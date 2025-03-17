@@ -32,11 +32,7 @@ const EventDetailSchema = new Schema(
 // Define the Event Schema
 const EventSchema = new Schema(
   {
-    eventID: {
-      type: Number,
-      required: true,
-      unique: true,
-    },
+    eventID: { type: Number, required: true },
     eventNameAKey: { type: String, required: true },
     eventNameBKey: { type: String, required: true },
     gameId: { type: Number, required: true },

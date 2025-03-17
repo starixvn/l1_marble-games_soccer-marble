@@ -1,4 +1,6 @@
 import { Document } from "mongoose";
+import { logger } from "sc-common";
+import { GameSettings } from "../config/game-settings";
 
 export enum SettlementStatus {
   PLAY = "Play",
@@ -33,9 +35,7 @@ export interface Event extends Document {
   endTime: Date;
 }
 
-export interface GameConfig {
-  eventsPerGeneration: number;
-  gameHalfDurationSeconds: number;
-  breakDurationSeconds: number;
-  generationIntervalMinutes: number;
+export interface AppContainer {
+  logService: typeof logger;
+  gameSettings: GameSettings;
 }

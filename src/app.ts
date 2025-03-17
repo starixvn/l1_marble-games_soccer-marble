@@ -1,8 +1,6 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
-import { PORT, MONGODB_URI } from "./config";
-import eventRoutes from "./routes/eventRoutes";
-import SchedulerService from "./services/SchedulerService";
+import http from "http";
 
 // Create Express app
 const app = express();
@@ -10,40 +8,41 @@ const app = express();
 // Middleware
 app.use(express.json());
 
-// Routes
-app.use("/api/events", eventRoutes);
+app.get("/", (req, res, next) => {
+  res.send(`Soccer marble service running`);
+});
 
-// Health check route
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "ok" });
 });
 
+const httpServer = http.createServer(app);
+
 // Connect to MongoDB
 mongoose
-  .connect(MONGODB_URI)
+  .connect("mongodb://localhost:27017/marble-football")
   .then(() => {
     console.log("Connected to MongoDB");
 
-    // Start the server
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-
-      // Start the scheduler service
-      SchedulerService.start();
+    // Start the server (only once)
+    httpServer.listen(3000, () => {
+      console.log(`Server running on port 3000`);
 
       // Handle graceful shutdown
       process.on("SIGINT", () => {
         console.log("SIGINT received. Shutting down gracefully...");
-        SchedulerService.stop();
-        mongoose.connection.close();
-        process.exit(0);
+        httpServer.close(() => {
+          mongoose.connection.close();
+          process.exit(0);
+        });
       });
 
       process.on("SIGTERM", () => {
         console.log("SIGTERM received. Shutting down gracefully...");
-        SchedulerService.stop();
-        mongoose.connection.close();
-        process.exit(0);
+        httpServer.close(() => {
+          mongoose.connection.close();
+          process.exit(0);
+        });
       });
     });
   })
