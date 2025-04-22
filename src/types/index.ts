@@ -1,31 +1,59 @@
-import { Document } from "mongoose";
 import { logger } from "sc-common";
-import { GameSettings } from "../config/game-settings";
+
+export type RateConfig = {
+  scoreRate: Record<string, number>;
+};
+
+export type HalfConfigType = RateConfig & {
+  overUnderValue?: number;
+  handicapValue?: number;
+};
+
+export type MatchConfigType = {
+  firstHalf: HalfConfigType;
+  secondHalf: HalfConfigType;
+  overUnderValue?: number;
+  handicapValue?: number;
+};
 
 export enum SettlementStatus {
-  PLAY = "Play",
-  LOSE = "Lose",
-  WIN = "Win",
-  DRAW = "Draw",
+  PLAY = "P",
+  LOSE = "L",
+  WIN = "W",
+  DRAW = "D",
 }
 
 export interface Selection {
   name: string;
   price: number;
+  point: number;
   settlementStatus: SettlementStatus;
 }
 
 export interface EventDetail {
+  oddsAvailableTs: Date;
   scheduleStartTs: Date;
   resultsAvailableTs: Date;
   playlist?: string;
   goalInfo?: string;
   selections?: Selection[];
-  result?: Record<string, any>;
-  encryptedResult: Record<string, any>;
+  result?: string;
 }
 
-export interface Event extends Document {
+export type DrawResultType = {
+  playlist: string;
+  goalInfo?: string;
+  result: string;
+};
+
+export type RoundResultType = {
+  drawResults: DrawResultType[];
+};
+
+export type DrawSettlementResultType = Record<string, SettlementStatus>;
+export type RoundSettlementResultType = DrawSettlementResultType[];
+
+export interface Event {
   eventID: number;
   eventNameAKey: string;
   eventNameBKey: string;
@@ -38,4 +66,34 @@ export interface Event extends Document {
 export interface AppContainer {
   logService: typeof logger;
   gameSettings: GameSettings;
+  rateConfigs: RateConfig[];
 }
+
+export type GameSettings = {
+  gameId: number;
+  upcomingEvents: number;
+  gameTiming: GameTiming;
+  teams: string[];
+  numberOfVideos: Record<string, number>;
+  choices: string[];
+};
+
+export type GameTiming = {
+  wholeRound: number;
+  timelines: Array<Timeline>;
+};
+
+export type Timeline = {
+  [key in Phase]: number;
+};
+
+export enum Phase {
+  OddsAvailable = "OddsAvailable",
+  ScheduleStart = "ScheduleStart",
+  ResultAvailable = "ResultAvailable",
+}
+
+export type DataResultType = {
+  numberOfVideos: Record<string, number>;
+  matchConfig: MatchConfigType;
+};

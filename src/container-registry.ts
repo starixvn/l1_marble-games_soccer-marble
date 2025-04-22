@@ -1,6 +1,7 @@
 import { AppContainer } from "./types/index";
 import { createContainer, AwilixContainer, InjectionMode, asValue } from "awilix";
 import { gameSettings } from "./config/game-settings";
+import { rateConfigs } from "./config/rate-config";
 import { logger } from "sc-common";
 
 export class Container {
@@ -17,6 +18,7 @@ export class Container {
     this.container.register({
       logService: asValue(logger),
       gameSettings: asValue(gameSettings),
+      rateConfigs: asValue(rateConfigs),
     });
   }
 }

@@ -28,15 +28,16 @@
     "lodash.shuffle": "^4.2.0",
     "mongoose": "^8.12.1",
     "random-js": "^2.1.0",
-    "sc-common": "^1.8.1"
+    "sc-common": "^1.8.1",
+    "sc-core-rng": "^1.1.0"
   },
   "devDependencies": {
-    "@types/crypto-js": "^4.2.2",
-    "@types/express": "^5.0.0",
-    "@types/mongoose": "^5.11.96",
     "@types/chance": "^1.1.6",
+    "@types/crypto-js": "^4.2.2",
     "@types/d3-array": "^3.2.1",
+    "@types/express": "^5.0.0",
     "@types/lodash.shuffle": "^4.2.9",
+    "@types/mongoose": "^5.11.96",
     "@types/sc-common": "^1.0.0"
   }
 }

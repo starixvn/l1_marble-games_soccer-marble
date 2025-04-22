@@ -1,42 +1,54 @@
+import { GameSettings } from "../types";
+
 export const gameSettings: GameSettings = {
+  gameId: 2001,
   upcomingEvents: 3,
-  duration: {
+  gameTiming: {
     wholeRound: 120,
     timelines: [
       {
-        oddsAvailable: 0,
-        videoInfoAvailable: 35,
-        resultAvailable: 65,
+        OddsAvailable: 0,
+        ScheduleStart: 35,
+        ResultAvailable: 65,
       },
       {
-        oddsAvailable: 65,
-        videoInfoAvailable: 80,
-        resultAvailable: 110,
+        OddsAvailable: 65,
+        ScheduleStart: 80,
+        ResultAvailable: 110,
       },
     ],
   },
   teams: ["MCI", "RMA", "BAR", "LIV", "ARS", "FCB", "INT", "LEV", "AVL", "ATA", "BVB", "JUV", "PSG", "SCP", "ATM", "MIL"],
+  numberOfVideos: {
+    AAAA: 2,
+    AAAH: 6,
+    AAA: 2,
+    AAHA: 2,
+    AAHH: 2,
+    AAH: 2,
+    AA: 2,
+    AHAA: 3,
+    AHAH: 3,
+    AHA: 2,
+    AHHA: 4,
+    AHHH: 5,
+    AHH: 2,
+    AH: 15,
+    A: 15,
+    HAAA: 2,
+    HAAH: 2,
+    HAA: 11,
+    HAHA: 2,
+    HAHH: 2,
+    HAH: 12,
+    HA: 2,
+    HHAA: 2,
+    HHAH: 3,
+    HHA: 8,
+    HHHA: 2,
+    HHHH: 2,
+    HHH: 2,
+    HH: 4,
+    H: 19,
+  },
 };
-
-export type GameSettings = {
-  upcomingEvents: number;
-  duration: Duration;
-  teams: string[];
-};
-
-export type Duration = {
-  wholeRound: number;
-  timelines: Array<Timeline>;
-};
-
-export type Timeline = {
-  oddsAvailable: number;
-  videoInfoAvailable: number;
-  resultAvailable: number;
-};
-
-export enum Phase {
-  OddsAvailable = "oddsAvailable",
-  VideoInfoAvailable = "videoInfoAvailable",
-  ResultAvailable = "resultAvailable",
-}
