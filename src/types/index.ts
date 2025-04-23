@@ -1,4 +1,6 @@
 import { logger } from "sc-common";
+import { EventDetailModel, EventModel, RoundModel } from "../models";
+import { GameCron } from "../crons/game-cron";
 
 export type RateConfig = {
   scoreRate: Record<string, number>;
@@ -23,14 +25,15 @@ export enum SettlementStatus {
   DRAW = "D",
 }
 
-export interface Selection {
+export type Selection = {
   name: string;
   price: number;
   point: number;
   settlementStatus: SettlementStatus;
-}
+};
 
-export interface EventDetail {
+export type EventDetail = {
+  eventId: number;
   oddsAvailableTs: Date;
   scheduleStartTs: Date;
   resultsAvailableTs: Date;
@@ -38,7 +41,7 @@ export interface EventDetail {
   goalInfo?: string;
   selections?: Selection[];
   result?: string;
-}
+};
 
 export type DrawResultType = {
   playlist: string;
@@ -53,7 +56,7 @@ export type RoundResultType = {
 export type DrawSettlementResultType = Record<string, SettlementStatus>;
 export type RoundSettlementResultType = DrawSettlementResultType[];
 
-export interface Event {
+export type Event = {
   eventID: number;
   eventNameAKey: string;
   eventNameBKey: string;
@@ -61,12 +64,16 @@ export interface Event {
   eventDetails: EventDetail[];
   startTime: Date;
   endTime: Date;
-}
+};
 
 export interface AppContainer {
   logService: typeof logger;
   gameSettings: GameSettings;
   rateConfigs: RateConfig[];
+  eventDetailsRepository: typeof EventDetailModel;
+  eventRepository: typeof EventModel;
+  roundRepository: typeof RoundModel;
+  gameCron: GameCron;
 }
 
 export type GameSettings = {

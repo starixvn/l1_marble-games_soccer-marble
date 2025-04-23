@@ -12,7 +12,7 @@
   "type": "module",
   "scripts": {
     "start": "node ./build/app.js",
-    "dev": "ts-node src/app.ts",
+    "dev": "cross-env NODE_ENV=development tsx watch ./src/app.ts",
     "build": "tsc",
     "watch": "tsc -w",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,6 +21,7 @@
     "awilix": "^12.0.4",
     "chance": "^1.1.12",
     "cron": "^4.1.0",
+    "cross-env": "^7.0.3",
     "crypto-js": "^4.2.0",
     "d3-array": "^3.2.4",
     "dotenv": "^16.4.7",
@@ -29,7 +30,9 @@
     "mongoose": "^8.12.1",
     "random-js": "^2.1.0",
     "sc-common": "^1.8.1",
-    "sc-core-rng": "^1.1.0"
+    "sc-core-rng": "^1.1.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
   },
   "devDependencies": {
     "@types/chance": "^1.1.6",

@@ -51,4 +51,5 @@ export const gameSettings: GameSettings = {
     HH: 4,
     H: 19,
   },
+  choices: [],
 };

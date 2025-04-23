@@ -1,6 +1,10 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import http from "http";
+import { Container } from "./container-registry";
+import { StartUp } from "./start-up";
+import { AppContainer } from "./types";
+import { GameCron } from "./crons/game-cron";
 
 // Create Express app
 const app = express();
@@ -50,3 +54,12 @@ mongoose
     console.error("Failed to connect to MongoDB", err);
     process.exit(1);
   });
+
+const container = new Container();
+container.register();
+// const startUp = new StartUp(container.container as unknown as AppContainer);
+// startUp.start();
+
+const gameCron = container.container.resolve<GameCron>("gameCron");
+console.log("gameCron: ", gameCron);
+gameCron.start();
