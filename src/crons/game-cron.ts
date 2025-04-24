@@ -65,7 +65,12 @@ export class GameCron {
   }
 
   async start() {
-    this.startCron();
+    try {
+      await this.getLastRound();
+      this.startCron();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   private startCron() {
@@ -86,24 +91,35 @@ export class GameCron {
     const { timelines, wholeRound } = this.gameSettings.gameTiming;
 
     if (currentRoundTime > wholeRound || currentRoundTime === 0) {
+      await this.updateRoundEnded();
       await this.startNewRound();
     }
 
-    timelines.forEach((timeline, drawIndex) => {
+    timelines.forEach(async (timeline, drawIndex) => {
       if (currentRoundTime === timeline.OddsAvailable) {
-        this.updateOddsForDraw(drawIndex);
+        console.log(`updateOddsForDraw ${drawIndex} with time ${new Date()}`);
+        await this.updateOddsForDraw(drawIndex);
       }
 
       if (currentRoundTime === timeline.ScheduleStart) {
-        this.updateVideoInfoForDraw(drawIndex);
+        console.log(`updateVideoInfoForDraw ${drawIndex} with time ${new Date()}`);
+        await this.updateVideoInfoForDraw(drawIndex);
       }
 
       if (currentRoundTime === timeline.ResultAvailable) {
-        this.updateResultForDraw(drawIndex);
+        console.log(`updateResultForDraw ${drawIndex} with time ${new Date()}`);
+        await this.updateResultForDraw(drawIndex);
       }
     });
 
     this.round.roundTime++;
+  }
+
+  private async updateRoundEnded() {
+    await this.roundRepository.updateOne(
+      { roundId: this.round.roundId, gameId: this.gameSettings.gameId },
+      { $set: { ended: true } }
+    );
   }
 
   private async updateOddsForDraw(drawIndex: number) {
@@ -138,11 +154,23 @@ export class GameCron {
 
     eventDetail.result = this.round.result!.drawResults[drawIndex].result;
 
+    eventDetail.selections!.forEach((selection) => {
+      selection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
+    });
+
     await this.updateEventDetail(eventDetail as unknown as IEventDetail);
   }
 
   private async updateEventDetail(eventDetail: IEventDetail) {
     await this.eventDetailsRepository.updateOne({ _id: eventDetail._id }, { $set: eventDetail });
+  }
+
+  private async getLastRound() {
+    const round = await this.roundRepository.findOne({ gameId: this.gameSettings.gameId }, "roundId", {
+      sort: { roundId: -1 },
+    });
+    console.log("last round", round);
+    this.round.roundId = round?.roundId ?? 0;
   }
 
   private async startNewRound() {
@@ -157,6 +185,7 @@ export class GameCron {
     this.getSettlementResult();
     this.updateSecondHalfOdds();
     await this.handleCreateAndUpdateNewEvent(this.round);
+    await this.createNewRound();
   }
 
   private async handleCreateAndUpdateNewEvent(round: Round) {
@@ -166,20 +195,58 @@ export class GameCron {
   private async createNewEvent(roundData: Round) {
     const eventDetails = await this.createNewEventDetails(roundData);
 
-    const event = await this.eventRepository.create({
+    const event = {
       eventID: roundData.roundId,
       eventNameAKey: roundData.homeTeam,
       eventNameBKey: roundData.awayTeam,
       gameId: this.gameSettings.gameId,
       eventDetails: eventDetails.map((eventDetail) => eventDetail._id),
       startTime: new Date(),
-      endTime: new Date(),
-    });
+      endTime: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
+    };
 
     this.event = {
       ...event,
       eventDetails: eventDetails,
     };
+
+    await this.eventRepository.create(event);
+  }
+
+  private async createNewRound() {
+    try {
+      console.log("createNewRound", JSON.stringify(this.event));
+
+      // Check if round already exists
+      const existingRound = await this.roundRepository.findOne({
+        gameId: this.gameSettings.gameId,
+        roundId: this.round.roundId,
+      });
+
+      if (existingRound) {
+        console.log(`Round ${this.round.roundId} already exists`);
+        return;
+      }
+
+      // Create new round with all required fields
+      const newRound = {
+        roundId: this.round.roundId,
+        eventID: this.event.eventID,
+        eventNameAKey: this.event.eventNameAKey,
+        eventNameBKey: this.event.eventNameBKey,
+        eventDetails: this.event.eventDetails,
+        gameId: this.gameSettings.gameId,
+        ended: false,
+        startTime: new Date(),
+        endTime: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
+      };
+
+      await this.roundRepository.create(newRound);
+      console.log(`Created new round ${this.round.roundId}`);
+    } catch (error) {
+      console.log(`Error creating new round: ${error}`);
+      throw error;
+    }
   }
 
   private async createNewEventDetails(roundData: Round): Promise<IEventDetail[]> {
@@ -188,9 +255,15 @@ export class GameCron {
     for (let drawIndex = 0; drawIndex < roundData.numberOfDraws; drawIndex++) {
       const eventDetail = await this.eventDetailsRepository.create({
         eventId: roundData.roundId,
-        oddsAvailableTs: new Date(),
-        scheduleStartTs: new Date(),
-        resultsAvailableTs: new Date(),
+        oddsAvailableTs: new Date(
+          new Date().getTime() + this.gameSettings.gameTiming.timelines[drawIndex].OddsAvailable * 1000
+        ),
+        scheduleStartTs: new Date(
+          new Date().getTime() + this.gameSettings.gameTiming.timelines[drawIndex].ScheduleStart * 1000
+        ),
+        resultsAvailableTs: new Date(
+          new Date().getTime() + this.gameSettings.gameTiming.timelines[drawIndex].ResultAvailable * 1000
+        ),
       });
 
       eventDetails.push(eventDetail as unknown as IEventDetail);

@@ -44,4 +44,4 @@ const EventSchema = new Schema<IEvent>(
 );
 
 // Create and export the Event model
-export default mongoose.model("marble_events", EventSchema);
+export default mongoose.model("events", EventSchema);

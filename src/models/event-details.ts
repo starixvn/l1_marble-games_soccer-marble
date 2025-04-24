@@ -18,4 +18,4 @@ export const EventDetailSchema = new Schema<EventDetail>({
   result: { type: Schema.Types.Mixed },
 });
 
-export default mongoose.model("marble_event_details", EventDetailSchema);
+export default mongoose.model("event_details", EventDetailSchema);

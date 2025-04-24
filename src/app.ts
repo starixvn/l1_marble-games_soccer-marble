@@ -2,8 +2,6 @@ import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import http from "http";
 import { Container } from "./container-registry";
-import { StartUp } from "./start-up";
-import { AppContainer } from "./types";
 import { GameCron } from "./crons/game-cron";
 
 // Create Express app
@@ -24,7 +22,7 @@ const httpServer = http.createServer(app);
 
 // Connect to MongoDB
 mongoose
-  .connect("mongodb://localhost:27017/marble-football")
+  .connect("mongodb://service:S3rv1c3@10.10.50.14:8708/marble_odds_feed?replicaSet=BotsRS&authSource=admin&tls=false")
   .then(() => {
     console.log("Connected to MongoDB");
 

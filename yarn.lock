@@ -705,6 +705,11 @@ express@^4.21.2:
     utils-merge "1.0.1"
     vary "~1.1.2"
 
+extensionless@^1.9.9:
+  version "1.9.9"
+  resolved "http://npm.lumigame.com/extensionless/-/extensionless-1.9.9.tgz#1ddb102f2fa164f421c195d5edaca80d9887dc91"
+  integrity sha512-fz0cWfLA4pgc2nwmg6lc2UH+g+NlFuD63VWqp8n1wGAZSSbPNoARkA54BxXRjYCYW9LvhBnA3NyJaGS2KudkWw==
+
 fast-glob@^3.3.2:
   version "3.3.3"
   resolved "http://npm.lumigame.com/fast-glob/-/fast-glob-3.3.3.tgz#d06d585ce8dba90a16b0505c543c3ccfb3aeb818"

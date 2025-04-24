@@ -26,6 +26,7 @@
     "d3-array": "^3.2.4",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "extensionless": "^1.9.9",
     "lodash.shuffle": "^4.2.0",
     "mongoose": "^8.12.1",
     "random-js": "^2.1.0",
