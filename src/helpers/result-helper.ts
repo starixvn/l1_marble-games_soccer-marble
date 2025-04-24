@@ -19,11 +19,13 @@ export const generateResult = (data: DataResultType): RoundResultType => {
 
   const firstHalfResult: DrawResultType = {
     playlist: videoInfo.firstHalfVideo,
+    goalInfo: videoInfo.firstHalfVideo,
     result: firstHalf,
   };
 
   const secondHalfResult: DrawResultType = {
     playlist: videoInfo.secondHalfVideo,
+    goalInfo: videoInfo.secondHalfVideo,
     result: secondHalf,
   };
 

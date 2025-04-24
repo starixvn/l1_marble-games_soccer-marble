@@ -16,6 +16,7 @@ import { securePickOne, secureShuffle } from "sc-core-rng";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
 import type { EventDetailModel, EventModel, RoundModel } from "../models";
 import { IEventDetail } from "../models/event-details";
+import e from "express";
 
 type Draw = {
   drawIndex: number;
@@ -32,6 +33,7 @@ type Round = {
   awayTeam: string;
   numberOfDraws: number;
   matchConfig?: MatchConfigType;
+  selections?: Record<string, Selection>[];
   odds?: Record<string, number>[];
   result?: RoundResultType;
   settlementResult?: RoundSettlementResultType;
@@ -67,6 +69,7 @@ export class GameCron {
   async start() {
     try {
       await this.getLastRound();
+      await this.startNewRound();
       this.startCron();
     } catch (error) {
       console.log(error);
@@ -90,7 +93,7 @@ export class GameCron {
     const currentRoundTime = this.round.roundTime;
     const { timelines, wholeRound } = this.gameSettings.gameTiming;
 
-    if (currentRoundTime > wholeRound || currentRoundTime === 0) {
+    if (currentRoundTime > wholeRound) {
       await this.updateRoundEnded();
       await this.startNewRound();
     }
@@ -123,19 +126,10 @@ export class GameCron {
   }
 
   private async updateOddsForDraw(drawIndex: number) {
+    console.log("updateOddsForDraw", drawIndex);
     const eventDetail = this.event.eventDetails[drawIndex];
-    const odds = this.round.odds![drawIndex];
 
-    Object.entries(odds).forEach(([betChoice, odds]) => {
-      const selection: Selection = {
-        name: betChoice,
-        price: odds,
-        point: 0,
-        settlementStatus: SettlementStatus.PLAY,
-      };
-
-      eventDetail.selections!.push(selection);
-    });
+    eventDetail.selections = Object.values(this.round.selections![drawIndex]);
 
     await this.updateEventDetail(eventDetail as unknown as IEventDetail);
   }
@@ -193,6 +187,7 @@ export class GameCron {
   }
 
   private async createNewEvent(roundData: Round) {
+    console.log("createNewEvent");
     const eventDetails = await this.createNewEventDetails(roundData);
 
     const event = {
@@ -228,13 +223,24 @@ export class GameCron {
         return;
       }
 
+      const eventDetails = this.event.eventDetails.map((eventDetail: any) => eventDetail.toObject());
+
+      eventDetails.forEach((eventDetail, drawIndex) => {
+        eventDetail.selections = Object.values(this.round.selections![drawIndex]);
+        eventDetail.result = this.round.result!.drawResults[drawIndex].result;
+        eventDetail.playlist = this.round.result!.drawResults[drawIndex].playlist;
+        eventDetail.goalInfo = this.round.result!.drawResults[drawIndex].goalInfo;
+      });
+
+      console.log("eventDetails", eventDetails);
+
       // Create new round with all required fields
       const newRound = {
         roundId: this.round.roundId,
         eventID: this.event.eventID,
         eventNameAKey: this.event.eventNameAKey,
         eventNameBKey: this.event.eventNameBKey,
-        eventDetails: this.event.eventDetails,
+        eventDetails: eventDetails,
         gameId: this.gameSettings.gameId,
         ended: false,
         startTime: new Date(),
@@ -250,6 +256,7 @@ export class GameCron {
   }
 
   private async createNewEventDetails(roundData: Round): Promise<IEventDetail[]> {
+    console.log("createNewEventDetails");
     const eventDetails: IEventDetail[] = [];
 
     for (let drawIndex = 0; drawIndex < roundData.numberOfDraws; drawIndex++) {
@@ -280,9 +287,10 @@ export class GameCron {
   }
 
   private generateRoundOddsAndUpdateMatchConfig() {
-    const { odds, matchConfig } = calculateOddsForRound(this.round.matchConfig!);
+    const { odds, matchConfig, selections } = calculateOddsForRound(this.round.matchConfig!);
     this.round.odds = odds;
     this.round.matchConfig = matchConfig;
+    this.round.selections = selections;
   }
 
   private generateResult() {
@@ -310,6 +318,8 @@ export class GameCron {
     if (this.round.settlementResult![0].odd === SettlementStatus.WIN) {
       this.round.odds![1].odd = secondHalfOdds.even;
       this.round.odds![1].even = secondHalfOdds.odd;
+      this.round.selections![1].odd.price = secondHalfOdds.even;
+      this.round.selections![1].even.price = secondHalfOdds.odd;
     }
   }
 }

@@ -1,4 +1,4 @@
-import { RateConfig, MatchConfigType } from "../types";
+import { RateConfig, MatchConfigType, SettlementStatus, Selection } from "../types";
 
 export const parseScore = (score: string): [number, number] => {
   const [home, away] = score.split("-").map(Number);
@@ -196,8 +196,48 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType) => {
     secondHalf: updatedSecondHalf,
   };
 
+  const firstHalfSelections: Record<string, Selection> = {};
+  const secondHalfSelections: Record<string, Selection> = {};
+
+  Object.entries(firstHalfOdds).forEach(([key, value]) => {
+    const selection: Selection = {
+      name: key,
+      price: value,
+      point: 0,
+      settlementStatus: SettlementStatus.PLAY,
+    };
+
+    firstHalfSelections[key] = selection;
+  });
+
+  firstHalfSelections["ft_hdp_home"].point = fulltime.handicapValue;
+  firstHalfSelections["ft_hdp_away"].point = -fulltime.handicapValue;
+  firstHalfSelections["h1_hdp_home"].point = firstHalf.handicapValue;
+  firstHalfSelections["h1_hdp_away"].point = -firstHalf.handicapValue;
+  firstHalfSelections["ft_ou_over"].point = fulltime.overUnderValue;
+  firstHalfSelections["ft_ou_under"].point = fulltime.overUnderValue;
+  firstHalfSelections["h1_ou_over"].point = firstHalf.overUnderValue;
+  firstHalfSelections["h1_ou_under"].point = firstHalf.overUnderValue;
+
+  Object.entries(secondHalfOdds).forEach(([key, value]) => {
+    const selection: Selection = {
+      name: key,
+      price: value,
+      point: 0,
+      settlementStatus: SettlementStatus.PLAY,
+    };
+
+    secondHalfSelections[key] = selection;
+  });
+
+  secondHalfSelections["ft_hdp_home"].point = secondHalf.handicapValue;
+  secondHalfSelections["ft_hdp_away"].point = -secondHalf.handicapValue;
+  secondHalfSelections["ft_ou_over"].point = secondHalf.overUnderValue;
+  secondHalfSelections["ft_ou_under"].point = secondHalf.overUnderValue;
+
   return {
     odds: [firstHalfOdds, secondHalfOdds],
     matchConfig: updatedMatchConfig,
+    selections: [firstHalfSelections, secondHalfSelections],
   };
 };
