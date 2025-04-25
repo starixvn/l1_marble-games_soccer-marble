@@ -1,27 +1,23 @@
 import cron from "cron";
-import { logger } from "sc-common";
 import {
   AppContainer,
   Event,
   Selection,
-  SettlementStatus,
   GameSettings,
-  RateConfig,
   MatchConfigType,
   RoundResultType,
   RoundSettlementResultType,
   DrawResultType,
   DrawSettlementResultType,
 } from "../types";
-import { calculateOddsForRound } from "../helpers/odds-helper";
-import { securePickOne, secureShuffle } from "sc-core-rng";
-import { generateResult, getSettlementResult } from "../helpers/result-helper";
-import type { EventDetailModel, EventModel, RoundModel } from "../models";
 import { IEventDetail } from "../models/event-details";
 import { IRound } from "../models/rounds";
+import { RoundService } from "../services/round-service";
+import { EventService } from "../services/event-service";
+import { MatchGeneratorService } from "../services/match-generator-service";
 
 // Types
-type Round = {
+export type Round = {
   roundId: number;
   roundTime: number;
   homeTeam: string;
@@ -34,147 +30,11 @@ type Round = {
   settlementResult?: RoundSettlementResultType;
 };
 
-// Round Manager class to handle round-related operations
-class RoundManager {
-  constructor(private roundRepository: typeof RoundModel, private gameSettings: GameSettings) {}
-
-  async initRoundId(): Promise<number> {
-    const round = await this.roundRepository.findOne({ gameId: this.gameSettings.gameId }, "roundId", {
-      sort: { roundId: -1 },
-    });
-    return round?.roundId ?? 0;
-  }
-
-  async getLastRound(roundId: number): Promise<IRound | null> {
-    return await this.roundRepository.findOne({ gameId: this.gameSettings.gameId, roundId }).lean().exec();
-  }
-
-  async updateRoundEnded(roundId: number): Promise<void> {
-    await this.roundRepository.updateOne({ roundId, gameId: this.gameSettings.gameId }, { $set: { ended: true } });
-  }
-
-  async createRound(round: any): Promise<void> {
-    await this.roundRepository.create(round);
-  }
-}
-
-// Event Manager class to handle event-related operations
-class EventManager {
-  constructor(
-    private eventRepository: typeof EventModel,
-    private eventDetailsRepository: typeof EventDetailModel,
-    private gameSettings: GameSettings
-  ) {}
-
-  async createNewEvent(roundData: Round): Promise<Event> {
-    const eventDetails = await this.createNewEventDetails(roundData);
-
-    const event = {
-      eventID: roundData.roundId,
-      eventNameAKey: roundData.homeTeam,
-      eventNameBKey: roundData.awayTeam,
-      gameId: this.gameSettings.gameId,
-      eventDetails: eventDetails.map((eventDetail) => eventDetail._id),
-      startTime: new Date(),
-      endTime: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
-    };
-
-    const createdEvent = (await this.eventRepository.create(event)).toObject();
-    return {
-      ...createdEvent,
-      eventDetails,
-    };
-  }
-
-  private async createNewEventDetails(roundData: Round): Promise<IEventDetail[]> {
-    const eventDetails: IEventDetail[] = [];
-
-    for (let drawIndex = 0; drawIndex < roundData.numberOfDraws; drawIndex++) {
-      const eventDetail = await this.eventDetailsRepository.create({
-        eventId: roundData.roundId,
-        oddsAvailableTs: new Date(
-          new Date().getTime() + this.gameSettings.gameTiming.timelines[drawIndex].OddsAvailable * 1000
-        ),
-        scheduleStartTs: new Date(
-          new Date().getTime() + this.gameSettings.gameTiming.timelines[drawIndex].ScheduleStart * 1000
-        ),
-        resultsAvailableTs: new Date(
-          new Date().getTime() + this.gameSettings.gameTiming.timelines[drawIndex].ResultAvailable * 1000
-        ),
-      });
-
-      eventDetails.push(eventDetail as unknown as IEventDetail);
-    }
-
-    return eventDetails;
-  }
-
-  async updateEventDetail(eventDetail: IEventDetail, fieldsToUpdate?: (keyof IEventDetail)[]) {
-    if (!fieldsToUpdate) {
-      await this.eventDetailsRepository.updateOne({ _id: eventDetail._id }, { $set: eventDetail });
-      return;
-    }
-
-    const updateObject: Record<string, any> = {};
-    fieldsToUpdate.forEach((field) => {
-      if (field in eventDetail) {
-        updateObject[field] = eventDetail[field];
-      }
-    });
-
-    await this.eventDetailsRepository.updateOne({ _id: eventDetail._id }, { $set: updateObject });
-  }
-}
-
-// Match Manager class to handle match-related operations
-class MatchManager {
-  constructor(private gameSettings: GameSettings, private rateConfigs: RateConfig[]) {}
-
-  createNewMatch(): { homeTeam: string; awayTeam: string } {
-    const teams = secureShuffle(this.gameSettings.teams);
-    return {
-      homeTeam: teams[0],
-      awayTeam: teams[1],
-    };
-  }
-
-  createNewMatchConfig(): MatchConfigType {
-    return {
-      firstHalf: securePickOne(this.rateConfigs),
-      secondHalf: securePickOne(this.rateConfigs),
-    };
-  }
-
-  generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType) {
-    return calculateOddsForRound(matchConfig);
-  }
-
-  generateResult(matchConfig: MatchConfigType, numberOfVideos: Record<string, number>) {
-    return generateResult({
-      numberOfVideos,
-      matchConfig,
-    });
-  }
-
-  getSettlementResult(result: RoundResultType, matchConfig: MatchConfigType) {
-    return getSettlementResult(result, matchConfig);
-  }
-
-  updateSecondHalfOdds(odds: Record<string, number>[], settlementResult: RoundSettlementResultType) {
-    const secondHalfOdds = { ...odds[1] };
-    if (settlementResult[0].odd === SettlementStatus.WIN) {
-      odds[1].odd = secondHalfOdds.even;
-      odds[1].even = secondHalfOdds.odd;
-    }
-    return odds;
-  }
-}
-
 // Main GameCron class
 export class GameCron {
-  private roundManager: RoundManager;
-  private eventManager: EventManager;
-  private matchManager: MatchManager;
+  private roundService: RoundService;
+  private eventService: EventService;
+  private matchGeneratorService: MatchGeneratorService;
   private round: Round;
   private event: Event;
   private lastRound?: IRound;
@@ -182,9 +42,9 @@ export class GameCron {
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
-    this.roundManager = new RoundManager(container.roundRepository, this.gameSettings);
-    this.eventManager = new EventManager(container.eventRepository, container.eventDetailsRepository, this.gameSettings);
-    this.matchManager = new MatchManager(this.gameSettings, container.rateConfigs);
+    this.roundService = new RoundService(container);
+    this.eventService = new EventService(container);
+    this.matchGeneratorService = new MatchGeneratorService(container);
 
     this.round = {
       roundId: 0,
@@ -225,7 +85,7 @@ export class GameCron {
     const { timelines, wholeRound } = this.gameSettings.gameTiming;
 
     if (currentRoundTime > wholeRound || this.round.roundTime === 0) {
-      await this.roundManager.updateRoundEnded(this.round.roundId);
+      await this.roundService.markRoundAsEnded(this.round.roundId);
       await this.startNewRound();
     }
 
@@ -250,11 +110,11 @@ export class GameCron {
   }
 
   private async initRoundId() {
-    this.round.roundId = await this.roundManager.initRoundId();
+    this.round.roundId = await this.roundService.initializeRoundId();
   }
 
   private async getLastRound() {
-    const lastRound = await this.roundManager.getLastRound(this.round.roundId);
+    const lastRound = await this.roundService.fetchLastRound(this.round.roundId);
     if (lastRound) {
       this.lastRound = lastRound;
     }
@@ -264,26 +124,26 @@ export class GameCron {
     this.round.roundTime = 0;
     this.round.roundId++;
 
-    const { homeTeam, awayTeam } = this.matchManager.createNewMatch();
+    const { homeTeam, awayTeam } = this.matchGeneratorService.createNewMatch();
     this.round.homeTeam = homeTeam;
     this.round.awayTeam = awayTeam;
 
-    this.round.matchConfig = this.matchManager.createNewMatchConfig();
+    this.round.matchConfig = this.matchGeneratorService.createNewMatchConfig();
 
-    const { odds, matchConfig, selections } = this.matchManager.generateRoundOddsAndUpdateMatchConfig(
+    const { odds, matchConfig, selections } = this.matchGeneratorService.generateRoundOddsAndUpdateMatchConfig(
       this.round.matchConfig
     );
     this.round.odds = odds;
     this.round.matchConfig = matchConfig;
     this.round.selections = selections;
 
-    this.round.result = this.matchManager.generateResult(this.round.matchConfig, this.gameSettings.numberOfVideos);
+    this.round.result = this.matchGeneratorService.generateResult(this.round.matchConfig, this.gameSettings.numberOfVideos);
 
-    this.round.settlementResult = this.matchManager.getSettlementResult(this.round.result, this.round.matchConfig);
+    this.round.settlementResult = this.matchGeneratorService.getSettlementResult(this.round.result, this.round.matchConfig);
 
-    this.round.odds = this.matchManager.updateSecondHalfOdds(this.round.odds!, this.round.settlementResult);
+    this.round.odds = this.matchGeneratorService.updateSecondHalfOdds(this.round.odds!, this.round.settlementResult);
 
-    this.event = await this.eventManager.createNewEvent(this.round);
+    this.event = await this.eventService.createNewEvent(this.round);
     await this.createNewRound();
   }
 
@@ -310,7 +170,7 @@ export class GameCron {
         endTime: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
       };
 
-      await this.roundManager.createRound(newRound);
+      await this.roundService.saveNewRound(newRound);
     } catch (error) {
       console.error(`Error creating new round: ${error}`);
       throw error;
@@ -323,7 +183,7 @@ export class GameCron {
       const eventDetails = this.lastRound.eventDetails;
 
       if (currentDate > this.lastRound.endTime) {
-        await this.roundManager.updateRoundEnded(this.lastRound.roundId);
+        await this.roundService.markRoundAsEnded(this.lastRound.roundId);
         await this.updateAllEventDetails(eventDetails);
       } else {
         await this.updateEventDetailsByTimeline(eventDetails, currentDate);
@@ -336,7 +196,7 @@ export class GameCron {
     for (const eventDetail of eventDetails) {
       const eventDetailWithId = eventDetail as unknown as IEventDetail;
       if (eventDetailWithId._id) {
-        await this.eventManager.updateEventDetail(eventDetailWithId);
+        await this.eventService.updateEventDetail(eventDetailWithId);
       }
     }
   }
@@ -347,15 +207,15 @@ export class GameCron {
       if (!eventDetailWithId._id) continue;
 
       if (eventDetail.oddsAvailableTs < currentDate) {
-        await this.eventManager.updateEventDetail(eventDetailWithId, ["selections"]);
+        await this.eventService.updateEventDetail(eventDetailWithId, ["selections"]);
       }
 
       if (eventDetail.scheduleStartTs < currentDate) {
-        await this.eventManager.updateEventDetail(eventDetailWithId, ["playlist", "goalInfo"]);
+        await this.eventService.updateEventDetail(eventDetailWithId, ["playlist", "goalInfo"]);
       }
 
       if (eventDetail.resultsAvailableTs < currentDate) {
-        await this.eventManager.updateEventDetail(eventDetailWithId, ["result"]);
+        await this.eventService.updateEventDetail(eventDetailWithId, ["result"]);
       }
     }
   }
@@ -402,7 +262,7 @@ export class GameCron {
     if (!eventDetail._id) return;
 
     eventDetail.selections = Object.values(this.round.selections![drawIndex]);
-    await this.eventManager.updateEventDetail(eventDetail, ["selections"]);
+    await this.eventService.updateEventDetail(eventDetail, ["selections"]);
   }
 
   private async updateVideoInfoForDraw(drawIndex: number) {
@@ -411,7 +271,7 @@ export class GameCron {
 
     eventDetail.playlist = this.round.result!.drawResults[drawIndex].playlist;
     eventDetail.goalInfo = this.round.result!.drawResults[drawIndex].goalInfo;
-    await this.eventManager.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
+    await this.eventService.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
   }
 
   private async updateResultForDraw(drawIndex: number) {
@@ -422,6 +282,6 @@ export class GameCron {
     eventDetail.selections!.forEach((selection) => {
       selection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
     });
-    await this.eventManager.updateEventDetail(eventDetail, ["result"]);
+    await this.eventService.updateEventDetail(eventDetail, ["result"]);
   }
 }
