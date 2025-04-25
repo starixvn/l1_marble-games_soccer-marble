@@ -7,7 +7,7 @@ export const gameSettings: GameSettings = {
     wholeRound: 120,
     timelines: [
       {
-        OddsAvailable: 0,
+        OddsAvailable: 1,
         ScheduleStart: 35,
         ResultAvailable: 65,
       },

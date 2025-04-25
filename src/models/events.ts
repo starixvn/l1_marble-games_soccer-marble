@@ -28,20 +28,15 @@ export const SelectionSchema = new Schema(
 );
 
 // Define the Event Schema
-const EventSchema = new Schema<IEvent>(
-  {
-    eventID: { type: Number, required: true },
-    eventNameAKey: { type: String, required: true },
-    eventNameBKey: { type: String, required: true },
-    gameId: { type: Number, required: true },
-    eventDetails: [mongoose.Schema.Types.ObjectId],
-    startTime: { type: Date, required: true },
-    endTime: { type: Date, required: true },
-  },
-  {
-    timestamps: true,
-  }
-);
+const EventSchema = new Schema<IEvent>({
+  eventID: { type: Number, required: true },
+  eventNameAKey: { type: String, required: true },
+  eventNameBKey: { type: String, required: true },
+  gameId: { type: Number, required: true },
+  eventDetails: [mongoose.Schema.Types.ObjectId],
+  startTime: { type: Date, required: true },
+  endTime: { type: Date, required: true },
+});
 
 // Create and export the Event model
 export default mongoose.model("events", EventSchema);
