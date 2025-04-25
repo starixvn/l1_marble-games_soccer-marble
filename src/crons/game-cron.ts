@@ -56,11 +56,37 @@ export class GameCron {
     this.event = {} as Event;
   }
 
+  private async initRoundId() {
+    this.round.roundId = await this.roundService.initializeRoundId();
+  }
+
+  private async getLastRound() {
+    const lastRound = await this.roundService.fetchLastRound(this.round.roundId);
+    if (lastRound) {
+      this.lastRound = lastRound;
+    }
+  }
+
+  private async handleUnfinishedEvents() {
+    if (this.lastRound && !this.lastRound.ended) {
+      const currentDate = new Date();
+      const eventDetails = this.lastRound.eventDetails;
+
+      if (currentDate > this.lastRound.endTime) {
+        await this.roundService.markRoundAsEnded(this.lastRound.roundId);
+        await this.updateAllEventDetails(eventDetails);
+      } else {
+        await this.updateEventDetailsByTimeline(eventDetails, currentDate);
+        await this.updateRoundFromLastRound();
+      }
+    }
+  }
+
   async start() {
     try {
       await this.initRoundId();
       await this.getLastRound();
-      await this.updateUnfinishedEvents();
+      await this.handleUnfinishedEvents();
       this.startCron();
     } catch (error) {
       console.log(error);
@@ -85,7 +111,7 @@ export class GameCron {
     const { timelines, wholeRound } = this.gameSettings.gameTiming;
 
     if (currentRoundTime > wholeRound || this.round.roundTime === 0) {
-      await this.roundService.markRoundAsEnded(this.round.roundId);
+      currentRoundTime > wholeRound && (await this.roundService.markRoundAsEnded(this.round.roundId));
       await this.startNewRound();
     }
 
@@ -106,17 +132,6 @@ export class GameCron {
       if (currentRoundTime === timeline.ResultAvailable) {
         await this.updateResultForDraw(drawIndex);
       }
-    }
-  }
-
-  private async initRoundId() {
-    this.round.roundId = await this.roundService.initializeRoundId();
-  }
-
-  private async getLastRound() {
-    const lastRound = await this.roundService.fetchLastRound(this.round.roundId);
-    if (lastRound) {
-      this.lastRound = lastRound;
     }
   }
 
@@ -174,21 +189,6 @@ export class GameCron {
     } catch (error) {
       console.error(`Error creating new round: ${error}`);
       throw error;
-    }
-  }
-
-  private async updateUnfinishedEvents() {
-    if (this.lastRound && !this.lastRound.ended) {
-      const currentDate = new Date();
-      const eventDetails = this.lastRound.eventDetails;
-
-      if (currentDate > this.lastRound.endTime) {
-        await this.roundService.markRoundAsEnded(this.lastRound.roundId);
-        await this.updateAllEventDetails(eventDetails);
-      } else {
-        await this.updateEventDetailsByTimeline(eventDetails, currentDate);
-        await this.updateRoundFromLastRound();
-      }
     }
   }
 

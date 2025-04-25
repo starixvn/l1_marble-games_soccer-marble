@@ -35,41 +35,22 @@ export class EventService {
   }
 
   private async createNewEventDetails(roundData: Round): Promise<IEventDetail[]> {
-    const eventDetails: IEventDetail[] = [];
-
-    for (let drawIndex = 0; drawIndex < roundData.numberOfDraws; drawIndex++) {
-      const eventDetail = await this.eventDetailsRepository.create({
-        eventId: roundData.roundId,
-        oddsAvailableTs: new Date(
-          new Date().getTime() + this.gameSettings.gameTiming.timelines[drawIndex].OddsAvailable * 1000
-        ),
-        scheduleStartTs: new Date(
-          new Date().getTime() + this.gameSettings.gameTiming.timelines[drawIndex].ScheduleStart * 1000
-        ),
-        resultsAvailableTs: new Date(
-          new Date().getTime() + this.gameSettings.gameTiming.timelines[drawIndex].ResultAvailable * 1000
-        ),
-      });
-
-      eventDetails.push(eventDetail as unknown as IEventDetail);
-    }
-
-    return eventDetails;
+    const { timelines } = this.gameSettings.gameTiming;
+    return Promise.all(
+      timelines.map(
+        (timeline) =>
+          this.eventDetailsRepository.create({
+            eventId: roundData.roundId,
+            oddsAvailableTs: new Date(Date.now() + timeline.OddsAvailable * 1000),
+            scheduleStartTs: new Date(Date.now() + timeline.ScheduleStart * 1000),
+            resultsAvailableTs: new Date(Date.now() + timeline.ResultAvailable * 1000),
+          }) as unknown as IEventDetail
+      )
+    );
   }
 
-  async updateEventDetail(eventDetail: IEventDetail, fieldsToUpdate?: (keyof IEventDetail)[]) {
-    if (!fieldsToUpdate) {
-      await this.eventDetailsRepository.updateOne({ _id: eventDetail._id }, { $set: eventDetail });
-      return;
-    }
-
-    const updateObject: Record<string, any> = {};
-    fieldsToUpdate.forEach((field) => {
-      if (field in eventDetail) {
-        updateObject[field] = eventDetail[field];
-      }
-    });
-
-    await this.eventDetailsRepository.updateOne({ _id: eventDetail._id }, { $set: updateObject });
+  async updateEventDetail(eventDetail: IEventDetail, fields?: (keyof IEventDetail)[]) {
+    const updateFields = fields ? Object.fromEntries(fields.map((field) => [field, eventDetail[field]])) : eventDetail;
+    await this.eventDetailsRepository.updateOne({ _id: eventDetail._id }, { $set: updateFields });
   }
 }

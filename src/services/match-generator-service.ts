@@ -15,11 +15,8 @@ export class MatchGeneratorService {
   }
 
   createNewMatch(): { homeTeam: string; awayTeam: string } {
-    const teams = secureShuffle(this.gameSettings.teams);
-    return {
-      homeTeam: teams[0],
-      awayTeam: teams[1],
-    };
+    const [homeTeam, awayTeam] = secureShuffle(this.gameSettings.teams);
+    return { homeTeam, awayTeam };
   }
 
   createNewMatchConfig(): MatchConfigType {
