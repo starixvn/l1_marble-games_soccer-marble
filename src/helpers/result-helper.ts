@@ -15,7 +15,7 @@ export const generateResult = (data: DataResultType): RoundResultType => {
   const numberOfVideos = data.numberOfVideos;
   const firstHalf = generateResultForHalf(data.matchConfig.firstHalf);
   const secondHalf = generateResultForHalf(data.matchConfig.secondHalf);
-  const videoInfo = getVideoInfoFromResult(firstHalf, secondHalf, numberOfVideos);
+  const videoInfo = getVideoInfoFromResult(firstHalf.goalSequence, secondHalf.goalSequence, numberOfVideos);
 
   const firstHalfResult: DrawResultType = {
     playlist: videoInfo.firstHalfVideo,
@@ -42,17 +42,17 @@ export const getSettlementResult = (
   const secondHalf = roundResult.drawResults[1].result;
 
   const firstHalfSettlementResult = getSettlementResultFromResultString(
-    firstHalf,
+    firstHalf.goalSequence,
     matchConfig.firstHalf.overUnderValue!,
     matchConfig.firstHalf.handicapValue!
   );
   const secondHalfSettlementResult = getSettlementResultFromResultString(
-    secondHalf,
+    secondHalf.goalSequence,
     matchConfig.secondHalf.overUnderValue!,
     matchConfig.secondHalf.handicapValue!
   );
   const fullTimeSettlementResult = getSettlementResultFromResultString(
-    firstHalf + secondHalf,
+    firstHalf.goalSequence + secondHalf.goalSequence,
     matchConfig.overUnderValue!,
     matchConfig.handicapValue!
   );
@@ -139,7 +139,10 @@ const generateResultForHalf = (halfConfig: HalfConfigType) => {
 
   const result = secureShuffle(sequence).join("");
 
-  return result || "0";
+  return {
+    goalSequence: result || "0",
+    finalScore: scoreResult,
+  };
 };
 
 export const getScoreFromScoreRate = (scoreRate: Record<string, number>) => {

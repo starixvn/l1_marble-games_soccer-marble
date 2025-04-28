@@ -40,14 +40,20 @@ export type EventDetail = {
   playlist?: string;
   goalInfo?: string;
   selections?: Selection[];
-  result?: string;
+  result?: {
+    goalSequence: string;
+    finalScore: string;
+  };
   hasResult: boolean;
 };
 
 export type DrawResultType = {
   playlist: string;
   goalInfo?: string;
-  result: string;
+  result: {
+    goalSequence: string;
+    finalScore: string;
+  };
 };
 
 export type RoundResultType = {
