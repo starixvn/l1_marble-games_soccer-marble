@@ -1,6 +1,7 @@
 import { AppContainer, GameSettings } from "../types";
 import { RoundModel } from "../models";
 import { IRound } from "../models/rounds";
+import { IEventDetail } from "../models/event-details";
 
 // Round Manager class to handle round-related operations
 export class RoundService {
@@ -27,7 +28,15 @@ export class RoundService {
     await this.roundRepository.updateOne({ roundId, gameId: this.gameSettings.gameId }, { $set: { ended: true } });
   }
 
-  async saveNewRound(round: any): Promise<void> {
-    await this.roundRepository.create(round);
+  async insertOrUpdateRound(round: IRound): Promise<void> {
+    await this.roundRepository.updateOne(
+      { roundId: round.roundId, gameId: this.gameSettings.gameId },
+      { $set: round },
+      { upsert: true }
+    );
+  }
+
+  async updateRoundEventDetailResult(roundId: number, eventDetails: IEventDetail[]): Promise<void> {
+    await this.roundRepository.updateOne({ roundId, gameId: this.gameSettings.gameId }, { $set: { eventDetails } });
   }
 }

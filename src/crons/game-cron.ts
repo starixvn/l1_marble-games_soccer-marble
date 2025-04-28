@@ -15,6 +15,7 @@ import { IRound } from "../models/rounds";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { MatchGeneratorService } from "../services/match-generator-service";
+import { decrypt, encrypt } from "../helpers/crypto-helper";
 
 // Types
 export type Round = {
@@ -39,6 +40,7 @@ export class GameCron {
   private event: Event;
   private lastRound?: IRound;
   private gameSettings: GameSettings;
+  private eventDetails: IEventDetail[];
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
@@ -54,6 +56,7 @@ export class GameCron {
       numberOfDraws: this.gameSettings.gameTiming.timelines.length,
     };
     this.event = {} as Event;
+    this.eventDetails = [];
   }
 
   private async initRoundId() {
@@ -67,17 +70,56 @@ export class GameCron {
     }
   }
 
+  private async updateAllEventDetails(eventDetails: IEventDetail[]) {
+    for (const eventDetail of eventDetails) {
+      if (eventDetail._id) {
+        await this.eventService.updateEventDetail(eventDetail, [
+          "selections",
+          "playlist",
+          "goalInfo",
+          "result",
+          "hasResult",
+        ]);
+      }
+    }
+  }
+
+  private async updateEventDetailsByTimeline(rawEventDetails: IEventDetail[], currentDate: Date) {
+    rawEventDetails.forEach(async (eventDetail, drawIndex) => {
+      if (!eventDetail._id) return;
+
+      if (eventDetail.oddsAvailableTs < currentDate) {
+        await this.updateOddsForDraw(drawIndex);
+      }
+
+      if (eventDetail.scheduleStartTs < currentDate) {
+        await this.updateVideoInfoForDraw(drawIndex);
+      }
+
+      if (eventDetail.resultsAvailableTs < currentDate) {
+        await this.updateResultForDraw(drawIndex);
+      }
+    });
+  }
+
   private async handleUnfinishedEvents() {
     if (this.lastRound && !this.lastRound.ended) {
       const currentDate = new Date();
-      const eventDetails = this.lastRound.eventDetails;
+      const eventDetails = this.lastRound.eventDetails as IEventDetail[];
 
       if (currentDate > this.lastRound.scheduleEndTs) {
+        eventDetails.forEach((eventDetail) => {
+          eventDetail.hasResult = true;
+          eventDetail.result = decrypt(eventDetail.encryptedResult);
+        });
+
         await this.roundService.markRoundAsEnded(this.lastRound.roundId);
+        await this.roundService.updateRoundEventDetailResult(this.lastRound.roundId, eventDetails);
         await this.updateAllEventDetails(eventDetails);
       } else {
+        await this.updateRoundAndEventFromLastRound();
+        await this.updateEventDetails();
         await this.updateEventDetailsByTimeline(eventDetails, currentDate);
-        await this.updateRoundFromLastRound();
       }
     }
   }
@@ -110,8 +152,13 @@ export class GameCron {
     const currentRoundTime = this.round.roundTime;
     const { timelines, wholeRound } = this.gameSettings.gameTiming;
 
-    if (currentRoundTime > wholeRound || this.round.roundTime === 0) {
-      currentRoundTime > wholeRound && (await this.roundService.markRoundAsEnded(this.round.roundId));
+    if (currentRoundTime === 0) {
+      await this.startNewRound();
+    }
+
+    if (currentRoundTime > wholeRound) {
+      await this.roundService.markRoundAsEnded(this.round.roundId);
+      await this.roundService.updateRoundEventDetailResult(this.round.roundId, this.eventDetails);
       await this.startNewRound();
     }
 
@@ -159,71 +206,58 @@ export class GameCron {
     this.round.odds = this.matchGeneratorService.updateSecondHalfOdds(this.round.odds!, this.round.settlementResult);
 
     this.event = await this.eventService.createNewEvent(this.round);
+    await this.updateEventDetails();
     await this.createNewRound();
+  }
+
+  private async updateEventDetails() {
+    const eventDetails = this.event.eventDetails.map((eventDetail: any) => eventDetail.toObject());
+
+    eventDetails.forEach((eventDetail, drawIndex) => {
+      eventDetail.selections = Object.values(this.round.selections![drawIndex]);
+      eventDetail.playlist = this.round.result!.drawResults[drawIndex].playlist;
+      eventDetail.goalInfo = this.round.result!.drawResults[drawIndex].goalInfo;
+      eventDetail.hasResult = true;
+      eventDetail.result = this.round.result!.drawResults[drawIndex].result;
+      eventDetail.encryptedResult = encrypt(eventDetail.result);
+    });
+
+    this.eventDetails = eventDetails;
   }
 
   private async createNewRound() {
     try {
-      const eventDetails = this.event.eventDetails.map((eventDetail: any) => eventDetail.toObject());
+      const eventDetails = this.eventDetails.map((eventDetail, drawIndex) => {
+        const newSelections = eventDetail.selections!.map((selection: Selection) => {
+          const newSelection = { ...selection };
+          newSelection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
+          return newSelection;
+        });
 
-      eventDetails.forEach((eventDetail, drawIndex) => {
-        eventDetail.selections = Object.values(this.round.selections![drawIndex]);
-        eventDetail.result = this.round.result!.drawResults[drawIndex].result;
-        eventDetail.playlist = this.round.result!.drawResults[drawIndex].playlist;
-        eventDetail.goalInfo = this.round.result!.drawResults[drawIndex].goalInfo;
-        eventDetail.hasResult = true;
+        return {
+          ...eventDetail,
+          result: null,
+          selections: newSelections,
+        };
       });
 
       const newRound = {
+        ...this.event,
+        eventDetails,
         roundId: this.round.roundId,
-        eventID: this.event.eventID,
-        eventNameAKey: this.event.eventNameAKey,
-        eventNameBKey: this.event.eventNameBKey,
-        eventDetails: eventDetails,
-        gameId: this.gameSettings.gameId,
         ended: false,
-        scheduleStartTs: new Date(),
-        scheduleEndTs: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
       };
 
-      await this.roundService.saveNewRound(newRound);
+      await this.roundService.insertOrUpdateRound(newRound as any);
     } catch (error) {
       console.error(`Error creating new round: ${error}`);
       throw error;
     }
   }
 
-  private async updateAllEventDetails(eventDetails: any[]) {
-    for (const eventDetail of eventDetails) {
-      const eventDetailWithId = eventDetail as unknown as IEventDetail;
-      if (eventDetailWithId._id) {
-        await this.eventService.updateEventDetail(eventDetailWithId);
-      }
-    }
-  }
-
-  private async updateEventDetailsByTimeline(eventDetails: any[], currentDate: Date) {
-    for (const eventDetail of eventDetails) {
-      const eventDetailWithId = eventDetail as unknown as IEventDetail;
-      if (!eventDetailWithId._id) continue;
-
-      if (eventDetail.oddsAvailableTs < currentDate) {
-        await this.eventService.updateEventDetail(eventDetailWithId, ["selections"]);
-      }
-
-      if (eventDetail.scheduleStartTs < currentDate) {
-        await this.eventService.updateEventDetail(eventDetailWithId, ["playlist", "goalInfo"]);
-      }
-
-      if (eventDetail.resultsAvailableTs < currentDate) {
-        await this.eventService.updateEventDetail(eventDetailWithId, ["result", "hasResult"]);
-      }
-    }
-  }
-
-  private async updateRoundFromLastRound() {
+  private async updateRoundAndEventFromLastRound() {
     const drawResults = this.lastRound!.eventDetails.map((eventDetail) => ({
-      result: eventDetail.result || "",
+      result: decrypt(eventDetail.encryptedResult) || "",
       playlist: eventDetail.playlist || "",
       goalInfo: eventDetail.goalInfo || "",
     })) as DrawResultType[];
@@ -262,7 +296,7 @@ export class GameCron {
     const eventDetail = this.event.eventDetails[drawIndex] as unknown as IEventDetail;
     if (!eventDetail._id) return;
 
-    eventDetail.selections = Object.values(this.round.selections![drawIndex]);
+    eventDetail.selections = this.eventDetails[drawIndex].selections;
     await this.eventService.updateEventDetail(eventDetail, ["selections"]);
   }
 
@@ -270,8 +304,8 @@ export class GameCron {
     const eventDetail = this.event.eventDetails[drawIndex] as unknown as IEventDetail;
     if (!eventDetail._id) return;
 
-    eventDetail.playlist = this.round.result!.drawResults[drawIndex].playlist;
-    eventDetail.goalInfo = this.round.result!.drawResults[drawIndex].goalInfo;
+    eventDetail.playlist = this.eventDetails[drawIndex].playlist;
+    eventDetail.goalInfo = this.eventDetails[drawIndex].goalInfo;
     await this.eventService.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
   }
 
@@ -279,11 +313,12 @@ export class GameCron {
     const eventDetail = this.event.eventDetails[drawIndex] as unknown as IEventDetail;
     if (!eventDetail._id) return;
 
-    eventDetail.result = this.round.result!.drawResults[drawIndex].result;
-    eventDetail.selections!.forEach((selection) => {
+    eventDetail.result = this.eventDetails[drawIndex].result;
+    eventDetail.selections = this.eventDetails[drawIndex].selections!;
+    eventDetail.hasResult = true;
+    eventDetail.selections.forEach((selection: Selection) => {
       selection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
     });
-    eventDetail.hasResult = true;
-    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResult"]);
+    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResult", "selections"]);
   }
 }

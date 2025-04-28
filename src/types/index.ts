@@ -45,6 +45,7 @@ export type EventDetail = {
     finalScore: string;
   };
   hasResult: boolean;
+  encryptedResult?: any;
 };
 
 export type DrawResultType = {

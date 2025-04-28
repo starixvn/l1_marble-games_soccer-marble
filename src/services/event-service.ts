@@ -29,9 +29,9 @@ export class EventService {
       scheduleEndTs: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
     };
 
-    const createdEvent = await this.eventRepository.create(event);
+    await this.eventRepository.create(event);
 
-    return { ...createdEvent.toObject(), eventDetails };
+    return { ...event, eventDetails };
   }
 
   private async createNewEventDetails(roundData: Round): Promise<IEventDetail[]> {
@@ -46,7 +46,7 @@ export class EventService {
           hasResult: false,
         };
 
-        return this.eventDetailsRepository.create(eventDetail) as unknown as IEventDetail;
+        return this.eventDetailsRepository.create(eventDetail);
       })
     );
   }
