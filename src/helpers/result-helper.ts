@@ -141,7 +141,7 @@ const generateResultForHalf = (halfConfig: HalfConfigType) => {
 
   return {
     goalSequence: result || "0",
-    finalScore: scoreResult,
+    finalScore: `${homeGoals}:${awayGoals}`,
   };
 };
 
