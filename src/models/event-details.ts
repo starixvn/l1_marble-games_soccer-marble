@@ -7,8 +7,8 @@ export interface IEventDetail extends EventDetail {
 }
 
 // Define the EventDetail Schema
-export const EventDetailSchema = new Schema<EventDetail>({
-  eventId: { type: Number, required: true },
+export const EventDetailSchema = new Schema<IEventDetail>({
+  eventID: { type: Number, required: true },
   oddsAvailableTs: { type: Date, required: true },
   scheduleStartTs: { type: Date, required: true },
   resultsAvailableTs: { type: Date, required: true },
@@ -16,6 +16,7 @@ export const EventDetailSchema = new Schema<EventDetail>({
   goalInfo: { type: String },
   selections: [SelectionSchema],
   result: { type: Schema.Types.Mixed },
+  hasResult: { type: Boolean, default: false },
 });
 
 export default mongoose.model("event_details", EventDetailSchema);

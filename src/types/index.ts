@@ -33,7 +33,7 @@ export type Selection = {
 };
 
 export type EventDetail = {
-  eventId: number;
+  eventID: number;
   oddsAvailableTs: Date;
   scheduleStartTs: Date;
   resultsAvailableTs: Date;
@@ -41,6 +41,7 @@ export type EventDetail = {
   goalInfo?: string;
   selections?: Selection[];
   result?: string;
+  hasResult: boolean;
 };
 
 export type DrawResultType = {
@@ -62,8 +63,8 @@ export type Event = {
   eventNameBKey: string;
   gameId: number;
   eventDetails: EventDetail[];
-  startTime: Date;
-  endTime: Date;
+  scheduleStartTs: Date;
+  scheduleEndTs: Date;
 };
 
 export interface AppContainer {

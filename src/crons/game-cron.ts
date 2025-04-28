@@ -72,7 +72,7 @@ export class GameCron {
       const currentDate = new Date();
       const eventDetails = this.lastRound.eventDetails;
 
-      if (currentDate > this.lastRound.endTime) {
+      if (currentDate > this.lastRound.scheduleEndTs) {
         await this.roundService.markRoundAsEnded(this.lastRound.roundId);
         await this.updateAllEventDetails(eventDetails);
       } else {
@@ -171,6 +171,7 @@ export class GameCron {
         eventDetail.result = this.round.result!.drawResults[drawIndex].result;
         eventDetail.playlist = this.round.result!.drawResults[drawIndex].playlist;
         eventDetail.goalInfo = this.round.result!.drawResults[drawIndex].goalInfo;
+        eventDetail.hasResult = true;
       });
 
       const newRound = {
@@ -181,8 +182,8 @@ export class GameCron {
         eventDetails: eventDetails,
         gameId: this.gameSettings.gameId,
         ended: false,
-        startTime: new Date(),
-        endTime: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
+        scheduleStartTs: new Date(),
+        scheduleEndTs: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
       };
 
       await this.roundService.saveNewRound(newRound);
@@ -215,7 +216,7 @@ export class GameCron {
       }
 
       if (eventDetail.resultsAvailableTs < currentDate) {
-        await this.eventService.updateEventDetail(eventDetailWithId, ["result"]);
+        await this.eventService.updateEventDetail(eventDetailWithId, ["result", "hasResult"]);
       }
     }
   }
@@ -245,7 +246,7 @@ export class GameCron {
 
     this.round = {
       roundId: this.lastRound!.roundId,
-      roundTime: Math.round((new Date().getTime() - this.lastRound!.startTime.getTime()) / 1000),
+      roundTime: Math.round((new Date().getTime() - this.lastRound!.scheduleStartTs.getTime()) / 1000),
       homeTeam: this.lastRound!.eventNameAKey,
       awayTeam: this.lastRound!.eventNameBKey,
       numberOfDraws: this.lastRound!.eventDetails.length,
@@ -282,6 +283,7 @@ export class GameCron {
     eventDetail.selections!.forEach((selection) => {
       selection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
     });
-    await this.eventService.updateEventDetail(eventDetail, ["result"]);
+    eventDetail.hasResult = true;
+    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResult"]);
   }
 }

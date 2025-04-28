@@ -8,8 +8,8 @@ export interface IEvent {
   eventNameBKey: string;
   eventDetails: mongoose.Schema.Types.ObjectId[];
   gameId: number;
-  startTime: Date;
-  endTime: Date;
+  scheduleStartTs: Date;
+  scheduleEndTs: Date;
 }
 
 // Define the Selection Schema
@@ -34,8 +34,8 @@ const EventSchema = new Schema<IEvent>({
   eventNameBKey: { type: String, required: true },
   gameId: { type: Number, required: true },
   eventDetails: [mongoose.Schema.Types.ObjectId],
-  startTime: { type: Date, required: true },
-  endTime: { type: Date, required: true },
+  scheduleStartTs: { type: Date, required: true },
+  scheduleEndTs: { type: Date, required: true },
 });
 
 // Create and export the Event model

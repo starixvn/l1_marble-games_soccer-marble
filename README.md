@@ -39,8 +39,8 @@ interface Event {
   eventNameBKey: string; // Away team
   gameId: number;
   eventDetails: EventDetail[]; // Array of event details (halves)
-  startTime: DateTime;
-  endTime: DateTime;
+  scheduleStartTs: DateTime;
+  scheduleEndTs: DateTime;
 }
 
 interface EventDetail {

@@ -2,7 +2,7 @@ import { Round } from "../crons/game-cron";
 import { EventModel } from "../models";
 import { EventDetailModel } from "../models";
 import { IEventDetail } from "../models/event-details";
-import { GameSettings, Event, AppContainer } from "../types";
+import { GameSettings, Event, AppContainer, EventDetail } from "../types";
 
 // Event Manager class to handle event-related operations
 export class EventService {
@@ -25,8 +25,8 @@ export class EventService {
       eventNameBKey: roundData.awayTeam,
       gameId: this.gameSettings.gameId,
       eventDetails: eventDetails.map((eventDetail) => eventDetail._id),
-      startTime: new Date(),
-      endTime: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
+      scheduleStartTs: new Date(),
+      scheduleEndTs: new Date(new Date().getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
     };
 
     const createdEvent = await this.eventRepository.create(event);
@@ -37,15 +37,17 @@ export class EventService {
   private async createNewEventDetails(roundData: Round): Promise<IEventDetail[]> {
     const { timelines } = this.gameSettings.gameTiming;
     return Promise.all(
-      timelines.map(
-        (timeline) =>
-          this.eventDetailsRepository.create({
-            eventId: roundData.roundId,
-            oddsAvailableTs: new Date(Date.now() + timeline.OddsAvailable * 1000),
-            scheduleStartTs: new Date(Date.now() + timeline.ScheduleStart * 1000),
-            resultsAvailableTs: new Date(Date.now() + timeline.ResultAvailable * 1000),
-          }) as unknown as IEventDetail
-      )
+      timelines.map((timeline) => {
+        const eventDetail: EventDetail = {
+          eventID: roundData.roundId,
+          oddsAvailableTs: new Date(Date.now() + timeline.OddsAvailable * 1000),
+          scheduleStartTs: new Date(Date.now() + timeline.ScheduleStart * 1000),
+          resultsAvailableTs: new Date(Date.now() + timeline.ResultAvailable * 1000),
+          hasResult: false,
+        };
+
+        return this.eventDetailsRepository.create(eventDetail) as unknown as IEventDetail;
+      })
     );
   }
 
