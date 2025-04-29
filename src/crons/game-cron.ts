@@ -16,6 +16,7 @@ import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { MatchGeneratorService } from "../services/match-generator-service";
 import { decrypt, encrypt } from "../helpers/crypto-helper";
+import { logger } from "sc-common";
 
 // Types
 export type Round = {
@@ -41,9 +42,11 @@ export class GameCron {
   private lastRound?: IRound;
   private gameSettings: GameSettings;
   private eventDetails: IEventDetail[];
+  private logService: typeof logger;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
+    this.logService = container.logService;
     this.roundService = new RoundService(container);
     this.eventService = new EventService(container);
     this.matchGeneratorService = new MatchGeneratorService(container);
@@ -104,6 +107,7 @@ export class GameCron {
 
   private async handleUnfinishedEvents() {
     if (this.lastRound && !this.lastRound.ended) {
+      this.logService.log("Handling unfinished events", "info");
       const currentDate = new Date();
       const eventDetails = this.lastRound.eventDetails as IEventDetail[];
 
@@ -131,16 +135,16 @@ export class GameCron {
       await this.handleUnfinishedEvents();
       this.startCron();
     } catch (error) {
-      console.log(error);
+      this.logService.logError(error);
     }
   }
 
   private startCron() {
     const job = new cron.CronJob(
       "* * * * * *",
-      () => this.proceed().catch(console.error),
+      () => this.proceed().catch(this.logService.logError),
       () => {
-        console.error("Game cron job unexpectedly stopped because some other tasks halt it.");
+        this.logService.logError("Game cron job unexpectedly stopped because some other tasks halt it.");
         job.start();
       }
     );
