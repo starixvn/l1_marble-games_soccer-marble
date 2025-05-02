@@ -8,13 +8,13 @@ export const gameSettings: GameSettings = {
     timelines: [
       {
         OddsAvailable: 1,
-        ScheduleStart: 35,
-        ResultAvailable: 65,
+        ScheduleStart: 31,
+        ResultAvailable: 61,
       },
       {
-        OddsAvailable: 65,
-        ScheduleStart: 80,
-        ResultAvailable: 110,
+        OddsAvailable: 61,
+        ScheduleStart: 81,
+        ResultAvailable: 111,
       },
     ],
   },
