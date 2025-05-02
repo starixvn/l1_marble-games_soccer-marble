@@ -26,8 +26,8 @@ export class MatchGeneratorService {
     };
   }
 
-  generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType) {
-    return calculateOddsForRound(matchConfig);
+  generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, firstHalfResult: string) {
+    return calculateOddsForRound(matchConfig, firstHalfResult);
   }
 
   generateResult(matchConfig: MatchConfigType, numberOfVideos: Record<string, number>) {
@@ -39,14 +39,5 @@ export class MatchGeneratorService {
 
   getSettlementResult(result: RoundResultType, matchConfig: MatchConfigType) {
     return getSettlementResult(result, matchConfig);
-  }
-
-  updateSecondHalfOdds(odds: Record<string, number>[], settlementResult: RoundSettlementResultType) {
-    const secondHalfOdds = { ...odds[1] };
-    if (settlementResult[0].odd === SettlementStatus.WIN) {
-      odds[1].odd = secondHalfOdds.even;
-      odds[1].even = secondHalfOdds.odd;
-    }
-    return odds;
   }
 }

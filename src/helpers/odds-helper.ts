@@ -60,7 +60,7 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
   homeScore /= totalRates;
   awayScore /= totalRates;
 
-  const handicapValue = Math.round((homeScore - awayScore) / 0.5) * 0.5;
+  const handicapValue = Math.round((awayScore - homeScore) / 0.5) * 0.5;
   const overUnderValue = Math.round((homeScore + awayScore) / 0.5) * 0.5;
 
   for (const [score, rate] of Object.entries(scoreRates)) {
@@ -135,7 +135,11 @@ export const calculateHalfOdds = (halfConfig: RateConfig) => {
   return { odds, overUnderValue, handicapValue };
 };
 
-export const calculateOddsForRound = (matchConfig: MatchConfigType) => {
+export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfResult: string) => {
+  const fhHomeGoals = firstHalfResult.split("H").length - 1;
+  const fhAwayGoals = firstHalfResult.split("A").length - 1;
+  const fhTotalGoals = fhHomeGoals + fhAwayGoals;
+
   const fulltime = calculateFulltimeOdds({
     firstHalf: matchConfig.firstHalf,
     secondHalf: matchConfig.secondHalf,
@@ -184,8 +188,8 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType) => {
     ft_hdp_away: secondHalf.odds.hdp_away,
     ft_ou_over: secondHalf.odds.over,
     ft_ou_under: secondHalf.odds.under,
-    ft_oe_odd: secondHalf.odds.odd,
-    ft_oe_even: secondHalf.odds.even,
+    ft_oe_odd: fhTotalGoals % 2 === 0 ? secondHalf.odds.odd : secondHalf.odds.even,
+    ft_oe_even: fhTotalGoals % 2 === 0 ? secondHalf.odds.even : secondHalf.odds.odd,
   };
 
   const updatedMatchConfig = {
@@ -230,10 +234,10 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType) => {
     secondHalfSelections[key] = selection;
   });
 
-  secondHalfSelections["ft_hdp_home"].point = secondHalf.handicapValue;
-  secondHalfSelections["ft_hdp_away"].point = -secondHalf.handicapValue;
-  secondHalfSelections["ft_ou_over"].point = secondHalf.overUnderValue;
-  secondHalfSelections["ft_ou_under"].point = secondHalf.overUnderValue;
+  secondHalfSelections["ft_hdp_home"].point = secondHalf.handicapValue - fhHomeGoals + fhAwayGoals;
+  secondHalfSelections["ft_hdp_away"].point = -secondHalf.handicapValue + fhHomeGoals - fhAwayGoals;
+  secondHalfSelections["ft_ou_over"].point = secondHalf.overUnderValue + fhTotalGoals;
+  secondHalfSelections["ft_ou_under"].point = secondHalf.overUnderValue + fhTotalGoals;
 
   return {
     odds: [firstHalfOdds, secondHalfOdds],

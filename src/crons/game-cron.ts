@@ -196,18 +196,18 @@ export class GameCron {
 
     this.round.matchConfig = this.matchGeneratorService.createNewMatchConfig();
 
+    this.round.result = this.matchGeneratorService.generateResult(this.round.matchConfig, this.gameSettings.numberOfVideos);
+
     const { odds, matchConfig, selections } = this.matchGeneratorService.generateRoundOddsAndUpdateMatchConfig(
-      this.round.matchConfig
+      this.round.matchConfig,
+      this.round.result.drawResults[0].result.goalSequence
     );
+
     this.round.odds = odds;
     this.round.matchConfig = matchConfig;
     this.round.selections = selections;
 
-    this.round.result = this.matchGeneratorService.generateResult(this.round.matchConfig, this.gameSettings.numberOfVideos);
-
     this.round.settlementResult = this.matchGeneratorService.getSettlementResult(this.round.result, this.round.matchConfig);
-
-    this.round.odds = this.matchGeneratorService.updateSecondHalfOdds(this.round.odds!, this.round.settlementResult);
 
     this.event = await this.eventService.createNewEvent(this.round);
     await this.updateEventDetails();
