@@ -111,20 +111,9 @@ export class GameCron {
       const currentDate = new Date();
       const eventDetails = this.lastRound.eventDetails as IEventDetail[];
 
-      if (currentDate > this.lastRound.scheduleEndTs) {
-        eventDetails.forEach((eventDetail) => {
-          eventDetail.hasResult = true;
-          eventDetail.result = decrypt(eventDetail.encryptedResult);
-        });
-
-        await this.roundService.markRoundAsEnded(this.lastRound.roundId);
-        await this.roundService.updateRoundEventDetailResult(this.lastRound.roundId, eventDetails);
-        await this.updateAllEventDetails(eventDetails);
-      } else {
-        await this.updateRoundAndEventFromLastRound();
-        await this.updateEventDetails();
-        await this.updateEventDetailsByTimeline(eventDetails, currentDate);
-      }
+      await this.updateRoundAndEventFromLastRound();
+      await this.updateEventDetails();
+      await this.updateEventDetailsByTimeline(eventDetails, currentDate);
     }
   }
 
@@ -154,6 +143,7 @@ export class GameCron {
 
   private async proceed() {
     const currentRoundTime = this.round.roundTime;
+    console.log(currentRoundTime);
     const { timelines, wholeRound } = this.gameSettings.gameTiming;
 
     if (currentRoundTime === 0) {
@@ -215,7 +205,7 @@ export class GameCron {
   }
 
   private async updateEventDetails() {
-    const eventDetails = this.event.eventDetails.map((eventDetail: any) => eventDetail.toObject());
+    const eventDetails = this.event.eventDetails;
 
     eventDetails.forEach((eventDetail, drawIndex) => {
       eventDetail.selections = Object.values(this.round.selections![drawIndex]);
@@ -226,30 +216,22 @@ export class GameCron {
       eventDetail.encryptedResult = encrypt(eventDetail.result);
     });
 
-    this.eventDetails = eventDetails;
+    this.eventDetails = eventDetails as IEventDetail[];
   }
 
   private async createNewRound() {
     try {
-      const eventDetails = this.eventDetails.map((eventDetail, drawIndex) => {
-        const newSelections = eventDetail.selections!.map((selection: Selection) => {
-          const newSelection = { ...selection };
-          newSelection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
-          return newSelection;
-        });
-
-        return {
-          ...eventDetail,
-          result: null,
-          selections: newSelections,
-        };
-      });
-
       const newRound = {
-        ...this.event,
-        eventDetails,
+        eventID: this.event.eventID,
+        eventNameAKey: this.event.eventNameAKey,
+        eventNameBKey: this.event.eventNameBKey,
+        gameId: this.gameSettings.gameId,
+        scheduleStartTs: this.event.scheduleStartTs,
+        scheduleEndTs: this.event.scheduleEndTs,
+        eventDetails: this.eventDetails,
         roundId: this.round.roundId,
         ended: false,
+        matchConfig: this.round.matchConfig,
       };
 
       await this.roundService.insertOrUpdateRound(newRound as any);
@@ -266,17 +248,12 @@ export class GameCron {
       goalInfo: eventDetail.goalInfo || "",
     })) as DrawResultType[];
 
-    const settlementResult = this.lastRound!.eventDetails.map((eventDetail) => {
-      const drawSettlementResult: DrawSettlementResultType = {};
-      eventDetail.selections!.forEach((selection) => {
-        drawSettlementResult[selection.name] = selection.settlementStatus;
-      });
-      return drawSettlementResult;
-    });
+    const settlementResult = this.matchGeneratorService.getSettlementResult({ drawResults }, this.lastRound!.matchConfig);
 
-    const eventSelections = this.lastRound!.eventDetails.map((eventDetail) => {
+    const eventSelections = this.lastRound!.eventDetails.map((eventDetail, drawIndex) => {
       const eventDetailSelections = {} as Record<string, Selection>;
       eventDetail.selections!.forEach((selection) => {
+        selection.settlementStatus = settlementResult[drawIndex][selection.name];
         eventDetailSelections[selection.name] = selection;
       });
       return eventDetailSelections;

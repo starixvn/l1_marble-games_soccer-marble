@@ -1,11 +1,12 @@
 import mongoose, { Schema } from "mongoose";
 import { EventDetailSchema } from "./event-details";
-import { Event } from "../types";
+import { Event, MatchConfigType } from "../types";
 
 export interface IRound extends Event {
   _id: mongoose.Schema.Types.ObjectId;
   roundId: number;
   ended: boolean;
+  matchConfig: MatchConfigType;
 }
 
 const RoundSchema = new Schema<IRound>({
@@ -18,6 +19,7 @@ const RoundSchema = new Schema<IRound>({
   scheduleStartTs: { type: Date, required: true },
   scheduleEndTs: { type: Date, required: true },
   ended: { type: Boolean, required: true },
+  matchConfig: { type: Schema.Types.Mixed },
 });
 
 export default mongoose.model<IRound>("soccer_marble_rounds", RoundSchema);
