@@ -250,10 +250,9 @@ export class GameCron {
 
     const settlementResult = this.matchGeneratorService.getSettlementResult({ drawResults }, this.lastRound!.matchConfig);
 
-    const eventSelections = this.lastRound!.eventDetails.map((eventDetail, drawIndex) => {
+    const eventSelections = this.lastRound!.eventDetails.map((eventDetail) => {
       const eventDetailSelections = {} as Record<string, Selection>;
       eventDetail.selections!.forEach((selection) => {
-        selection.settlementStatus = settlementResult[drawIndex][selection.name];
         eventDetailSelections[selection.name] = selection;
       });
       return eventDetailSelections;
