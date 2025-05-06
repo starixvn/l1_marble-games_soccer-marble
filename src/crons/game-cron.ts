@@ -98,6 +98,7 @@ export class GameCron {
     await this.processTimelines(timelines, currentRoundTime);
 
     if (currentRoundTime === wholeRound) {
+      await this.updateSettlementResult();
       await this.roundService.markRoundAsEnded(this.round.roundId);
       await this.roundService.updateRoundEventDetailResult(this.round.roundId, this.event.eventDetails as IEventDetail[]);
       this.round.roundTime = 0;
@@ -197,13 +198,20 @@ export class GameCron {
   }
 
   private async updateResultForDraw(drawIndex: number) {
-    const eventDetail = this.event.eventDetails[drawIndex] as unknown as IEventDetail;
+    const eventDetail = this.event.eventDetails[drawIndex] as IEventDetail;
     if (!eventDetail._id) return;
 
     eventDetail.hasResult = true;
-    eventDetail.selections!.forEach((selection: Selection) => {
-      selection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
-    });
     await this.eventService.updateEventDetail(eventDetail, ["result", "hasResult", "selections"]);
+  }
+
+  private async updateSettlementResult() {
+    this.event.eventDetails.forEach(async (eventDetail, drawIndex) => {
+      eventDetail.selections!.forEach((selection: Selection) => {
+        selection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
+      });
+
+      await this.eventService.updateEventDetail(eventDetail as IEventDetail, ["selections"]);
+    });
   }
 }
