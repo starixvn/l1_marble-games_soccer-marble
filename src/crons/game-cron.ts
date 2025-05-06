@@ -97,7 +97,9 @@ export class GameCron {
 
     await this.processTimelines(timelines, currentRoundTime);
 
-    if (currentRoundTime > wholeRound) {
+    if (currentRoundTime === wholeRound) {
+      await this.roundService.markRoundAsEnded(this.round.roundId);
+      await this.roundService.updateRoundEventDetailResult(this.round.roundId, this.event.eventDetails as IEventDetail[]);
       this.round.roundTime = 0;
     }
   }
@@ -114,8 +116,6 @@ export class GameCron {
 
       if (currentRoundTime === timeline.ResultAvailable) {
         await this.updateResultForDraw(drawIndex);
-        await this.roundService.markRoundAsEnded(this.round.roundId);
-        await this.roundService.updateRoundEventDetailResult(this.round.roundId, this.event.eventDetails as IEventDetail[]);
       }
     }
   }
