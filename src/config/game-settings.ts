@@ -4,7 +4,7 @@ export const gameSettings: GameSettings = {
   gameId: 2001,
   upcomingEvents: 3,
   gameTiming: {
-    wholeRound: 120,
+    wholeRound: 111,
     timelines: [
       {
         OddsAvailable: 1,
@@ -18,7 +18,24 @@ export const gameSettings: GameSettings = {
       },
     ],
   },
-  teams: ["MCI", "RMA", "BAR", "LIV", "ARS", "FCB", "INT", "LEV", "AVL", "ATA", "BVB", "JUV", "PSG", "SCP", "ATM", "MIL"],
+  teams: [
+    "clb_rma",
+    "clb_mci",
+    "clb_fcb",
+    "clb_psg",
+    "clb_che",
+    "clb_int",
+    "clb_juv",
+    "clb_atm",
+    "clb_bvb",
+    "clb_ben",
+    "clb_por",
+    "clb_fla",
+    "clb_riv",
+    "clb_pal",
+    "clb_boj",
+    "clb_mon",
+  ],
   numberOfVideos: {
     AAAA: 2,
     AAAH: 6,

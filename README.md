@@ -50,7 +50,6 @@ interface EventDetail {
   goalInfo?: string; // JSON URL
   selections?: Selection[]; // Bet choices
   result?: Object;
-  encryptedResult: Object;
 }
 
 interface Selection {
@@ -64,7 +63,7 @@ interface Selection {
 
 1. Every specific time (configured in `.env`), the service generates a configurable number of events
 2. Each event has two event details (corresponding to two halves of a game match)
-3. At generation time, only `scheduleStartTs`, `resultsAvailableTs`, and `encryptedResult` are stored
+3. At generation time, only `scheduleStartTs`, `resultsAvailableTs` are stored
 4. At `scheduleStartTs`, the service generates `playlist`, `goalInfo`, and `selections` data and updates the event
 5. At `resultsAvailableTs`, the service decrypts the result and updates the event
 

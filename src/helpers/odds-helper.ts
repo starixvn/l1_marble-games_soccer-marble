@@ -5,8 +5,8 @@ export const parseScore = (score: string): [number, number] => {
   return [home, away];
 };
 
-export const roundToPrecision = (value: number, precision = 100000) => {
-  return Math.round(value * precision) / precision;
+export const roundToPrecision = (value: number, precision = 100) => {
+  return Math.floor(value * precision) / precision;
 };
 
 export const calculateFullTimeScoreRates = (firstHalf: RateConfig, secondHalf: RateConfig): Record<string, number> => {

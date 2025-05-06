@@ -7,6 +7,7 @@ export interface IRound extends Event {
   roundId: number;
   ended: boolean;
   matchConfig: MatchConfigType;
+  encryptedEventDetails: any[];
 }
 
 const RoundSchema = new Schema<IRound>({
@@ -16,6 +17,7 @@ const RoundSchema = new Schema<IRound>({
   eventNameAKey: { type: String, required: true },
   eventNameBKey: { type: String, required: true },
   eventDetails: [EventDetailSchema],
+  encryptedEventDetails: [{ type: Schema.Types.Mixed }],
   scheduleStartTs: { type: Date, required: true },
   scheduleEndTs: { type: Date, required: true },
   ended: { type: Boolean, required: true },

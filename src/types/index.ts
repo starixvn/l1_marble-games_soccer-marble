@@ -45,7 +45,6 @@ export type EventDetail = {
     finalScore: string;
   };
   hasResult: boolean;
-  encryptedResult?: any;
 };
 
 export type DrawResultType = {
@@ -111,4 +110,18 @@ export enum Phase {
 export type DataResultType = {
   numberOfVideos: Record<string, number>;
   matchConfig: MatchConfigType;
+};
+
+export type GameRunningRound = {
+  disabled: boolean;
+  roundId: number;
+  roundTime: number;
+  homeTeam: string;
+  awayTeam: string;
+  numberOfDraws: number;
+  matchConfig?: MatchConfigType;
+  selections?: Record<string, Selection>[];
+  odds?: Record<string, number>[];
+  result?: RoundResultType;
+  settlementResult?: RoundSettlementResultType;
 };

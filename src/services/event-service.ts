@@ -1,8 +1,7 @@
-import { Round } from "../crons/game-cron";
 import { EventModel } from "../models";
 import { EventDetailModel } from "../models";
 import { IEventDetail } from "../models/event-details";
-import { GameSettings, Event, AppContainer, EventDetail } from "../types";
+import { GameSettings, Event, AppContainer, EventDetail, GameRunningRound } from "../types";
 
 // Event Manager class to handle event-related operations
 export class EventService {
@@ -16,7 +15,7 @@ export class EventService {
     this.gameSettings = container.gameSettings;
   }
 
-  async createNewEvent(roundData: Round): Promise<Event> {
+  async createNewEvent(roundData: GameRunningRound): Promise<Event> {
     const eventDetails = await this.createNewEventDetails(roundData);
 
     const event = {
@@ -34,7 +33,7 @@ export class EventService {
     return { ...event, eventDetails };
   }
 
-  private async createNewEventDetails(roundData: Round): Promise<IEventDetail[]> {
+  private async createNewEventDetails(roundData: GameRunningRound): Promise<IEventDetail[]> {
     const { timelines } = this.gameSettings.gameTiming;
     return Promise.all(
       timelines.map((timeline) => {
