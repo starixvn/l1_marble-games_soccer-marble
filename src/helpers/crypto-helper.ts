@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-const algorithm = "aes-256-cbc";
+const algorithm = "aes-256-ctr";
 const key = "SDF4eGGjkyulkuiop3Ef42vsgaemEfeq";
 
 export const encrypt = (data: any) => {
@@ -19,7 +19,7 @@ export const decrypt = (encrypted: any) => {
   const [ivBase64, encryptedData] = encrypted.split(":");
   const iv = Buffer.from(ivBase64, "base64");
 
-  const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+  const decipher = crypto.createDecipheriv(algorithm, key, iv);
 
   let decrypted = decipher.update(encryptedData, "base64", "utf8");
   decrypted += decipher.final("utf8");

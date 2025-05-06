@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "./build",
     "target": "ESNext",
-    "types": ["node"],
+    "types": ["node", "jest"],
     "module": "ESNext",
     "moduleResolution": "Node",
     "esModuleInterop": true,
