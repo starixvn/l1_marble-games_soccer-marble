@@ -46,240 +46,269 @@ describe("calculateOddsForRound", () => {
     const matchConfig = {
       firstHalf: {
         scoreRate: {
-          '2-1': 0.1294,
-          '1-0': 0.1176,
-          '2-0': 0.1176,
-          '3-1': 0.0824,
-          '3-0': 0.0706,
-          '4-0': 0.0235,
-          '1-1': 0.1293,
-          '2-2': 0.0706,
-          '0-1': 0.0824,
-          '1-2': 0.0824,
-          '0-2': 0.0353,
-          '1-3': 0.0353,
-          '0-3': 0.0118,
-          '0-4': 0.0118
+          "2-1": 0.1294,
+          "1-0": 0.1176,
+          "2-0": 0.1176,
+          "3-1": 0.0824,
+          "3-0": 0.0706,
+          "4-0": 0.0235,
+          "1-1": 0.1293,
+          "2-2": 0.0706,
+          "0-1": 0.0824,
+          "1-2": 0.0824,
+          "0-2": 0.0353,
+          "1-3": 0.0353,
+          "0-3": 0.0118,
+          "0-4": 0.0118,
         }
       },
       secondHalf: {
         scoreRate: {
-          '1-0': 0.1285,
-          '0-1': 0.1285,
-          '1-1': 0.18,
-          '2-0': 0.0834,
-          '0-2': 0.0834,
-          '2-1': 0.0729,
-          '1-2': 0.0729,
-          '3-0': 0.0416,
-          '0-3': 0.0416,
-          '2-2': 0.0628,
-          '3-1': 0.0418,
-          '1-3': 0.0418,
-          '4-0': 0.0104,
-          '0-4': 0.0104
+          "2-1": 0.1294,
+          "1-0": 0.1176,
+          "2-0": 0.1176,
+          "3-1": 0.0824,
+          "3-0": 0.0706,
+          "4-0": 0.0235,
+          "1-1": 0.1293,
+          "2-2": 0.0706,
+          "0-1": 0.0824,
+          "1-2": 0.0824,
+          "0-2": 0.0353,
+          "1-3": 0.0353,
+          "0-3": 0.0118,
+          "0-4": 0.0118,
         }
       }
     };
     
-    const firstHalfScore = "AHH";
+    const firstHalfScore = "HH";
     
     const expected = {
+      matchConfig: {
+        firstHalf: {
+          scoreRate: {
+            "0-1": 0.0824,
+            "0-2": 0.0353,
+            "0-3": 0.0118,
+            "0-4": 0.0118,
+            "1-0": 0.1176,
+            "1-1": 0.1293,
+            "1-2": 0.0824,
+            "1-3": 0.0353,
+            "2-0": 0.1176,
+            "2-1": 0.1294,
+            "2-2": 0.0706,
+            "3-0": 0.0706,
+            "3-1": 0.0824,
+            "4-0": 0.0235,
+          },
+          handicapValue: -0.5,
+          overUnderValue: 2.5,
+        },
+        handicapValue: -1.5,
+        overUnderValue: 5.5,
+        secondHalf: {
+          scoreRate: {
+            "0-1": 0.0824,
+            "0-2": 0.0353,
+            "0-3": 0.0118,
+            "0-4": 0.0118,
+            "1-0": 0.1176,
+            "1-1": 0.1293,
+            "1-2": 0.0824,
+            "1-3": 0.0353,
+            "2-0": 0.1176,
+            "2-1": 0.1294,
+            "2-2": 0.0706,
+            "3-0": 0.0706,
+            "3-1": 0.0824,
+            "4-0": 0.0235,
+          },
+          handicapValue: -0.5,
+          overUnderValue: 2.5,
+        },
+      },
       odds: [
         {
-          h1_hdp_home: 1.84,
-          h1_hdp_away: 2.17,
-          h1_1x2_home: 1.84,
+          ft_1x2_away: 4.38,
+          ft_1x2_draw: 6.58,
+          ft_1x2_home: 1.61,
+          ft_hdp_away: 1.8,
+          ft_hdp_home: 2.24,
+          ft_oe_even: 1.99,
+          ft_oe_odd: 2,
+          ft_ou_over: 2.53,
+          ft_ou_under: 1.65,
           h1_1x2_away: 3.86,
           h1_1x2_draw: 5,
+          h1_1x2_home: 1.84,
+          h1_hdp_away: 2.17,
+          h1_hdp_home: 1.84,
+          h1_oe_even: 1.97,
+          h1_oe_odd: 2.02,
           h1_ou_over: 1.93,
           h1_ou_under: 2.07,
-          h1_oe_odd: 2.02,
-          h1_oe_even: 1.97,
-          
-          ft_hdp_home: 1.93,
-          ft_hdp_away: 2.07,
-          ft_1x2_home: 1.93,
-          ft_1x2_away: 3.18,
-          ft_1x2_draw: 5.91,
-          ft_ou_over: 3.03,
-          ft_ou_under: 2.42,
-          ft_oe_odd: 2,
-          ft_oe_even: 1.99
         },
         {
-          ft_hdp_home: 2.64,
-          ft_hdp_away: 2.64,
-          ft_ou_over: 2.52,
-          ft_ou_under: 1.65,
-          ft_oe_odd: 1.94,
-          ft_oe_even: 2.05
-        }
+          ft_hdp_away: 2.17,
+          ft_hdp_home: 1.84,
+          ft_oe_even: 1.97,
+          ft_oe_odd: 2.02,
+          ft_ou_over: 1.93,
+          ft_ou_under: 2.07,
+        },
       ],
       selections: [
         {
-          h1_hdp_home: {
-            name: "h1_hdp_home",
-            price: 1.84,
-            point: -0.5,
-            settlementStatus: "P"
-          },
-          h1_hdp_away: {
-            name: "h1_hdp_away",
-            price: 2.17,
-            point: 0.5,
-            settlementStatus: "P"
-          },
-          h1_1x2_home: {
-            name: "h1_1x2_home",
-            price: 1.84,
-            point: 0,
-            settlementStatus: "P"
-          },
-          h1_1x2_away: {
-            name: "h1_1x2_away",
-            price: 3.86,
-            point: 0,
-            settlementStatus: "P"
-          },
-          h1_1x2_draw: {
-            name: "h1_1x2_draw",
-            price: 5,
-            point: 0,
-            settlementStatus: "P"
-          },
-          h1_ou_over: {
-            name: "h1_ou_over",
-            price: 1.93,
-            point: 2.5,
-            settlementStatus: "P"
-          },
-          h1_ou_under: {
-            name: "h1_ou_under",
-            price: 2.07,
-            point: 2.5,
-            settlementStatus: "P"
-          },
-          h1_oe_odd: {
-            name: "h1_oe_odd",
-            price: 2.02,
-            point: 0,
-            settlementStatus: "P"
-          },
-          h1_oe_even: {
-            name: "h1_oe_even",
-            price: 1.97,
-            point: 0,
-            settlementStatus: "P"
-          },
-          ft_hdp_home: {
-            name: "ft_hdp_home",
-            price: 1.93,
-            point: -0.5,
-            settlementStatus: "P"
-          },
-          ft_hdp_away: {
-            name: "ft_hdp_away",
-            price: 2.07,
-            point: 0.5,
-            settlementStatus: "P"
-          },
-          ft_1x2_home: {
-            name: "ft_1x2_home",
-            price: 1.93,
-            point: 0,
-            settlementStatus: "P"
-          },
           ft_1x2_away: {
             name: "ft_1x2_away",
-            price: 3.18,
             point: 0,
-            settlementStatus: "P"
+            price: 4.38,
+            settlementStatus: "P",
           },
           ft_1x2_draw: {
             name: "ft_1x2_draw",
-            price: 5.91,
             point: 0,
-            settlementStatus: "P"
+            price: 6.58,
+            settlementStatus: "P",
           },
-          ft_ou_over: {
-            name: "ft_ou_over",
-            price: 3.03,
-            point: 5,
-            settlementStatus: "P"
-          },
-          ft_ou_under: {
-            name: "ft_ou_under",
-            price: 2.42,
-            point: 5,
-            settlementStatus: "P"
-          },
-          ft_oe_odd: {
-            name: "ft_oe_odd",
-            price: 2,
+          ft_1x2_home: {
+            name: "ft_1x2_home",
             point: 0,
-            settlementStatus: "P"
-          },
-          ft_oe_even: {
-            name: "ft_oe_even",
-            price: 1.99,
-            point: 0,
-            settlementStatus: "P"
-          }
-        },
-        {
-          ft_hdp_home: {
-            name: "ft_hdp_home",
-            price: 2.64,
-            point: -1, 
-            settlementStatus: "P"
+            price: 1.61,
+            settlementStatus: "P",
           },
           ft_hdp_away: {
             name: "ft_hdp_away",
-            price: 2.64,
-            point: 1, 
-            settlementStatus: "P"
+            point: 1.5,
+            price: 1.8,
+            settlementStatus: "P",
           },
-          ft_ou_over: {
-            name: "ft_ou_over",
-            price: 2.52,
-            point: 5.5, 
-            settlementStatus: "P"
-          },
-          ft_ou_under: {
-            name: "ft_ou_under",
-            price: 1.65,
-            point: 5.5, 
-            settlementStatus: "P"
-          },
-          ft_oe_odd: {
-            name: "ft_oe_odd",
-            price: 1.94,
-            point: 0,
-            settlementStatus: "P"
+          ft_hdp_home: {
+            name: "ft_hdp_home",
+            point: -1.5,
+            price: 2.24,
+            settlementStatus: "P",
           },
           ft_oe_even: {
             name: "ft_oe_even",
-            price: 2.05,
             point: 0,
-            settlementStatus: "P"
-          }
-        }
+            price: 1.99,
+            settlementStatus: "P",
+          },
+          ft_oe_odd: {
+            name: "ft_oe_odd",
+            point: 0,
+            price: 2,
+            settlementStatus: "P",
+          },
+          ft_ou_over: {
+            name: "ft_ou_over",
+            point: 5.5,
+            price: 2.53,
+            settlementStatus: "P",
+          },
+          ft_ou_under: {
+            name: "ft_ou_under",
+            point: 5.5,
+            price: 1.65,
+            settlementStatus: "P",
+          },
+          h1_1x2_away: {
+            name: "h1_1x2_away",
+            point: 0,
+            price: 3.86,
+            settlementStatus: "P",
+          },
+          h1_1x2_draw: {
+            name: "h1_1x2_draw",
+            point: 0,
+            price: 5,
+            settlementStatus: "P",
+          },
+          h1_1x2_home: {
+            name: "h1_1x2_home",
+            point: 0,
+            price: 1.84,
+            settlementStatus: "P",
+          },
+          h1_hdp_away: {
+            name: "h1_hdp_away",
+            point: 0.5,
+            price: 2.17,
+            settlementStatus: "P",
+          },
+          h1_hdp_home: {
+            name: "h1_hdp_home",
+            point: -0.5,
+            price: 1.84,
+            settlementStatus: "P",
+          },
+          h1_oe_even: {
+            name: "h1_oe_even",
+            point: 0,
+            price: 1.97,
+            settlementStatus: "P",
+          },
+          h1_oe_odd: {
+            name: "h1_oe_odd",
+            point: 0,
+            price: 2.02,
+            settlementStatus: "P",
+          },
+          h1_ou_over: {
+            name: "h1_ou_over",
+            point: 2.5,
+            price: 1.93,
+            settlementStatus: "P",
+          },
+          h1_ou_under: {
+            name: "h1_ou_under",
+            point: 2.5,
+            price: 2.07,
+            settlementStatus: "P",
+          },
+        },
+        {
+          ft_hdp_away: {
+            name: "ft_hdp_away",
+            point: 2.5,
+            price: 2.17,
+            settlementStatus: "P",
+          },
+          ft_hdp_home: {
+            name: "ft_hdp_home",
+            point: -2.5,
+            price: 1.84,
+            settlementStatus: "P",
+          },
+          ft_oe_even: {
+            name: "ft_oe_even",
+            point: 0,
+            price: 1.97,
+            settlementStatus: "P",
+          },
+          ft_oe_odd: {
+            name: "ft_oe_odd",
+            point: 0,
+            price: 2.02,
+            settlementStatus: "P",
+          },
+          ft_ou_over: {
+            name: "ft_ou_over",
+            point: 4.5,
+            price: 1.93,
+            settlementStatus: "P",
+          },
+          ft_ou_under: {
+            name: "ft_ou_under",
+            point: 4.5,
+            price: 2.07,
+            settlementStatus: "P",
+          },
+        },
       ],
-      matchConfig: {
-        firstHalf: {
-          scoreRate: matchConfig.firstHalf.scoreRate,
-          overUnderValue: 2.5,
-          handicapValue: -0.5
-        },
-        secondHalf: {
-          scoreRate: matchConfig.secondHalf.scoreRate,
-          overUnderValue: 2.5,
-          handicapValue: 0
-        },
-        overUnderValue: 5,
-        handicapValue: -0.5
-      }
     };
     
     const actual = calculateOddsForRound(matchConfig, firstHalfScore);
