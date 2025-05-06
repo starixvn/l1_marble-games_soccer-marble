@@ -1,45 +1,44 @@
-import { calculateOddsForRound, parseScore, roundToPrecision } from '../../../src/helpers/odds-helper';
+import { calculateOddsForRound, parseScore, roundToPrecision } from "../../../src/helpers/odds-helper";
 
-describe('parseScore', () => {
-  it('should parse a simple score string into an array of numbers', () => {
-    expect(parseScore('1-0')).toEqual([1, 0]);
-    expect(parseScore('0-1')).toEqual([0, 1]);
-    expect(parseScore('2-2')).toEqual([2, 2]);
+describe("parseScore", () => {
+  it("should parse a simple score string into an array of numbers", () => {
+    expect(parseScore("1-0")).toEqual([1, 0]);
+    expect(parseScore("0-1")).toEqual([0, 1]);
+    expect(parseScore("2-2")).toEqual([2, 2]);
   });
 
-  it('should handle high-scoring matches', () => {
-    expect(parseScore('5-3')).toEqual([5, 3]);
-    expect(parseScore('7-0')).toEqual([7, 0]);
-    expect(parseScore('0-8')).toEqual([0, 8]);
+  it("should handle high-scoring matches", () => {
+    expect(parseScore("5-3")).toEqual([5, 3]);
+    expect(parseScore("7-0")).toEqual([7, 0]);
+    expect(parseScore("0-8")).toEqual([0, 8]);
   });
 
-  it('should handle single-digit scores', () => {
-    expect(parseScore('0-0')).toEqual([0, 0]);
-    expect(parseScore('1-1')).toEqual([1, 1]);
-    expect(parseScore('9-9')).toEqual([9, 9]);
+  it("should handle single-digit scores", () => {
+    expect(parseScore("0-0")).toEqual([0, 0]);
+    expect(parseScore("1-1")).toEqual([1, 1]);
+    expect(parseScore("9-9")).toEqual([9, 9]);
   });
 });
 
-describe('roundToPrecision', () => {
-  it('should round to 2 decimal places with default precision', () => {
+describe("roundToPrecision", () => {
+  it("should round to 2 decimal places with default precision", () => {
     expect(roundToPrecision(1.256)).toBe(1.25);
     expect(roundToPrecision(2.99)).toBe(2.99);
-    expect(roundToPrecision(3.505)).toBe(3.50);
+    expect(roundToPrecision(3.505)).toBe(3.5);
   });
 
-  it('should round using custom precision values', () => {
+  it("should round using custom precision values", () => {
     expect(roundToPrecision(1.256, 10)).toBe(1.2);
     expect(roundToPrecision(2.998, 1000)).toBe(2.998);
     expect(roundToPrecision(3.505, 1)).toBe(3);
   });
 
-  it('should handle edge cases', () => {
+  it("should handle edge cases", () => {
     expect(roundToPrecision(0)).toBe(0);
     expect(roundToPrecision(-1.235)).toBe(-1.24);
     expect(roundToPrecision(1000000.125)).toBe(1000000.12);
   });
 });
-
 
 describe("calculateOddsForRound", () => {
   it("should calculate odds for round", () => {
@@ -60,7 +59,7 @@ describe("calculateOddsForRound", () => {
           "1-3": 0.0353,
           "0-3": 0.0118,
           "0-4": 0.0118,
-        }
+        },
       },
       secondHalf: {
         scoreRate: {
@@ -78,12 +77,12 @@ describe("calculateOddsForRound", () => {
           "1-3": 0.0353,
           "0-3": 0.0118,
           "0-4": 0.0118,
-        }
-      }
+        },
+      },
     };
-    
+
     const firstHalfScore = "HH";
-    
+
     const expected = {
       matchConfig: {
         firstHalf: {
@@ -310,9 +309,9 @@ describe("calculateOddsForRound", () => {
         },
       ],
     };
-    
+
     const actual = calculateOddsForRound(matchConfig, firstHalfScore);
-    
+
     expect(actual).toEqual(expected);
   });
 });
