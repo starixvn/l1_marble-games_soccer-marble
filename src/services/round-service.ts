@@ -2,14 +2,17 @@ import { AppContainer, GameSettings } from "../types";
 import { RoundModel } from "../models";
 import { IRound } from "../models/rounds";
 import { IEventDetail } from "../models/event-details";
+import { logger } from "sc-common";
 
 export class RoundService {
   private readonly roundRepository: typeof RoundModel;
   private readonly gameSettings: GameSettings;
+  private readonly logService: typeof logger;
 
   constructor(container: AppContainer) {
     this.roundRepository = container.roundRepository;
     this.gameSettings = container.gameSettings;
+    this.logService = container.logService;
   }
 
   async initializeRoundId(): Promise<number> {
@@ -21,6 +24,27 @@ export class RoundService {
 
   async fetchLastRound(roundId: number): Promise<IRound | null> {
     return await this.roundRepository.findOne({ gameId: this.gameSettings.gameId, roundId }).lean().exec();
+  }
+
+  async fetchAllUnfinishedRounds() {
+    return await this.roundRepository
+      .find({
+        gameId: this.gameSettings.gameId,
+        ended: false,
+      })
+      .lean()
+      .exec();
+  }
+
+  async fetchRoundData(roundId: number): Promise<IRound> {
+    const round = await this.roundRepository.findOne({ gameId: this.gameSettings.gameId, roundId }).lean().exec();
+
+    if (!round) {
+      this.logService.logError(`Round not found for roundId ${roundId}`);
+      throw new Error(`Round not found for roundId ${roundId}`);
+    }
+
+    return round;
   }
 
   async markRoundAsEnded(roundId: number): Promise<void> {

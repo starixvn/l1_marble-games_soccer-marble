@@ -6,6 +6,9 @@ import { logger } from "sc-common";
 import { GameCron } from "./crons/game-cron";
 import { EventDetailModel, EventModel, RoundModel } from "./models";
 import appConfig from "./game-config";
+import { RoundGeneratorService } from "./services/round-generator-service";
+import { RoundService } from "./services/round-service";
+import { EventService } from "./services/event-service";
 export class ContainerRegistry {
   container: AwilixContainer<AppContainer>;
 
@@ -25,6 +28,9 @@ export class ContainerRegistry {
       eventDetailsRepository: asValue(EventDetailModel),
       eventRepository: asValue(EventModel),
       roundRepository: asValue(RoundModel),
+      roundGeneratorService: asClass(RoundGeneratorService).singleton(),
+      roundService: asClass(RoundService).singleton(),
+      eventService: asClass(EventService).singleton(),
     });
 
     return this.container;

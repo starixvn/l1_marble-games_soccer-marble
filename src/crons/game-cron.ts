@@ -1,65 +1,70 @@
 import cron from "cron";
-import { AppContainer, Event, Selection, GameSettings, GameRunningRound } from "../types";
+import { AppContainer, Selection, GameSettings, GameRunningRound, Timeline } from "../types";
 import { IEventDetail } from "../models/event-details";
 import { IRound } from "../models/rounds";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
-import { MatchGeneratorService } from "../services/match-generator-service";
-import { encrypt } from "../helpers/crypto-helper";
+import { RoundGeneratorService } from "../services/round-generator-service";
 import { logger } from "sc-common";
+import { decrypt } from "../helpers/crypto-helper";
 
 // Main GameCron class
 export class GameCron {
   private roundService: RoundService;
   private eventService: EventService;
-  private matchGeneratorService: MatchGeneratorService;
+  private roundGeneratorService: RoundGeneratorService;
   private round: GameRunningRound;
-  private event: Event;
-  private lastRound?: IRound;
+  private eventDetails: IEventDetail[];
   private gameSettings: GameSettings;
   private logService: typeof logger;
+  private disabled: boolean;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
     this.logService = container.logService;
-    this.roundService = new RoundService(container);
-    this.eventService = new EventService(container);
-    this.matchGeneratorService = new MatchGeneratorService(container);
+    this.roundService = container.roundService;
+    this.eventService = container.eventService;
+    this.roundGeneratorService = container.roundGeneratorService;
 
-    this.round = {
-      roundId: 0,
-      roundTime: 0,
-      homeTeam: "",
-      awayTeam: "",
-      numberOfDraws: this.gameSettings.gameTiming.timelines.length,
-      disabled: false,
-    } as GameRunningRound;
-
-    this.event = {} as Event;
+    this.disabled = false;
+    this.round = { roundTime: 0 } as GameRunningRound;
+    this.eventDetails = [];
   }
 
   private async initRoundId() {
     this.round.roundId = await this.roundService.initializeRoundId();
   }
 
-  private async getLastRound() {
-    const lastRound = await this.roundService.fetchLastRound(this.round.roundId);
-    if (lastRound) {
-      this.lastRound = lastRound;
+  private async handleUnfinishedEvents() {
+    const unfinishedRounds = await this.roundService.fetchAllUnfinishedRounds();
+    const unfinishedEvents = await this.eventService.fetchAllUpcomingEvents();
+
+    if (unfinishedRounds.length > 0) {
+      this.logService.logError(`List of unfinished events: ${unfinishedRounds.map((round) => round.eventID).join(", ")}`);
+    }
+
+    if (unfinishedEvents.length > 0) {
+      this.logService.logError(
+        `List of unfinished upcoming events: ${unfinishedEvents.map((event) => event.eventID).join(", ")}`
+      );
+
+      this.logService.log(`current time: ${new Date()}`, "info");
     }
   }
 
-  private async handleUnfinishedEvent() {
-    if (this.lastRound && !this.lastRound.ended) {
-      this.logService.logError(`Handling unfinished event ${this.lastRound.eventID} & round ${this.lastRound.roundId}`);
+  private async createUpcomingEvents() {
+    const upcomingEvents = this.gameSettings.upcomingEvents;
+
+    for (let i = 1; i < upcomingEvents; i++) {
+      await this.createUpcomingRoundAndEvent(i);
     }
   }
 
   async start() {
     try {
       await this.initRoundId();
-      await this.getLastRound();
-      await this.handleUnfinishedEvent();
+      await this.handleUnfinishedEvents();
+      await this.createUpcomingEvents();
       this.startCron();
     } catch (error) {
       this.logService.logError(error);
@@ -83,7 +88,7 @@ export class GameCron {
     if (this.round.roundTime === 0) {
     }
 
-    if (!this.round.disabled) {
+    if (!this.disabled) {
       this.round.roundTime++;
     }
 
@@ -92,22 +97,22 @@ export class GameCron {
     const { timelines, wholeRound } = this.gameSettings.gameTiming;
 
     if (currentRoundTime === 1) {
+      await this.createUpcomingRoundAndEvent(this.gameSettings.upcomingEvents);
       await this.startNewRound();
     }
 
     await this.processTimelines(timelines, currentRoundTime);
 
     if (currentRoundTime === wholeRound) {
-      await this.updateSettlementResult();
-      await this.roundService.markRoundAsEnded(this.round.roundId);
-      await this.roundService.updateRoundEventDetailResult(this.round.roundId, this.event.eventDetails as IEventDetail[]);
+      this.round.ended = true;
+      await this.roundService.insertOrUpdateRound(this.round as IRound);
       this.round.roundTime = 0;
     }
   }
 
-  private async processTimelines(timelines: any[], currentRoundTime: number) {
+  private async processTimelines(timelines: Timeline[], currentRoundTime: number) {
     for (const [drawIndex, timeline] of timelines.entries()) {
-      if (currentRoundTime === timeline.OddsAvailable) {
+      if (currentRoundTime === timeline.OddsAvailable && drawIndex !== 0) {
         await this.updateOddsForDraw(drawIndex);
       }
 
@@ -118,100 +123,78 @@ export class GameCron {
       if (currentRoundTime === timeline.ResultAvailable) {
         await this.updateResultForDraw(drawIndex);
       }
+
+      if (currentRoundTime === timeline.ResultAvailable && drawIndex === timelines.length - 1) {
+        await this.updateSettlementResult();
+        await this.roundService.markRoundAsEnded(this.round.roundId);
+      }
     }
   }
 
   private async startNewRound() {
-    this.round.roundId++;
+    this.eventDetails = [];
+    const nextRoundId = this.round.roundId + 1;
+    const event = await this.eventService.fetchEvent(nextRoundId);
+    const newRound = await this.roundService.fetchRoundData(nextRoundId);
 
-    const { homeTeam, awayTeam } = this.matchGeneratorService.createNewMatch();
-    this.round.homeTeam = homeTeam;
-    this.round.awayTeam = awayTeam;
-
-    this.round.matchConfig = this.matchGeneratorService.createNewMatchConfig();
-
-    this.round.result = this.matchGeneratorService.generateResult(this.round.matchConfig, this.gameSettings.numberOfVideos);
-
-    const { odds, matchConfig, selections } = this.matchGeneratorService.generateRoundOddsAndUpdateMatchConfig(
-      this.round.matchConfig,
-      this.round.result.drawResults[0].result.goalSequence
-    );
-
-    this.round.odds = odds;
-    this.round.matchConfig = matchConfig;
-    this.round.selections = selections;
-
-    this.round.settlementResult = this.matchGeneratorService.getSettlementResult(this.round.result, this.round.matchConfig);
-
-    this.event = await this.eventService.createNewEvent(this.round);
-    await this.updateEventDetails();
-    await this.createNewRound();
-  }
-
-  private async updateEventDetails() {
-    this.event.eventDetails.forEach((eventDetail, drawIndex) => {
-      eventDetail.selections = Object.values(this.round.selections![drawIndex]);
-      eventDetail.playlist = this.round.result!.drawResults[drawIndex].playlist;
-      eventDetail.goalInfo = this.round.result!.drawResults[drawIndex].goalInfo;
-      eventDetail.hasResult = true;
-      eventDetail.result = this.round.result!.drawResults[drawIndex].result;
-    });
-  }
-
-  private async createNewRound() {
-    try {
-      const encryptedEventDetails = this.event.eventDetails.map((eventDetail) => encrypt(eventDetail));
-
-      const newRound = {
-        eventID: this.event.eventID,
-        eventNameAKey: this.event.eventNameAKey,
-        eventNameBKey: this.event.eventNameBKey,
-        gameId: this.gameSettings.gameId,
-        scheduleStartTs: this.event.scheduleStartTs,
-        scheduleEndTs: this.event.scheduleEndTs,
-        eventDetails: [],
-        encryptedEventDetails,
-        roundId: this.round.roundId,
-        ended: false,
-        matchConfig: this.round.matchConfig,
-      };
-
-      await this.roundService.insertOrUpdateRound(newRound as any);
-    } catch (error) {
-      console.error(`Error creating new round: ${error}`);
-      throw error;
+    for (const eventDetailId of event.eventDetails) {
+      const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
+      this.eventDetails.push(eventDetail);
     }
+
+    this.round = newRound;
+    this.round.result = decrypt(newRound.encryptedResult);
+    this.round.settlementResult = decrypt(newRound.encryptedSettlementResult);
+    this.round.selections = decrypt(newRound.encryptedSelections);
+    this.round.roundId = nextRoundId;
+    this.round.roundTime = 1;
+  }
+
+  private async createUpcomingRoundAndEvent(offsetFromCurrent: number) {
+    const upcomingRoundId = this.round.roundId + offsetFromCurrent;
+    const newRound = this.roundGeneratorService.generateNewRound(upcomingRoundId);
+
+    await this.roundService.insertOrUpdateRound(newRound as IRound);
+
+    const event = await this.eventService.createNewEvent(newRound, offsetFromCurrent);
+
+    const firstEventDetail = await this.eventService.fetchEventDetail(event.eventDetails[0]);
+
+    const selections = decrypt(newRound.encryptedSelections);
+    firstEventDetail.selections = Object.values(selections![0]);
+    firstEventDetail.oddsAvailableTs = new Date();
+
+    await this.eventService.updateEventDetail(firstEventDetail, ["selections", "oddsAvailableTs"]);
   }
 
   private async updateOddsForDraw(drawIndex: number) {
-    const eventDetail = this.event.eventDetails[drawIndex] as unknown as IEventDetail;
-    if (!eventDetail._id) return;
-
+    const eventDetail = this.eventDetails[drawIndex];
+    eventDetail.selections = Object.values(this.round.selections![drawIndex]);
     await this.eventService.updateEventDetail(eventDetail, ["selections"]);
   }
 
   private async updateVideoInfoForDraw(drawIndex: number) {
-    const eventDetail = this.event.eventDetails[drawIndex] as unknown as IEventDetail;
-    if (!eventDetail._id) return;
+    const eventDetail = this.eventDetails[drawIndex];
+    eventDetail.playlist = this.round.result!.drawResults[drawIndex].playlist;
+    eventDetail.goalInfo = this.round.result!.drawResults[drawIndex].goalInfo;
 
     await this.eventService.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
   }
 
   private async updateResultForDraw(drawIndex: number) {
-    const eventDetail = this.event.eventDetails[drawIndex] as IEventDetail;
-    if (!eventDetail._id) return;
-
+    const eventDetail = this.eventDetails[drawIndex];
     eventDetail.hasResult = true;
-    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResult", "selections"]);
+    eventDetail.result = this.round.result!.drawResults[drawIndex].result;
+    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResult"]);
   }
 
   private async updateSettlementResult() {
-    this.event.eventDetails.forEach(async (eventDetail, drawIndex) => {
+    this.eventDetails.forEach(async (eventDetail, drawIndex) => {
       eventDetail.selections!.forEach((selection: Selection) => {
         selection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
       });
 
-      await this.eventService.updateEventDetail(eventDetail as IEventDetail, ["selections"]);
+      await this.eventService.updateEventDetail(eventDetail, ["selections"]);
     });
   }
 }
