@@ -9,6 +9,6 @@ export default {
   sentry: {
     sentryUrl: "https://9046cc701dad8bd271f2256cc4f0329a@sentry-k8s.sgamesuat.com/17",
     logIdentifier: "Soccer-Marble-Service",
-    env: "LOCAL",
+    env: "SIT",
   },
 };
