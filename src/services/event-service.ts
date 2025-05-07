@@ -20,7 +20,7 @@ export class EventService {
 
   async createNewEvent(roundData: GameRunningRound, offsetFromCurrent: number) {
     const currentTime = new Date();
-    const timeIncrement = this.gameSettings.gameTiming.wholeRound * (offsetFromCurrent - 1);
+    const timeIncrement = this.gameSettings.gameTiming.wholeRound * (offsetFromCurrent - 1) - 1;
     const startTime = new Date(currentTime.getTime() + timeIncrement * 1000);
 
     const eventDetails = await this.createNewEventDetails(roundData.roundId, startTime);
