@@ -1,6 +1,6 @@
 import { GameCron } from "./crons/game-cron";
 import { AppContainer } from "./types";
-import appConfig from "./config/game-config";
+import appConfig from "./game-config";
 import { logger } from "sc-common";
 import { AwilixContainer } from "awilix";
 import mongoose from "mongoose";

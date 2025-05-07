@@ -1,7 +1,7 @@
 import { logger } from "sc-common";
 import { EventDetailModel, EventModel, RoundModel } from "../models";
 import { GameCron } from "../crons/game-cron";
-import appConfig from "../config/game-config";
+import appConfig from "../game-config";
 
 export type RateConfig = {
   scoreRate: Record<string, number>;

@@ -1,4 +1,4 @@
-import { RateConfig } from "../types";
+import { RateConfig } from "./types";
 
 const halfConfig1: RateConfig = {
   scoreRate: {

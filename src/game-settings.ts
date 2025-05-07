@@ -1,4 +1,4 @@
-import { GameSettings } from "../types";
+import { GameSettings } from "./types";
 
 export const gameSettings: GameSettings = {
   gameId: 2001,
