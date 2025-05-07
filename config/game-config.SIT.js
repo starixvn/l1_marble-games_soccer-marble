@@ -1,0 +1,14 @@
+export default {
+  hostingPort: 3000,
+  database: {
+    url: "mongodb://marble_backend:MarbleBackend%40517@10.99.99.53:39530,10.99.99.54:39530,10.99.99.188:39530,10.99.99.187:39530/?authSource=admin&replicaSet=SP-SIT",
+    options: {
+      dbName: "marble_odds_feed",
+    },
+  },
+  sentry: {
+    sentryUrl: "https://9046cc701dad8bd271f2256cc4f0329a@sentry-k8s.sgamesuat.com/17",
+    logIdentifier: "Soccer-Marble-Service",
+    env: "LOCAL",
+  },
+};
