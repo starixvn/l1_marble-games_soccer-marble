@@ -16,7 +16,7 @@ describe("crypto-helper", () => {
       encrypt(testData);
 
       // Assert
-      expect(createCipherivSpy).toHaveBeenCalledWith("aes-256-cbc", expect.any(String), expect.any(Buffer));
+      expect(createCipherivSpy).toHaveBeenCalledWith("aes-256-ctr", expect.any(String), expect.any(Buffer));
     });
 
     it("should encrypt data that can be decrypted", () => {
@@ -46,7 +46,7 @@ describe("crypto-helper", () => {
       } catch {}
 
       // Assert
-      expect(createDecipherivSpy).toHaveBeenCalledWith("aes-256-cbc", expect.any(String), expect.any(Buffer));
+      expect(createDecipherivSpy).toHaveBeenCalledWith("aes-256-ctr", expect.any(String), expect.any(Buffer));
     });
   });
 });

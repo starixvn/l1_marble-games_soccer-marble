@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-const algorithm = "aes-256-cbc";
+const algorithm = "aes-256-ctr";
 const key = "SDF4eGGjkyulkuiop3Ef42vsgaemEfeq";
 
 export const encrypt = (data: any) => {

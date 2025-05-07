@@ -3,10 +3,9 @@ import { RoundModel } from "../models";
 import { IRound } from "../models/rounds";
 import { IEventDetail } from "../models/event-details";
 
-// Round Manager class to handle round-related operations
 export class RoundService {
-  private roundRepository: typeof RoundModel;
-  private gameSettings: GameSettings;
+  private readonly roundRepository: typeof RoundModel;
+  private readonly gameSettings: GameSettings;
 
   constructor(container: AppContainer) {
     this.roundRepository = container.roundRepository;

@@ -1,13 +1,11 @@
-import { RoundSettlementResultType, SettlementStatus, RoundResultType, MatchConfigType } from "../types";
+import {  RoundResultType, MatchConfigType, GameSettings, RateConfig, AppContainer } from "../types";
 import { securePickOne, secureShuffle } from "sc-core-rng";
-import { GameSettings, RateConfig, AppContainer } from "../types";
 import { calculateOddsForRound } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
 
-// Match Manager class to handle match-related operations
 export class MatchGeneratorService {
-  private gameSettings: GameSettings;
-  private rateConfigs: RateConfig[];
+  private readonly gameSettings: GameSettings;
+  private readonly rateConfigs: RateConfig[];
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;

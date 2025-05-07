@@ -1,13 +1,12 @@
-import { EventModel } from "../models";
-import { EventDetailModel } from "../models";
+import { EventModel, EventDetailModel } from "../models";
 import { IEventDetail } from "../models/event-details";
 import { GameSettings, Event, AppContainer, EventDetail, GameRunningRound } from "../types";
 
 // Event Manager class to handle event-related operations
 export class EventService {
-  private eventRepository: typeof EventModel;
-  private eventDetailsRepository: typeof EventDetailModel;
-  private gameSettings: GameSettings;
+  private readonly eventRepository: typeof EventModel;
+  private readonly eventDetailsRepository: typeof EventDetailModel;
+  private readonly gameSettings: GameSettings;
 
   constructor(container: AppContainer) {
     this.eventRepository = container.eventRepository;
