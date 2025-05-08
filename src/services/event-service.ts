@@ -22,17 +22,17 @@ export class EventService {
     const currentTime = new Date();
     const timeIncrement = this.gameSettings.gameTiming.wholeRound * (offsetFromCurrent - 1) - 1;
     const startTime = new Date(currentTime.getTime() + timeIncrement * 1000);
+    const eventId = roundData.eventID;
 
-    const eventDetails = await this.createNewEventDetails(roundData.roundId, startTime);
+    const eventDetails = await this.createNewEventDetails(eventId, startTime);
 
     const event = {
-      eventID: roundData.roundId,
+      eventID: eventId,
       eventNameAKey: roundData.homeTeam,
       eventNameBKey: roundData.awayTeam,
       gameId: this.gameSettings.gameId,
       eventDetails: eventDetails.map((eventDetail) => eventDetail._id),
       scheduleStartTs: startTime,
-      scheduleEndTs: new Date(startTime.getTime() + this.gameSettings.gameTiming.wholeRound * 1000),
     };
 
     return await this.eventRepository.create(event);
@@ -47,7 +47,7 @@ export class EventService {
           oddsAvailableTs: new Date(startTime.getTime() + timeline.OddsAvailable * 1000),
           scheduleStartTs: new Date(startTime.getTime() + timeline.ScheduleStart * 1000),
           resultsAvailableTs: new Date(startTime.getTime() + timeline.ResultAvailable * 1000),
-          hasResult: false,
+          hasResults: false,
         };
 
         return this.eventDetailsRepository.create(eventDetail);

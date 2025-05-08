@@ -16,20 +16,20 @@ describe("RoundService", () => {
   let service: RoundService;
   let container: any;
   let mockRoundModel: jest.Mocked<typeof RoundModel>;
-  
+
   beforeEach(() => {
     // Arrange
     mockRoundModel = RoundModel as unknown as jest.Mocked<typeof RoundModel>;
-    
+
     container = {
       roundRepository: mockRoundModel,
       gameSettings: {
         gameId: 123,
       },
     };
-    
+
     service = new RoundService(container);
-    
+
     // Reset mocks
     jest.clearAllMocks();
   });
@@ -40,34 +40,30 @@ describe("RoundService", () => {
       const mockRound = {
         roundId: 42,
       };
-      
+
       mockRoundModel.findOne = jest.fn().mockResolvedValue(mockRound);
-      
+
       // Act
       const result = await service.initializeRoundId();
-      
+
       // Assert
-      expect(mockRoundModel.findOne).toHaveBeenCalledWith(
-        { gameId: container.gameSettings.gameId }, 
-        "roundId", 
-        { sort: { roundId: -1 } }
-      );
+      expect(mockRoundModel.findOne).toHaveBeenCalledWith({ gameId: container.gameSettings.gameId }, "roundId", {
+        sort: { roundId: -1 },
+      });
       expect(result).toBe(42);
     });
 
     it("should return 0 when no rounds exist", async () => {
       // Arrange
       mockRoundModel.findOne = jest.fn().mockResolvedValue(null);
-      
+
       // Act
       const result = await service.initializeRoundId();
-      
+
       // Assert
-      expect(mockRoundModel.findOne).toHaveBeenCalledWith(
-        { gameId: container.gameSettings.gameId }, 
-        "roundId", 
-        { sort: { roundId: -1 } }
-      );
+      expect(mockRoundModel.findOne).toHaveBeenCalledWith({ gameId: container.gameSettings.gameId }, "roundId", {
+        sort: { roundId: -1 },
+      });
       expect(result).toBe(0);
     });
   });
@@ -81,21 +77,21 @@ describe("RoundService", () => {
         gameId: container.gameSettings.gameId,
         eventID: 123,
       };
-      
+
       const mockLean = jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockRound),
       });
-      
+
       mockRoundModel.findOne = jest.fn().mockReturnValue({
         lean: mockLean,
       });
-      
+
       // Act
       const result = await service.fetchLastRound(roundId);
-      
+
       // Assert
-      expect(mockRoundModel.findOne).toHaveBeenCalledWith({ 
-        gameId: container.gameSettings.gameId, 
+      expect(mockRoundModel.findOne).toHaveBeenCalledWith({
+        gameId: container.gameSettings.gameId,
         roundId,
       });
       expect(result).toEqual(mockRound);
@@ -104,21 +100,21 @@ describe("RoundService", () => {
     it("should return null when no round found", async () => {
       // Arrange
       const roundId = 42;
-      
+
       const mockLean = jest.fn().mockReturnValue({
         exec: jest.fn().mockResolvedValue(null),
       });
-      
+
       mockRoundModel.findOne = jest.fn().mockReturnValue({
         lean: mockLean,
       });
-      
+
       // Act
       const result = await service.fetchLastRound(roundId);
-      
+
       // Assert
-      expect(mockRoundModel.findOne).toHaveBeenCalledWith({ 
-        gameId: container.gameSettings.gameId, 
+      expect(mockRoundModel.findOne).toHaveBeenCalledWith({
+        gameId: container.gameSettings.gameId,
         roundId,
       });
       expect(result).toBeNull();
@@ -130,10 +126,10 @@ describe("RoundService", () => {
       // Arrange
       const roundId = 42;
       mockRoundModel.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
-      
+
       // Act
       await service.markRoundAsEnded(roundId);
-      
+
       // Assert
       expect(mockRoundModel.updateOne).toHaveBeenCalledWith(
         { roundId, gameId: container.gameSettings.gameId },
@@ -152,12 +148,12 @@ describe("RoundService", () => {
         eventID: 123,
         ended: false,
       };
-      
+
       mockRoundModel.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
-      
+
       // Act
       await service.insertOrUpdateRound(round as IRound);
-      
+
       // Assert
       expect(mockRoundModel.updateOne).toHaveBeenCalledWith(
         { roundId: round.roundId, gameId: container.gameSettings.gameId },
@@ -174,19 +170,19 @@ describe("RoundService", () => {
       const eventDetails: Partial<IEventDetail>[] = [
         {
           eventID: 123,
-          hasResult: true,
-          result: { 
+          hasResults: true,
+          result: {
             goalSequence: "H",
-            finalScore: "2-1" 
+            finalScore: "2-1",
           },
         },
       ];
-      
+
       mockRoundModel.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
-      
+
       // Act
       await service.updateRoundEventDetailResult(roundId, eventDetails as IEventDetail[]);
-      
+
       // Assert
       expect(mockRoundModel.updateOne).toHaveBeenCalledWith(
         { roundId, gameId: container.gameSettings.gameId },

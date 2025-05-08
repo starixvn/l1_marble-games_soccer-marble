@@ -49,7 +49,7 @@ export type EventDetail = {
     goalSequence: string;
     finalScore: string;
   };
-  hasResult: boolean;
+  hasResults: boolean;
 };
 
 export type DrawResultType = {
@@ -75,7 +75,6 @@ export type Event = {
   gameId: number;
   eventDetails: EventDetail[];
   scheduleStartTs: Date;
-  scheduleEndTs: Date;
 };
 
 export interface AppContainer {

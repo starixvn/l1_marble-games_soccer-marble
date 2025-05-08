@@ -40,7 +40,6 @@ interface Event {
   gameId: number;
   eventDetails: EventDetail[]; // Array of event details (halves)
   scheduleStartTs: DateTime;
-  scheduleEndTs: DateTime;
 }
 
 interface EventDetail {

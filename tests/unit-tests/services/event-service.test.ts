@@ -79,7 +79,7 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(),
         scheduleStartTs: new Date(),
         resultsAvailableTs: new Date(),
-        hasResult: false,
+        hasResults: false,
       };
 
       const mockEventDetail2 = {
@@ -88,7 +88,7 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(),
         scheduleStartTs: new Date(),
         resultsAvailableTs: new Date(),
-        hasResult: false,
+        hasResults: false,
       };
 
       mockEventDetailsRepository.create
@@ -117,7 +117,6 @@ describe("EventService", () => {
         gameId: 123,
         eventDetails: [mockObjectId1, mockObjectId2],
         scheduleStartTs: expect.any(Date),
-        scheduleEndTs: expect.any(Date),
       });
       expect(result).toMatchObject({
         eventID: 123,
@@ -139,7 +138,7 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(),
         scheduleStartTs: new Date(),
         resultsAvailableTs: new Date(),
-        hasResult: true,
+        hasResults: true,
       };
 
       mockEventDetailsRepository.updateOne.mockResolvedValue({ acknowledged: true } as any);
@@ -160,10 +159,10 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(),
         scheduleStartTs: new Date(),
         resultsAvailableTs: new Date(),
-        hasResult: true,
+        hasResults: true,
       };
 
-      const fieldsToUpdate: (keyof IEventDetail)[] = ["hasResult", "resultsAvailableTs"];
+      const fieldsToUpdate: (keyof IEventDetail)[] = ["hasResults", "resultsAvailableTs"];
 
       mockEventDetailsRepository.updateOne.mockResolvedValue({ acknowledged: true } as any);
 
@@ -175,7 +174,7 @@ describe("EventService", () => {
         { _id: mockObjectId },
         {
           $set: {
-            hasResult: eventDetail.hasResult,
+            hasResults: eventDetail.hasResults,
             resultsAvailableTs: eventDetail.resultsAvailableTs,
           },
         }

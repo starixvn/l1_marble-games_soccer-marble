@@ -16,7 +16,7 @@ export const EventDetailSchema = new Schema<IEventDetail>({
   goalInfo: { type: String },
   selections: [SelectionSchema],
   result: { type: Schema.Types.Mixed },
-  hasResult: { type: Boolean, default: false },
+  hasResults: { type: Boolean, default: false },
 });
 
 export default mongoose.model("event_details", EventDetailSchema);

@@ -3,6 +3,7 @@ import { securePickOne, secureShuffle } from "sc-core-rng";
 import { calculateOddsForRound } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
 import { encrypt } from "../helpers/crypto-helper";
+import { idHelper } from "../helpers";
 
 export class RoundGeneratorService {
   private readonly gameSettings: GameSettings;
@@ -42,8 +43,9 @@ export class RoundGeneratorService {
 
   generateNewRound(roundId: number) {
     const newRound = {
-      eventID: roundId,
+      eventID: idHelper.createEventId(this.gameSettings.gameId, roundId),
       roundId,
+      ended: false,
     } as GameRunningRound;
 
     const { homeTeam, awayTeam } = this.createNewMatch();

@@ -20,6 +20,7 @@ export class GameCron {
   private gameSettings: GameSettings;
   private logService: typeof logger;
   private enabled: boolean;
+  private upcomingRound: number[];
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
@@ -29,8 +30,9 @@ export class GameCron {
     this.roundGeneratorService = container.roundGeneratorService;
     this.gameConfigService = container.gameConfigService;
     this.enabled = false;
-    this.round = { roundTime: 0 } as GameRunningRound;
+    this.round = { roundTime: 0, ended: true } as GameRunningRound;
     this.eventDetails = [];
+    this.upcomingRound = [];
   }
 
   private async initRoundId() {
@@ -38,7 +40,7 @@ export class GameCron {
   }
 
   private async handleUnfinishedEvents() {
-    const unfinishedRounds = await this.roundService.fetchAllUnfinishedRounds();
+    const unfinishedRounds = (await this.roundService.fetchAllUnfinishedRounds()).sort((a, b) => b.roundId - a.roundId);
     const unfinishedEvents = await this.eventService.fetchAllUpcomingEvents();
 
     this.logService.logError(`List of unfinished events: ${unfinishedRounds.map((round) => round.eventID).join(", ")}`);
@@ -62,7 +64,6 @@ export class GameCron {
     try {
       await this.initRoundId();
       await this.handleUnfinishedEvents();
-      await this.createUpcomingEvents();
       this.startCron();
     } catch (error) {
       this.logService.logError(error);
@@ -87,7 +88,11 @@ export class GameCron {
       await this.setGameEnabled();
     }
 
-    if (this.enabled) {
+    if (this.enabled && this.upcomingRound.length === 0) {
+      await this.createUpcomingEvents();
+    }
+
+    if (this.enabled || this.upcomingRound.length > 0 || !this.round.ended) {
       this.round.roundTime++;
     }
 
@@ -143,9 +148,15 @@ export class GameCron {
 
   private async startNewRound() {
     this.eventDetails = [];
-    const nextRoundId = this.round.roundId + 1;
-    const event = await this.eventService.fetchEvent(nextRoundId);
+    const nextRoundId = this.upcomingRound.shift();
+
+    if (!nextRoundId) {
+      this.logService.logError("No upcoming round found");
+      return;
+    }
+
     const newRound = await this.roundService.fetchRoundData(nextRoundId);
+    const event = await this.eventService.fetchEvent(newRound.eventID);
 
     for (const eventDetailId of event.eventDetails) {
       const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
@@ -161,7 +172,14 @@ export class GameCron {
   }
 
   private async createUpcomingRoundAndEvent(offsetFromCurrent: number) {
+    if (!this.enabled) {
+      this.logService.log("Game is not enabled, skipping upcoming round and event creation", "info");
+      return;
+    }
+
     const upcomingRoundId = this.round.roundId + offsetFromCurrent;
+    this.upcomingRound.push(upcomingRoundId);
+
     const newRound = this.roundGeneratorService.generateNewRound(upcomingRoundId);
 
     await this.roundService.insertOrUpdateRound(newRound as IRound);
@@ -193,9 +211,9 @@ export class GameCron {
 
   private async updateResultForDraw(drawIndex: number) {
     const eventDetail = this.eventDetails[drawIndex];
-    eventDetail.hasResult = true;
+    eventDetail.hasResults = true;
     eventDetail.result = this.round.result!.drawResults[drawIndex].result;
-    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResult"]);
+    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResults"]);
   }
 
   private async updateSettlementResult() {
