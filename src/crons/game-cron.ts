@@ -8,7 +8,6 @@ import { RoundGeneratorService } from "../services/round-generator-service";
 import { logger } from "sc-common";
 import { decrypt } from "../helpers/crypto-helper";
 
-// Main GameCron class
 export class GameCron {
   private roundService: RoundService;
   private eventService: EventService;
@@ -39,17 +38,13 @@ export class GameCron {
     const unfinishedRounds = await this.roundService.fetchAllUnfinishedRounds();
     const unfinishedEvents = await this.eventService.fetchAllUpcomingEvents();
 
-    if (unfinishedRounds.length > 0) {
-      this.logService.logError(`List of unfinished events: ${unfinishedRounds.map((round) => round.eventID).join(", ")}`);
-    }
+    this.logService.logError(`List of unfinished events: ${unfinishedRounds.map((round) => round.eventID).join(", ")}`);
 
-    if (unfinishedEvents.length > 0) {
-      this.logService.logError(
-        `List of unfinished upcoming events: ${unfinishedEvents.map((event) => event.eventID).join(", ")}`
-      );
+    this.logService.logError(
+      `List of unfinished upcoming events: ${unfinishedEvents.map((event) => event.eventID).join(", ")}`
+    );
 
-      this.logService.log(`current time: ${new Date()}`, "info");
-    }
+    this.logService.log(`current time: ${new Date()}`, "info");
   }
 
   private async createUpcomingEvents() {
@@ -93,7 +88,6 @@ export class GameCron {
     }
 
     const currentRoundTime = this.round.roundTime;
-    console.log(currentRoundTime);
     const { timelines, wholeRound } = this.gameSettings.gameTiming;
 
     if (currentRoundTime === 1) {
