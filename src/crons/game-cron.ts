@@ -7,16 +7,19 @@ import { EventService } from "../services/event-service";
 import { RoundGeneratorService } from "../services/round-generator-service";
 import { logger } from "sc-common";
 import { decrypt } from "../helpers/crypto-helper";
+import { GameConfigService } from "../services/game-config-service";
 
 export class GameCron {
   private roundService: RoundService;
   private eventService: EventService;
   private roundGeneratorService: RoundGeneratorService;
+  private gameConfigService: GameConfigService;
+
   private round: GameRunningRound;
   private eventDetails: IEventDetail[];
   private gameSettings: GameSettings;
   private logService: typeof logger;
-  private disabled: boolean;
+  private enabled: boolean;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
@@ -24,8 +27,8 @@ export class GameCron {
     this.roundService = container.roundService;
     this.eventService = container.eventService;
     this.roundGeneratorService = container.roundGeneratorService;
-
-    this.disabled = false;
+    this.gameConfigService = container.gameConfigService;
+    this.enabled = false;
     this.round = { roundTime: 0 } as GameRunningRound;
     this.eventDetails = [];
   }
@@ -81,9 +84,10 @@ export class GameCron {
 
   private async proceed() {
     if (this.round.roundTime === 0) {
+      await this.setGameEnabled();
     }
 
-    if (!this.disabled) {
+    if (this.enabled) {
       this.round.roundTime++;
     }
 
@@ -97,11 +101,23 @@ export class GameCron {
 
     await this.processTimelines(timelines, currentRoundTime);
 
-    if (currentRoundTime === wholeRound) {
+    if (currentRoundTime === wholeRound || currentRoundTime > wholeRound) {
+      this.round.roundTime = 0;
       this.round.ended = true;
       await this.roundService.insertOrUpdateRound(this.round as IRound);
-      this.round.roundTime = 0;
     }
+  }
+
+  private async setGameEnabled() {
+    const gameConfig = await this.gameConfigService.getGameConfig();
+
+    if (!gameConfig) {
+      this.enabled = false;
+      this.logService.logError("Game config not found");
+      return;
+    }
+
+    this.enabled = gameConfig.enabled;
   }
 
   private async processTimelines(timelines: Timeline[], currentRoundTime: number) {

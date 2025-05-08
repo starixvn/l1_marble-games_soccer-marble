@@ -14,49 +14,45 @@ export class StartUp {
     this.appConfigs = container.resolve("appConfigs");
   }
 
+  async configureDatabaseAndSentry() {
+    logger.start(this.appConfigs.sentry as any);
+    await this.configureDatabase(this.appConfigs.database);
+  }
+
   async start() {
-    try {
-      logger.start(this.appConfigs.sentry as any);
-      await this.configureDatabase(this.appConfigs.database);
-      await this.gameCron.start();
-    } catch (error) {
-      logger.logError(`Failed to start the server ${error}`);
-      console.log(error);
-    }
+    await this.gameCron.start();
   }
 
   async configureDatabase({ url = "", options = {} }) {
-    await mongoose
-      .connect(url, options)
-      .then(() => {
-        console.log("Connect to MongoDB success " + url);
-      })
-      .catch((error) => {
-        console.log("Connect to MongoDB failed", error);
-        logger.logError(error);
-      });
+    try {
+      await mongoose.connect(url, options);
 
-    mongoose.connection.once("open", function () {
-      console.log("MongoDB database connection established successfully");
-    });
+      this.setupMongoEventHandlers();
+      logger.log("MongoDB database connection established successfully", "info");
+    } catch (error) {
+      logger.logError(`Failed to connect to MongoDB: ${error}`);
+    }
+  }
 
+  private setupMongoEventHandlers() {
     mongoose.connection.on("connected", () => {
-      const message = `MongoDB connected at ${new Date()}`;
-      logger.log(message, "info");
+      logger.log(`MongoDB connected at ${new Date()}`, "info");
     });
 
     mongoose.connection.on("reconnected", () => {
-      const message = `MongoDB reconnected at ${new Date()}`;
-      logger.logWarning(message);
+      logger.logWarning(`MongoDB reconnected at ${new Date()}`);
     });
 
     mongoose.connection.on("disconnected", () => {
       logger.logWarning(`MongoDB disconnected at ${new Date()}`);
-      process.exit(1);
     });
 
     mongoose.connection.on("error", (err) => {
-      logger.logError(err);
+      logger.logError(`MongoDB connection error: ${err}`);
+    });
+
+    mongoose.connection.on("close", () => {
+      logger.logWarning("MongoDB connection pool closed");
     });
   }
 }

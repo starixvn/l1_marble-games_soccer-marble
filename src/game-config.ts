@@ -11,4 +11,5 @@ export default {
     logIdentifier: "Soccer-Marble-Service",
     env: "DEV",
   },
+  adminToken: "LzOumSOmeWqFckOSZV0dtPBwGF6LZJBudCT4EJRO0krYSOxhFAveG777lMfZw89F",
 };

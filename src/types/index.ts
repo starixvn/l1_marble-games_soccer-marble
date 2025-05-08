@@ -1,10 +1,11 @@
 import { logger } from "sc-common";
-import { EventDetailModel, EventModel, RoundModel } from "../models";
+import { EventDetailModel, EventModel, GameConfigModel, RoundModel } from "../models";
 import { GameCron } from "../crons/game-cron";
 import appConfig from "../game-config";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { RoundGeneratorService } from "../services/round-generator-service";
+import { GameConfigService } from "../services/game-config-service";
 
 export type RateConfig = {
   scoreRate: Record<string, number>;
@@ -85,10 +86,12 @@ export interface AppContainer {
   eventDetailsRepository: typeof EventDetailModel;
   eventRepository: typeof EventModel;
   roundRepository: typeof RoundModel;
+  gameConfigRepository: typeof GameConfigModel;
   gameCron: GameCron;
   roundGeneratorService: RoundGeneratorService;
   roundService: RoundService;
   eventService: EventService;
+  gameConfigService: GameConfigService;
 }
 
 export type GameSettings = {
@@ -136,4 +139,9 @@ export type GameRunningRound = {
   encryptedResult: any;
   encryptedSettlementResult: any;
   encryptedSelections: any;
+};
+
+export type GameConfig = {
+  gameId: number;
+  enabled: boolean;
 };
