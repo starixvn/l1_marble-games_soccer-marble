@@ -108,15 +108,11 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
 };
 
 export const calculateHandicapValue = (homeScore: number, awayScore: number) => {
-  return Math.abs(Math.floor((awayScore - homeScore) / 0.5)) % 2 === 1
-    ? Math.floor((awayScore - homeScore) / 0.5) * 0.5
-    : Math.floor((awayScore - homeScore) / 0.5) * 0.5 + 0.5;
+  return Math.floor(awayScore - homeScore) + 0.5;
 };
 
 export const calculateOverUnderValue = (homeScore: number, awayScore: number) => {
-  return Math.floor((homeScore + awayScore) / 0.5) % 2 === 1
-    ? Math.floor((homeScore + awayScore) / 0.5) * 0.5
-    : Math.floor((homeScore + awayScore) / 0.5) * 0.5 + 0.5;
+  return Math.floor(homeScore + awayScore) + 0.5;
 };
 
 export const calculateBetOdds = (probabilities: Record<string, number>): Record<string, number> => {
