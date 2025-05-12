@@ -1,0 +1,25 @@
+{
+  "rest-client.environmentVariables": {
+    "$shared": {},
+    "dev": {
+      "host": "http://localhost:5000",
+      "token": "LzOumSOmeWqFckOSZV0dtPBwGF6LZJBudCT4EJRO0krYSOxhFAveG777lMfZw89F"
+    },
+    "local": {
+      "host": "https://soccer-marble.lumigame.com/soccer-marble",
+      "token": "Ir8TAKQCcs0bRheTZ1XXEvqPjJPAcXlapxmh1Ff639ZVLozSl4gPE4PFVCI2LuET"
+    },
+    "uat": {
+      "host": "https://mguatproxy.sgamesuat.com/soccer-marble",
+      "token": "3AsbupPJx4HcB6SOhUdqr7lzFhxE8Y82sCFio0mZi19Lha7WDIA4ASPLgdorOp7G"
+    },
+    "sit": {
+      "host": "https://mgsitproxy.sgamesuat.com/soccer-marble",
+      "token": "3AsbupPJx4HcB6SOhUdqr7lzFhxE8Y82sCFio0mZi19Lha7WDIA4ASPLgdorOp7G"
+    },
+    "prod": {
+      "host": "https://soccer-marble.lumigame.com",
+      "token": "Ir8TAKQCcs0bRheTZ1XXEvqPjJPAcXlapxmh1Ff639ZVLozSl4gPE4PFVCI2LuET"
+    }
+  }
+}
