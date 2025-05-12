@@ -57,8 +57,8 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
     }
   }
 
-  homeScore /= totalRates;
-  awayScore /= totalRates;
+  homeScore = roundToPrecision(homeScore / totalRates, 100);
+  awayScore = roundToPrecision(awayScore / totalRates, 100);
 
   const handicapValue = calculateHandicapValue(homeScore, awayScore);
 

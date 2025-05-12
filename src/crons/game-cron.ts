@@ -52,7 +52,7 @@ export class GameCron {
     this.logService.log(`current time: ${new Date()}`, "info");
   }
 
-  private async createUpcomingEvents() {
+  private async scheduleUpcomingEvents() {
     const upcomingEvents = this.gameSettings.upcomingEvents;
 
     for (let i = 1; i < upcomingEvents; i++) {
@@ -89,7 +89,7 @@ export class GameCron {
     }
 
     if (this.enabled && this.upcomingRound.length === 0) {
-      await this.createUpcomingEvents();
+      await this.scheduleUpcomingEvents();
     }
 
     if (this.enabled || this.upcomingRound.length > 0 || !this.round.ended) {
@@ -147,28 +147,24 @@ export class GameCron {
   }
 
   private async startNewRound() {
-    this.eventDetails = [];
     const nextRoundId = this.upcomingRound.shift();
 
     if (!nextRoundId) {
-      this.logService.logError("No upcoming round found");
-      return;
+      return this.logService.logError("No upcoming round found");
     }
 
     const newRound = await this.roundService.fetchRoundData(nextRoundId);
     const event = await this.eventService.fetchEvent(newRound.eventID);
+    const eventDetails = await Promise.all(event.eventDetails.map((id) => this.eventService.fetchEventDetail(id)));
 
-    for (const eventDetailId of event.eventDetails) {
-      const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
-      this.eventDetails.push(eventDetail);
-    }
-
-    this.round = newRound;
-    this.round.result = decrypt(newRound.encryptedResult);
-    this.round.settlementResult = decrypt(newRound.encryptedSettlementResult);
-    this.round.selections = decrypt(newRound.encryptedSelections);
-    this.round.roundId = nextRoundId;
-    this.round.roundTime = 1;
+    this.eventDetails = eventDetails;
+    this.round = {
+      ...newRound,
+      roundTime: 1,
+      result: decrypt(newRound.encryptedResult),
+      settlementResult: decrypt(newRound.encryptedSettlementResult),
+      selections: decrypt(newRound.encryptedSelections),
+    };
   }
 
   private async createUpcomingRoundAndEvent(offsetFromCurrent: number) {
@@ -179,13 +175,10 @@ export class GameCron {
 
     const upcomingRoundId = this.round.roundId + offsetFromCurrent;
     this.upcomingRound.push(upcomingRoundId);
-
     const newRound = this.roundGeneratorService.generateNewRound(upcomingRoundId);
 
     await this.roundService.insertOrUpdateRound(newRound as IRound);
-
     const event = await this.eventService.createNewEvent(newRound, offsetFromCurrent);
-
     const firstEventDetail = await this.eventService.fetchEventDetail(event.eventDetails[0]);
 
     const selections = decrypt(newRound.encryptedSelections);
@@ -217,12 +210,13 @@ export class GameCron {
   }
 
   private async updateSettlementResult() {
-    this.eventDetails.forEach(async (eventDetail, drawIndex) => {
-      eventDetail.selections!.forEach((selection: Selection) => {
-        selection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
-      });
-
-      await this.eventService.updateEventDetail(eventDetail, ["selections"]);
-    });
+    await Promise.all(
+      this.eventDetails.map((eventDetail, drawIndex) => {
+        eventDetail.selections!.forEach((selection: Selection) => {
+          selection.settlementStatus = this.round.settlementResult![drawIndex][selection.name];
+        });
+        return this.eventService.updateEventDetail(eventDetail, ["selections"]);
+      })
+    );
   }
 }

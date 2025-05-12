@@ -20,9 +20,10 @@ export class RoundGeneratorService {
   }
 
   createNewMatchConfig(): MatchConfigType {
+    const rateConfigs = secureShuffle(this.rateConfigs);
     return {
-      firstHalf: securePickOne(this.rateConfigs),
-      secondHalf: securePickOne(this.rateConfigs),
+      firstHalf: rateConfigs[0],
+      secondHalf: rateConfigs[1],
     };
   }
 
