@@ -32,7 +32,6 @@ describe("EventService", () => {
       gameId: 123,
       gameTiming: {
         wholeRound: 120,
-        oddsAvailableForNextEvent: 81,
         timelines: [
           { OddsAvailable: 1, ScheduleStart: 31, ResultAvailable: 61 },
           { OddsAvailable: 61, ScheduleStart: 81, ResultAvailable: 111 },
@@ -68,6 +67,12 @@ describe("EventService", () => {
         homeTeam: "Team A",
         awayTeam: "Team B",
         roundTime: 300,
+        eventID: 123,
+        gameId: 123,
+        ended: false,
+        encryptedResult: null,
+        encryptedSettlementResult: null,
+        encryptedSelections: null,
       };
 
       const mockObjectId1 = new mongoose.Types.ObjectId();
@@ -95,8 +100,9 @@ describe("EventService", () => {
         .mockResolvedValueOnce(mockEventDetail1 as any)
         .mockResolvedValueOnce(mockEventDetail2 as any);
 
+      const mockEventId = new mongoose.Types.ObjectId();
       mockEventRepository.create.mockResolvedValue({
-        _id: new mongoose.Types.ObjectId(),
+        _id: mockEventId,
         eventID: 123,
         eventNameAKey: "Team A",
         eventNameBKey: "Team B",
@@ -105,7 +111,7 @@ describe("EventService", () => {
       } as any);
 
       // Act
-      const result = await eventService.createNewEvent(roundData);
+      const event = await eventService.createNewEvent(roundData, 1);
 
       // Assert
       expect(mockEventDetailsRepository.create).toHaveBeenCalledTimes(2);
@@ -118,13 +124,17 @@ describe("EventService", () => {
         eventDetails: [mockObjectId1, mockObjectId2],
         scheduleStartTs: expect.any(Date),
       });
-      expect(result).toMatchObject({
+
+      const expectedEvent = {
+        _id: mockEventId,
         eventID: 123,
         eventNameAKey: "Team A",
         eventNameBKey: "Team B",
         gameId: 123,
-        eventDetails: [mockEventDetail1, mockEventDetail2],
-      });
+        eventDetails: [mockObjectId1, mockObjectId2],
+      };
+
+      expect(event).toMatchObject(expectedEvent);
     });
   });
 
