@@ -10,17 +10,17 @@ import { decrypt } from "../helpers/crypto-helper";
 import { GameConfigService } from "../services/game-config-service";
 
 export class GameCron {
-  private roundService: RoundService;
-  private eventService: EventService;
-  private roundGeneratorService: RoundGeneratorService;
-  private gameConfigService: GameConfigService;
+  private readonly roundService: RoundService;
+  private readonly eventService: EventService;
+  private readonly roundGeneratorService: RoundGeneratorService;
+  private readonly gameConfigService: GameConfigService;
+  private readonly gameSettings: GameSettings;
+  private readonly logService: typeof logger;
+  private readonly upcomingRound: number[];
 
   private round: GameRunningRound;
   private eventDetails: IEventDetail[];
-  private gameSettings: GameSettings;
-  private logService: typeof logger;
   private enabled: boolean;
-  private upcomingRound: number[];
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
@@ -146,7 +146,7 @@ export class GameCron {
     }
   }
 
-  private async startNewRound() {
+  private async startNewRound(): Promise<void> {
     const nextRoundId = this.upcomingRound.shift();
 
     if (!nextRoundId) {
@@ -167,10 +167,9 @@ export class GameCron {
     };
   }
 
-  private async createUpcomingRoundAndEvent(offsetFromCurrent: number) {
+  private async createUpcomingRoundAndEvent(offsetFromCurrent: number): Promise<void> {
     if (!this.enabled) {
-      this.logService.log("Game is not enabled, skipping upcoming round and event creation", "info");
-      return;
+      return this.logService.log("Game is not enabled, skipping upcoming round and event creation", "info");
     }
 
     const upcomingRoundId = this.round.roundId + offsetFromCurrent;

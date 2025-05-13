@@ -23,11 +23,11 @@ export class RoundService {
   }
 
   async fetchLastRound(roundId: number): Promise<IRound | null> {
-    return await this.roundRepository.findOne({ gameId: this.gameSettings.gameId, roundId }).lean().exec();
+    return this.roundRepository.findOne({ gameId: this.gameSettings.gameId, roundId }).lean().exec();
   }
 
   async fetchAllUnfinishedRounds() {
-    return await this.roundRepository
+    return this.roundRepository
       .find({
         gameId: this.gameSettings.gameId,
         ended: false,

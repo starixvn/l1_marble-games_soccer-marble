@@ -12,7 +12,7 @@ export const encrypt = (data: any) => {
 
   const ivBase64 = iv.toString("base64");
 
-  return ivBase64 + ":" + encrypted;
+  return `${ivBase64}:${encrypted}`;
 };
 
 export const decrypt = (encrypted: any) => {

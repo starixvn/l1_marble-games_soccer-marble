@@ -21,5 +21,9 @@
       "host": "https://soccer-marble.lumigame.com",
       "token": "Ir8TAKQCcs0bRheTZ1XXEvqPjJPAcXlapxmh1Ff639ZVLozSl4gPE4PFVCI2LuET"
     }
+  },
+  "sonarlint.connectedMode.project": {
+    "connectionId": "https-sonarqube-lumigame-com-",
+    "projectKey": "soccer-marble"
   }
 }

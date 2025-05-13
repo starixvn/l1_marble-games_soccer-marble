@@ -1,5 +1,5 @@
 import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, RateConfig, AppContainer } from "../types";
-import { securePickOne, secureShuffle } from "sc-core-rng";
+import { secureShuffle } from "sc-core-rng";
 import { calculateOddsForRound } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
 import { encrypt } from "../helpers/crypto-helper";

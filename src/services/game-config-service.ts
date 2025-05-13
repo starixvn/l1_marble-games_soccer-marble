@@ -2,9 +2,9 @@ import { AppContainer, GameConfig, GameSettings } from "../types";
 import { GameConfigModel } from "../models";
 import { logger } from "sc-common";
 export class GameConfigService {
-  private gameConfigRepository: typeof GameConfigModel;
-  private gameSettings: GameSettings;
-  private logService: typeof logger;
+  private readonly gameConfigRepository: typeof GameConfigModel;
+  private readonly gameSettings: GameSettings;
+  private readonly logService: typeof logger;
 
   constructor(container: AppContainer) {
     this.gameConfigRepository = container.gameConfigRepository;
@@ -13,13 +13,13 @@ export class GameConfigService {
   }
 
   async getGameConfig(): Promise<GameConfig | null> {
-    return await this.gameConfigRepository.findOne({ gameId: this.gameSettings.gameId });
+    return this.gameConfigRepository.findOne({ gameId: this.gameSettings.gameId }).lean().exec();
   }
 
   async setGameEnabled(enabled: boolean): Promise<GameConfig | null> {
     this.logService.log(`Game Configs: set game enabled to ${enabled}`, "info");
 
-    return await this.gameConfigRepository.findOneAndUpdate(
+    return this.gameConfigRepository.findOneAndUpdate(
       { gameId: this.gameSettings.gameId },
       { enabled },
       { new: true, upsert: true }

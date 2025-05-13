@@ -35,7 +35,7 @@ export class EventService {
       scheduleStartTs: startTime,
     };
 
-    return await this.eventRepository.create(event);
+    return this.eventRepository.create(event);
   }
 
   private async createNewEventDetails(eventId: number, startTime: Date): Promise<IEventDetail[]> {
@@ -83,7 +83,7 @@ export class EventService {
   }
 
   async fetchAllUpcomingEvents() {
-    return await this.eventRepository
+    return this.eventRepository
       .find({ gameId: this.gameSettings.gameId, scheduleStartTs: { $gt: new Date() } }, "eventID")
       .lean()
       .exec();
