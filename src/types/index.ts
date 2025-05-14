@@ -127,11 +127,11 @@ export type GameRunningRound = {
   roundTime: number;
   homeTeam: string;
   awayTeam: string;
-  matchConfig?: MatchConfigType;
-  selections?: Record<string, Selection>[];
-  odds?: Record<string, number>[];
-  result?: RoundResultType;
-  settlementResult?: RoundSettlementResultType;
+  matchConfig: MatchConfigType;
+  selections: Record<string, Selection>[];
+  odds: Record<string, number>[];
+  result: RoundResultType;
+  settlementResult: RoundSettlementResultType;
   eventID: number;
   gameId: number;
   ended: boolean;
