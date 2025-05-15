@@ -11,7 +11,8 @@ import { RoundService } from "./services/round-service";
 import { EventService } from "./services/event-service";
 import { GameConfigService } from "./services/game-config-service";
 import { GameStateManager } from "./crons/game-state-manager";
-import { TimelineProcessor } from "./crons/timeline-processor-service";
+import { TimelineProcessor } from "./crons/timeline-processor";
+import { RoundScheduler } from "./crons/round-scheduler";
 
 export class ContainerRegistry {
   container: AwilixContainer<AppContainer>;
@@ -63,6 +64,7 @@ export class ContainerRegistry {
       gameCron: asClass(GameCron).singleton(),
       gameStateManager: asClass(GameStateManager).singleton(),
       timelineProcessor: asClass(TimelineProcessor).singleton(),
+      roundScheduler: asClass(RoundScheduler).singleton(),
     });
   }
 }

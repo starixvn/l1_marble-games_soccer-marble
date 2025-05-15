@@ -49,11 +49,11 @@ export class GameStateManager {
     return this.enabled && this.upcomingRounds.length === 0;
   }
 
-  shouldAdvanceRound() {
+  shouldAdvanceRoundTime() {
     return this.enabled || this.upcomingRounds.length > 0 || !this.round.ended;
   }
 
-  advanceRound() {
+  advanceRoundTime() {
     this.round.roundTime++;
   }
 
@@ -81,11 +81,13 @@ export class GameStateManager {
       return;
     }
 
-    const newRound = await this.roundService.fetchRoundData(nextRoundId);
-    const event = await this.eventService.fetchEvent(newRound.eventID);
-    const eventDetails = await Promise.all(event.eventDetails.map((id) => this.eventService.fetchEventDetail(id)));
+    await this.loadNewRoundFromRoundId(nextRoundId);
+    await this.loadNewEventDetailsFromEventId(this.round.eventID);
+  }
 
-    this.eventDetails = eventDetails;
+  private async loadNewRoundFromRoundId(roundId: number) {
+    const newRound = await this.roundService.fetchRoundData(roundId);
+
     this.round = {
       ...newRound,
       roundTime: 1,
@@ -93,6 +95,12 @@ export class GameStateManager {
       settlementResult: decrypt(newRound.encryptedSettlementResult),
       selections: decrypt(newRound.encryptedSelections),
     };
+  }
+
+  private async loadNewEventDetailsFromEventId(eventId: number) {
+    const event = await this.eventService.fetchEvent(eventId);
+
+    this.eventDetails = await Promise.all(event.eventDetails.map((id) => this.eventService.fetchEventDetail(id)));
   }
 
   async endCurrentRound() {
@@ -122,13 +130,13 @@ export class GameStateManager {
     await this.eventService.updateEventDetail(firstEventDetail, ["selections", "oddsAvailableTs"]);
   }
 
-  async updateOddsForDraw(drawIndex: number) {
+  async handleOddsAvailableForDraw(drawIndex: number) {
     const eventDetail = this.eventDetails[drawIndex];
     eventDetail.selections = Object.values(this.round.selections[drawIndex]);
     await this.eventService.updateEventDetail(eventDetail, ["selections"]);
   }
 
-  async updateVideoInfoForDraw(drawIndex: number) {
+  async handleVideoInfoAvailableForDraw(drawIndex: number) {
     const eventDetail = this.eventDetails[drawIndex];
     eventDetail.playlist = this.round.result.drawResults[drawIndex].playlist;
     eventDetail.goalInfo = this.round.result.drawResults[drawIndex].goalInfo;
@@ -136,7 +144,7 @@ export class GameStateManager {
     await this.eventService.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
   }
 
-  async updateResultForDraw(drawIndex: number) {
+  async handleResultAvailableForDraw(drawIndex: number) {
     const eventDetail = this.eventDetails[drawIndex];
     eventDetail.hasResults = true;
     eventDetail.result = this.round.result.drawResults[drawIndex].result;
@@ -154,7 +162,7 @@ export class GameStateManager {
     );
   }
 
-  async settleRound() {
+  async handleRoundSettle() {
     await this.updateSettlementResult();
     await this.endCurrentRound();
   }
