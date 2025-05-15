@@ -1,25 +1,26 @@
 import cron from "cron";
-import { AppContainer, GameSettings, Timeline } from "../types";
+import { AppContainer, GameSettings } from "../types";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { logger } from "sc-common";
 import { GameStateManager } from "./game-state-manager";
+import { TimelineProcessor } from "./timeline-processor-service";
 
 export class GameCron {
   private readonly roundService: RoundService;
   private readonly eventService: EventService;
   private readonly gameSettings: GameSettings;
   private readonly logService: typeof logger;
-
   private readonly gameStateManager: GameStateManager;
+  private readonly timelineProcessor: TimelineProcessor;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
     this.logService = container.logService;
     this.roundService = container.roundService;
     this.eventService = container.eventService;
-
-    this.gameStateManager = new GameStateManager(container);
+    this.gameStateManager = container.gameStateManager;
+    this.timelineProcessor = container.timelineProcessor;
   }
 
   async initRoundId() {
@@ -43,8 +44,8 @@ export class GameCron {
   async scheduleUpcomingEvents() {
     const upcomingEvents = this.gameSettings.upcomingEvents;
 
-    for (let i = 1; i < upcomingEvents; i++) {
-      await this.gameStateManager.createUpcomingRoundAndEvent(i);
+    for (let offset = 1; offset < upcomingEvents; offset++) {
+      await this.gameStateManager.createUpcomingRoundAndEvent(offset);
     }
   }
 
@@ -73,10 +74,8 @@ export class GameCron {
 
   async proceed() {
     const gameState = this.gameStateManager;
-    const { timelines } = this.gameSettings.gameTiming;
-    const currentRoundTime = gameState.getCurrentRoundTime();
 
-    if (gameState.isBeforeStartNewRound()) {
+    if (gameState.isPreRoundPhase()) {
       await gameState.setGameEnabled();
     }
 
@@ -97,26 +96,7 @@ export class GameCron {
       await gameState.endCurrentRound();
     }
 
-    await this.processTimelines(timelines, currentRoundTime, gameState);
-  }
-
-  async processTimelines(timelines: Timeline[], currentRoundTime: number, gameState: GameStateManager) {
-    for (const [drawIndex, timeline] of timelines.entries()) {
-      if (currentRoundTime === timeline.OddsAvailable && drawIndex !== 0) {
-        await gameState.updateOddsForDraw(drawIndex);
-      }
-
-      if (currentRoundTime === timeline.ScheduleStart) {
-        await gameState.updateVideoInfoForDraw(drawIndex);
-      }
-
-      if (currentRoundTime === timeline.ResultAvailable) {
-        await gameState.updateResultForDraw(drawIndex);
-      }
-
-      if (currentRoundTime === timeline.ResultAvailable && drawIndex === timelines.length - 1) {
-        await gameState.settleRound();
-      }
-    }
+    const currentRoundTime = gameState.getCurrentRoundTime();
+    await this.timelineProcessor.processTimelines(currentRoundTime);
   }
 }

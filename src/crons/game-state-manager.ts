@@ -33,7 +33,7 @@ export class GameStateManager {
     this.round.roundId = id;
   }
 
-  isBeforeStartNewRound() {
+  isPreRoundPhase() {
     return this.round.roundTime === 0;
   }
 

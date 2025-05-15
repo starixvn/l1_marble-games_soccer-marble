@@ -6,6 +6,8 @@ import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { RoundGeneratorService } from "../services/round-generator-service";
 import { GameConfigService } from "../services/game-config-service";
+import { GameStateManager } from "../crons/game-state-manager";
+import { TimelineProcessor } from "../crons/timeline-processor-service";
 
 export type RateConfig = {
   scoreRate: Record<string, number>;
@@ -91,6 +93,8 @@ export interface AppContainer {
   roundService: RoundService;
   eventService: EventService;
   gameConfigService: GameConfigService;
+  gameStateManager: GameStateManager;
+  timelineProcessor: TimelineProcessor;
 }
 
 export type GameSettings = {
