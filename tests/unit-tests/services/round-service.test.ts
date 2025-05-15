@@ -1,37 +1,14 @@
 import { RoundService } from "../../../src/services/round-service";
-import { RoundModel } from "../../../src/models";
 import { IRound } from "../../../src/models/rounds";
 import { IEventDetail } from "../../../src/models/event-details";
-import mongoose from "mongoose";
-
-jest.mock("../../../src/models/rounds", () => ({
-  __esModule: true,
-  default: {
-    findOne: jest.fn(),
-    updateOne: jest.fn(),
-  },
-}));
+import { mockContainer } from "../global-stubs";
 
 describe("RoundService", () => {
   let service: RoundService;
-  let container: any;
-  let mockRoundModel: jest.Mocked<typeof RoundModel>;
 
   beforeEach(() => {
-    // Arrange
-    mockRoundModel = RoundModel as unknown as jest.Mocked<typeof RoundModel>;
-
-    container = {
-      roundRepository: mockRoundModel,
-      gameSettings: {
-        gameId: 123,
-      },
-    };
-
-    service = new RoundService(container);
-
-    // Reset mocks
     jest.clearAllMocks();
+    service = new RoundService(mockContainer);
   });
 
   describe("initializeRoundId", () => {
@@ -40,30 +17,37 @@ describe("RoundService", () => {
       const mockRound = {
         roundId: 42,
       };
-
-      mockRoundModel.findOne = jest.fn().mockResolvedValue(mockRound);
+      (mockContainer.roundRepository.findOne as jest.Mock).mockResolvedValue(mockRound);
 
       // Act
       const result = await service.initializeRoundId();
 
       // Assert
-      expect(mockRoundModel.findOne).toHaveBeenCalledWith({ gameId: container.gameSettings.gameId }, "roundId", {
-        sort: { roundId: -1 },
-      });
+      expect(mockContainer.roundRepository.findOne).toHaveBeenCalledWith(
+        { gameId: mockContainer.gameSettings.gameId },
+        "roundId",
+        {
+          sort: { roundId: -1 },
+        }
+      );
       expect(result).toBe(42);
     });
 
     it("should return 0 when no rounds exist", async () => {
       // Arrange
-      mockRoundModel.findOne = jest.fn().mockResolvedValue(null);
+      (mockContainer.roundRepository.findOne as jest.Mock).mockResolvedValue(null);
 
       // Act
       const result = await service.initializeRoundId();
 
       // Assert
-      expect(mockRoundModel.findOne).toHaveBeenCalledWith({ gameId: container.gameSettings.gameId }, "roundId", {
-        sort: { roundId: -1 },
-      });
+      expect(mockContainer.roundRepository.findOne).toHaveBeenCalledWith(
+        { gameId: mockContainer.gameSettings.gameId },
+        "roundId",
+        {
+          sort: { roundId: -1 },
+        }
+      );
       expect(result).toBe(0);
     });
   });
@@ -74,24 +58,22 @@ describe("RoundService", () => {
       const roundId = 42;
       const mockRound: Partial<IRound> = {
         roundId,
-        gameId: container.gameSettings.gameId,
+        gameId: mockContainer.gameSettings.gameId,
         eventID: 123,
       };
 
-      const mockLean = jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue(mockRound),
-      });
-
-      mockRoundModel.findOne = jest.fn().mockReturnValue({
-        lean: mockLean,
+      (mockContainer.roundRepository.findOne as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockRound),
+        }),
       });
 
       // Act
       const result = await service.fetchLastRound(roundId);
 
       // Assert
-      expect(mockRoundModel.findOne).toHaveBeenCalledWith({
-        gameId: container.gameSettings.gameId,
+      expect(mockContainer.roundRepository.findOne).toHaveBeenCalledWith({
+        gameId: mockContainer.gameSettings.gameId,
         roundId,
       });
       expect(result).toEqual(mockRound);
@@ -100,21 +82,18 @@ describe("RoundService", () => {
     it("should return null when no round found", async () => {
       // Arrange
       const roundId = 42;
-
-      const mockLean = jest.fn().mockReturnValue({
-        exec: jest.fn().mockResolvedValue(null),
-      });
-
-      mockRoundModel.findOne = jest.fn().mockReturnValue({
-        lean: mockLean,
+      (mockContainer.roundRepository.findOne as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(null),
+        }),
       });
 
       // Act
       const result = await service.fetchLastRound(roundId);
 
       // Assert
-      expect(mockRoundModel.findOne).toHaveBeenCalledWith({
-        gameId: container.gameSettings.gameId,
+      expect(mockContainer.roundRepository.findOne).toHaveBeenCalledWith({
+        gameId: mockContainer.gameSettings.gameId,
         roundId,
       });
       expect(result).toBeNull();
@@ -125,14 +104,14 @@ describe("RoundService", () => {
     it("should update round as ended", async () => {
       // Arrange
       const roundId = 42;
-      mockRoundModel.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
+      (mockContainer.roundRepository.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
       // Act
       await service.markRoundAsEnded(roundId);
 
       // Assert
-      expect(mockRoundModel.updateOne).toHaveBeenCalledWith(
-        { roundId, gameId: container.gameSettings.gameId },
+      expect(mockContainer.roundRepository.updateOne).toHaveBeenCalledWith(
+        { roundId, gameId: mockContainer.gameSettings.gameId },
         { $set: { ended: true } }
       );
     });
@@ -142,21 +121,20 @@ describe("RoundService", () => {
     it("should upsert a round", async () => {
       // Arrange
       const round: Partial<IRound> = {
-        _id: new mongoose.Types.ObjectId() as any,
         roundId: 42,
-        gameId: container.gameSettings.gameId,
+        gameId: mockContainer.gameSettings.gameId,
         eventID: 123,
         ended: false,
       };
 
-      mockRoundModel.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
+      (mockContainer.roundRepository.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
       // Act
       await service.insertOrUpdateRound(round as IRound);
 
       // Assert
-      expect(mockRoundModel.updateOne).toHaveBeenCalledWith(
-        { roundId: round.roundId, gameId: container.gameSettings.gameId },
+      expect(mockContainer.roundRepository.updateOne).toHaveBeenCalledWith(
+        { roundId: round.roundId, gameId: mockContainer.gameSettings.gameId },
         { $set: round },
         { upsert: true }
       );
@@ -178,16 +156,84 @@ describe("RoundService", () => {
         },
       ];
 
-      mockRoundModel.updateOne = jest.fn().mockResolvedValue({ modifiedCount: 1 });
+      (mockContainer.roundRepository.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
       // Act
       await service.updateRoundEventDetailResult(roundId, eventDetails as IEventDetail[]);
 
       // Assert
-      expect(mockRoundModel.updateOne).toHaveBeenCalledWith(
-        { roundId, gameId: container.gameSettings.gameId },
+      expect(mockContainer.roundRepository.updateOne).toHaveBeenCalledWith(
+        { roundId, gameId: mockContainer.gameSettings.gameId },
         { $set: { eventDetails } }
       );
+    });
+  });
+
+  describe("fetchAllUnfinishedRounds", () => {
+    it("should fetch all unfinished rounds", async () => {
+      // Arrange
+      const mockRounds = [
+        { roundId: 1, ended: false },
+        { roundId: 2, ended: false },
+      ];
+
+      (mockContainer.roundRepository.find as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockRounds),
+        }),
+      });
+
+      // Act
+      const result = await service.fetchAllUnfinishedRounds();
+
+      // Assert
+      expect(mockContainer.roundRepository.find).toHaveBeenCalledWith({
+        gameId: mockContainer.gameSettings.gameId,
+        ended: false,
+      });
+      expect(result).toEqual(mockRounds);
+    });
+  });
+
+  describe("fetchRoundData", () => {
+    it("should fetch round data by ID", async () => {
+      // Arrange
+      const mockRound = {
+        roundId: 123,
+        eventID: 456,
+        encryptedResult: "encrypted_result",
+        encryptedSettlementResult: "encrypted_settlement",
+        encryptedSelections: "encrypted_selections",
+      };
+
+      (mockContainer.roundRepository.findOne as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(mockRound),
+        }),
+      });
+
+      // Act
+      const result = await service.fetchRoundData(123);
+
+      // Assert
+      expect(mockContainer.roundRepository.findOne).toHaveBeenCalledWith({
+        roundId: 123,
+        gameId: mockContainer.gameSettings.gameId,
+      });
+      expect(result).toEqual(mockRound);
+    });
+
+    it("should throw error if round not found", async () => {
+      // Arrange
+      (mockContainer.roundRepository.findOne as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockReturnValue({
+          exec: jest.fn().mockResolvedValue(null),
+        }),
+      });
+
+      // Act & Assert
+      await expect(service.fetchRoundData(123)).rejects.toThrow("Round not found for roundId 123");
+      expect(mockContainer.logService.logError).toHaveBeenCalled();
     });
   });
 });

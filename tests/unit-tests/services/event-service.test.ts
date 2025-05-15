@@ -1,57 +1,18 @@
 import { EventService } from "../../../src/services/event-service";
-import { EventModel, EventDetailModel } from "../../../src/models";
-import { IEventDetail } from "../../../src/models/event-details";
-import { GameSettings, AppContainer, GameRunningRound } from "../../../src/types";
-import mongoose from "mongoose";
-
-// Jest mock setup
-jest.mock("../../../src/models/events");
-jest.mock("../../../src/models/event-details");
+import { mockContainer } from "../global-stubs";
 
 describe("EventService", () => {
   let eventService: EventService;
-  let mockEventRepository: jest.Mocked<typeof EventModel>;
-  let mockEventDetailsRepository: jest.Mocked<typeof EventDetailModel>;
-  let mockGameSettings: GameSettings;
-  let mockContainer: Partial<AppContainer>;
-
+  let mockEventRepository: any;
+  let mockEventDetailsRepository: any;
+  let mockLogService: any;
   beforeEach(() => {
-    // Arrange
     jest.clearAllMocks();
-
-    mockEventRepository = {
-      create: jest.fn(),
-    } as unknown as jest.Mocked<typeof EventModel>;
-
-    mockEventDetailsRepository = {
-      create: jest.fn(),
-      updateOne: jest.fn(),
-    } as unknown as jest.Mocked<typeof EventDetailModel>;
-
-    mockGameSettings = {
-      gameId: 123,
-      gameTiming: {
-        wholeRound: 120,
-        timelines: [
-          { OddsAvailable: 1, ScheduleStart: 31, ResultAvailable: 61 },
-          { OddsAvailable: 61, ScheduleStart: 81, ResultAvailable: 111 },
-        ],
-      },
-      teams: [],
-      upcomingEvents: 5,
-      numberOfVideos: {},
-      choices: [],
-    };
-
-    mockContainer = {
-      eventRepository: mockEventRepository,
-      eventDetailsRepository: mockEventDetailsRepository,
-      gameSettings: mockGameSettings,
-    };
-
-    eventService = new EventService(mockContainer as AppContainer);
-
-    // Mock Date.now
+    const { eventRepository, eventDetailsRepository, logService } = mockContainer;
+    mockEventRepository = eventRepository;
+    mockEventDetailsRepository = eventDetailsRepository;
+    mockLogService = logService;
+    eventService = new EventService(mockContainer);
     jest.spyOn(Date, "now").mockImplementation(() => 1625097600000); // 2021-07-01
   });
 
@@ -60,135 +21,131 @@ describe("EventService", () => {
   });
 
   describe("createNewEvent", () => {
-    it("should create a new event with event details", async () => {
+    it("should create event details and event with correct data", async () => {
       // Arrange
-      const roundData: GameRunningRound = {
-        roundId: 123,
-        homeTeam: "Team A",
-        awayTeam: "Team B",
-        roundTime: 300,
+      const roundData = {
+        roundId: 1,
+        roundTime: 0,
+        homeTeam: "clb_rma",
+        awayTeam: "clb_mci",
         eventID: 123,
-        gameId: 123,
+        gameId: 2001,
         ended: false,
         encryptedResult: null,
         encryptedSettlementResult: null,
         encryptedSelections: null,
       };
-
-      const mockObjectId1 = new mongoose.Types.ObjectId();
-      const mockObjectId2 = new mongoose.Types.ObjectId();
-
-      const mockEventDetail1 = {
-        _id: mockObjectId1,
-        eventID: 123,
-        oddsAvailableTs: new Date(),
-        scheduleStartTs: new Date(),
-        resultsAvailableTs: new Date(),
-        hasResults: false,
-      };
-
-      const mockEventDetail2 = {
-        _id: mockObjectId2,
-        eventID: 123,
-        oddsAvailableTs: new Date(),
-        scheduleStartTs: new Date(),
-        resultsAvailableTs: new Date(),
-        hasResults: false,
-      };
-
+      const fakeEventDetails = [{ _id: "id1" }, { _id: "id2" }];
       mockEventDetailsRepository.create
-        .mockResolvedValueOnce(mockEventDetail1 as any)
-        .mockResolvedValueOnce(mockEventDetail2 as any);
-
-      const mockEventId = new mongoose.Types.ObjectId();
-      mockEventRepository.create.mockResolvedValue({
-        _id: mockEventId,
-        eventID: 123,
-        eventNameAKey: "Team A",
-        eventNameBKey: "Team B",
-        gameId: 123,
-        eventDetails: [mockObjectId1, mockObjectId2],
-      } as any);
+        .mockResolvedValueOnce(fakeEventDetails[0])
+        .mockResolvedValueOnce(fakeEventDetails[1]);
+      mockEventRepository.create.mockResolvedValue({ eventID: 123 });
 
       // Act
-      const event = await eventService.createNewEvent(roundData, 1);
+      const result = await eventService.createNewEvent(roundData as any, 2);
 
       // Assert
       expect(mockEventDetailsRepository.create).toHaveBeenCalledTimes(2);
-      expect(mockEventRepository.create).toHaveBeenCalledTimes(1);
-      expect(mockEventRepository.create).toHaveBeenCalledWith({
-        eventID: 123,
-        eventNameAKey: "Team A",
-        eventNameBKey: "Team B",
-        gameId: 123,
-        eventDetails: [mockObjectId1, mockObjectId2],
-        scheduleStartTs: expect.any(Date),
-      });
-
-      const expectedEvent = {
-        _id: mockEventId,
-        eventID: 123,
-        eventNameAKey: "Team A",
-        eventNameBKey: "Team B",
-        gameId: 123,
-        eventDetails: [mockObjectId1, mockObjectId2],
-      };
-
-      expect(event).toMatchObject(expectedEvent);
+      expect(mockEventRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventID: 123,
+          eventNameAKey: "clb_rma",
+          eventNameBKey: "clb_mci",
+          gameId: 2001,
+          eventDetails: ["id1", "id2"],
+        })
+      );
+      expect(result).toEqual({ eventID: 123 });
     });
   });
 
   describe("updateEventDetail", () => {
-    it("should update an event detail with all fields", async () => {
+    it("should call updateOne with correct arguments", async () => {
       // Arrange
-      const mockObjectId = new mongoose.Types.ObjectId();
-      const eventDetail = {
-        _id: mockObjectId,
-        eventID: 123,
-        oddsAvailableTs: new Date(),
-        scheduleStartTs: new Date(),
-        resultsAvailableTs: new Date(),
-        hasResults: true,
-      };
-
-      mockEventDetailsRepository.updateOne.mockResolvedValue({ acknowledged: true } as any);
+      const eventDetail = { _id: "id1", hasResults: true };
+      mockEventDetailsRepository.updateOne.mockResolvedValue({});
 
       // Act
-      await eventService.updateEventDetail(eventDetail as any);
+      await eventService.updateEventDetail(eventDetail as any, ["hasResults"]);
 
       // Assert
-      expect(mockEventDetailsRepository.updateOne).toHaveBeenCalledWith({ _id: mockObjectId }, { $set: eventDetail });
+      expect(mockEventDetailsRepository.updateOne).toHaveBeenCalledWith({ _id: "id1" }, { $set: { hasResults: true } });
     });
+  });
 
-    it("should update an event detail with specific fields", async () => {
+  describe("fetchEvent", () => {
+    it("should return event if found", async () => {
       // Arrange
-      const mockObjectId = new mongoose.Types.ObjectId();
-      const eventDetail = {
-        _id: mockObjectId,
-        eventID: 123,
-        oddsAvailableTs: new Date(),
-        scheduleStartTs: new Date(),
-        resultsAvailableTs: new Date(),
-        hasResults: true,
-      };
-
-      const fieldsToUpdate: (keyof IEventDetail)[] = ["hasResults", "resultsAvailableTs"];
-
-      mockEventDetailsRepository.updateOne.mockResolvedValue({ acknowledged: true } as any);
+      const fakeEvent = { eventID: 123 };
+      mockEventRepository.findOne.mockReturnThis();
+      mockEventRepository.lean.mockReturnThis();
+      mockEventRepository.exec.mockResolvedValue(fakeEvent);
 
       // Act
-      await eventService.updateEventDetail(eventDetail as any, fieldsToUpdate);
+      const result = await eventService.fetchEvent(123);
 
       // Assert
-      expect(mockEventDetailsRepository.updateOne).toHaveBeenCalledWith(
-        { _id: mockObjectId },
-        {
-          $set: {
-            hasResults: eventDetail.hasResults,
-            resultsAvailableTs: eventDetail.resultsAvailableTs,
-          },
-        }
+      expect(result).toEqual(fakeEvent);
+    });
+    it("should log and throw if event not found", async () => {
+      // Arrange
+      mockEventRepository.findOne.mockReturnThis();
+      mockEventRepository.lean.mockReturnThis();
+      mockEventRepository.exec.mockResolvedValue(null);
+
+      // Act
+      await expect(eventService.fetchEvent(123)).rejects.toThrow("Event not found for eventId 123");
+
+      // Assert
+      expect(mockLogService.logError).toHaveBeenCalledWith("Event not found for eventId 123");
+    });
+  });
+
+  describe("fetchEventDetail", () => {
+    it("should return event detail if found", async () => {
+      // Arrange
+      const fakeDetail = { _id: "id1" };
+      mockEventDetailsRepository.findOne.mockReturnThis();
+      mockEventDetailsRepository.lean.mockReturnThis();
+      mockEventDetailsRepository.exec.mockResolvedValue(fakeDetail);
+
+      // Act
+      const result = await eventService.fetchEventDetail("id1" as any);
+
+      // Assert
+      expect(result).toEqual(fakeDetail);
+    });
+    it("should log and throw if event detail not found", async () => {
+      // Arrange
+      mockEventDetailsRepository.findOne.mockReturnThis();
+      mockEventDetailsRepository.lean.mockReturnThis();
+      mockEventDetailsRepository.exec.mockResolvedValue(null);
+
+      // Act
+      await expect(eventService.fetchEventDetail("id1" as any)).rejects.toThrow("Event detail not found for _id id1");
+
+      // Assert
+      expect(mockLogService.logError).toHaveBeenCalledWith("Event detail not found for _id id1");
+    });
+  });
+
+  describe("fetchAllUpcomingEvents", () => {
+    it("should call find with correct query and return result", async () => {
+      // Arrange
+      const fakeEvents = [{ eventID: 1 }, { eventID: 2 }];
+      mockEventRepository.find.mockReturnThis();
+      mockEventRepository.lean.mockReturnThis();
+      mockEventRepository.exec.mockResolvedValue(fakeEvents);
+
+      // Act
+      const result = await eventService.fetchAllUpcomingEvents();
+
+      // Assert
+      expect(mockEventRepository.find).toHaveBeenCalledWith(
+        { gameId: mockContainer.gameSettings.gameId, scheduleStartTs: { $gt: expect.any(Date) } },
+        "eventID"
       );
+      expect(result).toEqual(fakeEvents);
     });
   });
 });

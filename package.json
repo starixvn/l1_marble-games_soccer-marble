@@ -52,7 +52,9 @@
     "@types/mongoose": "^5.11.96",
     "@types/sc-common": "^1.0.0",
     "jest": "^29.7.0",
+    "jest-auto-stub": "^1.0.8",
     "jest-junit": "^16.0.0",
+    "jest-micro-auto-stub": "^1.0.9",
     "jest-sonar-reporter": "^2.0.0",
     "ts-jest": "^29.3.2"
   }

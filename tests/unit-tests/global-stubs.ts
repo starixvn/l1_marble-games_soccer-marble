@@ -1,0 +1,157 @@
+import { logger } from "sc-common";
+import { AppContainer, GameConfig, GameSettings } from "../../src/types";
+import { stub } from "jest-auto-stub";
+import { GameConfigService } from "../../src/services/game-config-service";
+import { EventService } from "../../src/services/event-service";
+import { RoundService } from "../../src/services/round-service";
+import { RoundGeneratorService } from "../../src/services/round-generator-service";
+import { GameCron } from "../../src/crons/game-cron";
+import { rateConfigs } from "../../src/rate-config";
+import { IEvent } from "../../src/models/events";
+import mongoose from "mongoose";
+import { IEventDetail } from "../../src/models/event-details";
+import { IRound } from "../../src/models/rounds";
+import { GameStateManager } from "../../src/crons/game-state-manager";
+import { TimelineProcessor } from "../../src/crons/timeline-processor";
+import { RoundScheduler } from "../../src/crons/round-scheduler";
+const mockLogService: typeof logger = {
+  log: jest.fn(),
+  logError: jest.fn(),
+  logInfo: jest.fn(),
+  logWarning: jest.fn(),
+} as unknown as typeof logger;
+const gameSettings: GameSettings = {
+  gameId: 2001,
+  upcomingEvents: 3,
+  gameTiming: {
+    timelines: [
+      { OddsAvailable: 10, ScheduleStart: 20, ResultAvailable: 30 },
+      { OddsAvailable: 40, ScheduleStart: 50, ResultAvailable: 60 },
+    ],
+    wholeRound: 60,
+  },
+  teams: [
+    "clb_rma",
+    "clb_mci",
+    "clb_fcb",
+    "clb_psg",
+    "clb_che",
+    "clb_int",
+    "clb_juv",
+    "clb_atm",
+    "clb_bvb",
+    "clb_ben",
+    "clb_por",
+    "clb_fla",
+    "clb_riv",
+    "clb_pal",
+    "clb_boj",
+    "clb_mon",
+  ],
+  numberOfVideos: {
+    AAAA: 2,
+    AAAH: 6,
+    AAA: 2,
+    AAHA: 2,
+    AAHH: 2,
+    AAH: 2,
+    AA: 2,
+    AHAA: 3,
+    AHAH: 3,
+    AHA: 2,
+    AHHA: 4,
+    AHHH: 5,
+    AHH: 2,
+    AH: 15,
+    A: 15,
+    HAAA: 2,
+    HAAH: 2,
+    HAA: 11,
+    HAHA: 2,
+    HAHH: 2,
+    HAH: 12,
+    HA: 2,
+    HHAA: 2,
+    HHAH: 3,
+    HHA: 8,
+    HHHA: 2,
+    HHHH: 2,
+    HHH: 2,
+    HH: 4,
+    H: 19,
+  },
+  choices: [],
+};
+const mockGameCron = stub<GameCron>();
+const mockRoundGeneratorService = stub<RoundGeneratorService>();
+const mockRoundService = stub<RoundService>();
+const mockEventService = stub<EventService>();
+const mockGameConfigService = stub<GameConfigService>();
+
+const mockEventRepository = {
+  create: jest.fn(),
+  find: jest.fn().mockReturnThis(),
+  findOne: jest.fn().mockReturnThis(),
+  findOneAndUpdate: jest.fn().mockReturnThis(),
+  updateOne: jest.fn().mockReturnThis(),
+  lean: jest.fn().mockReturnThis(),
+  exec: jest.fn(),
+} as unknown as mongoose.Model<IEvent>;
+
+const mockEventDetailsRepository = {
+  create: jest.fn(),
+  find: jest.fn().mockReturnThis(),
+  findOne: jest.fn().mockReturnThis(),
+  findOneAndUpdate: jest.fn().mockReturnThis(),
+  updateOne: jest.fn().mockReturnThis(),
+  lean: jest.fn().mockReturnThis(),
+  exec: jest.fn(),
+} as unknown as mongoose.Model<IEventDetail>;
+
+const mockGameConfigRepository = {
+  create: jest.fn(),
+  find: jest.fn().mockReturnThis(),
+  findOne: jest.fn().mockReturnThis(),
+  findOneAndUpdate: jest.fn().mockReturnThis(),
+  updateOne: jest.fn().mockReturnThis(),
+  lean: jest.fn().mockReturnThis(),
+  exec: jest.fn(),
+} as unknown as mongoose.Model<GameConfig>;
+
+const mockRoundRepository = {
+  create: jest.fn(),
+  find: jest.fn().mockReturnThis(),
+  findOne: jest.fn().mockReturnThis(),
+  findOneAndUpdate: jest.fn().mockReturnThis(),
+  updateOne: jest.fn().mockReturnThis(),
+  lean: jest.fn().mockReturnThis(),
+  exec: jest.fn(),
+} as unknown as mongoose.Model<IRound>;
+
+const mockGameStateManager = stub<GameStateManager>();
+const mockTimelineProcessor = stub<TimelineProcessor>();
+const mockRoundScheduler = stub<RoundScheduler>();
+
+const mockContainer: AppContainer = {
+  gameSettings,
+  appConfigs: {} as any,
+  rateConfigs: rateConfigs,
+
+  gameCron: mockGameCron,
+  gameStateManager: mockGameStateManager,
+  timelineProcessor: mockTimelineProcessor,
+  roundScheduler: mockRoundScheduler,
+
+  logService: mockLogService,
+  roundGeneratorService: mockRoundGeneratorService,
+  roundService: mockRoundService,
+  eventService: mockEventService,
+  gameConfigService: mockGameConfigService,
+
+  eventDetailsRepository: mockEventDetailsRepository,
+  eventRepository: mockEventRepository,
+  gameConfigRepository: mockGameConfigRepository,
+  roundRepository: mockRoundRepository,
+};
+
+export { mockContainer };
