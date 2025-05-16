@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 import RoundModel from "../../../src/models/rounds";
-
+import { mongoDbConnectionUrl } from "../global-stubs";
 describe("Round Model", () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI || "mongodb://0.0.0.0:27017/test");
+    await mongoose.connect(mongoDbConnectionUrl);
   });
 
   afterAll(async () => {

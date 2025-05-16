@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 import GameConfigModel from "../../../src/models/game-configs";
+import { mongoDbConnectionUrl } from "../global-stubs";
 
 describe("Game Config Model", () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI || "mongodb://0.0.0.0:27017/test");
+    await mongoose.connect(mongoDbConnectionUrl);
   });
 
   afterAll(async () => {

@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import EventDetailModel from "../../../src/models/event-details";
 import { SettlementStatus } from "../../../src/types";
-
+import { mongoDbConnectionUrl } from "../global-stubs";
 describe("Event Detail Model", () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI || "mongodb://0.0.0.0:27017/test");
+    await mongoose.connect(mongoDbConnectionUrl);
   });
 
   afterAll(async () => {
