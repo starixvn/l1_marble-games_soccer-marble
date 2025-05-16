@@ -27,14 +27,30 @@ export const calculateFullTimeScoreRates = (firstHalf: RateConfig, secondHalf: R
   return fulltimeScoreRates;
 };
 
-export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, number>) => {
+const calculateAverageScore = (scoreRates: Record<string, number>) => {
   const totalRates = Object.values(scoreRates).reduce((sum, rate) => sum + rate, 0);
 
   let homeScore = 0,
-    awayScore = 0,
-    hdp_home = 0,
-    hdp_away = 0,
-    hdp_draw = 0,
+    awayScore = 0;
+
+  for (const [score, rate] of Object.entries(scoreRates)) {
+    const [homeGoals, awayGoals] = parseScore(score);
+    homeScore += homeGoals * rate;
+    awayScore += awayGoals * rate;
+  }
+
+  homeScore = roundToPrecision(homeScore / totalRates, 100);
+  awayScore = roundToPrecision(awayScore / totalRates, 100);
+
+  return { homeScore, awayScore };
+};
+
+export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, number>) => {
+  const totalRates = Object.values(scoreRates).reduce((sum, rate) => sum + rate, 0);
+
+  let hdpHome = 0,
+    hdpAway = 0,
+    hdpDraw = 0,
     home = 0,
     away = 0,
     draw = 0,
@@ -43,10 +59,13 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
     odd = 0,
     even = 0;
 
+  const { homeScore, awayScore } = calculateAverageScore(scoreRates);
+  const handicapValue = calculateHandicapValue(homeScore, awayScore);
+  const overUnderValue = calculateOverUnderValue(homeScore, awayScore);
+
   for (const [score, rate] of Object.entries(scoreRates)) {
     const [homeGoals, awayGoals] = parseScore(score);
-    homeScore += homeGoals * rate;
-    awayScore += awayGoals * rate;
+    const totalGoals = homeGoals + awayGoals;
 
     if (homeGoals > awayGoals) {
       home += rate;
@@ -55,25 +74,13 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
     } else {
       draw += rate;
     }
-  }
-
-  homeScore = roundToPrecision(homeScore / totalRates, 100);
-  awayScore = roundToPrecision(awayScore / totalRates, 100);
-
-  const handicapValue = calculateHandicapValue(homeScore, awayScore);
-
-  const overUnderValue = calculateOverUnderValue(homeScore, awayScore);
-
-  for (const [score, rate] of Object.entries(scoreRates)) {
-    const [homeGoals, awayGoals] = parseScore(score);
-    const totalGoals = homeGoals + awayGoals;
 
     if (homeGoals + handicapValue > awayGoals) {
-      hdp_home += rate;
+      hdpHome += rate;
     } else if (homeGoals + handicapValue < awayGoals) {
-      hdp_away += rate;
+      hdpAway += rate;
     } else {
-      hdp_draw += rate;
+      hdpDraw += rate;
     }
 
     if (totalGoals > overUnderValue) {
@@ -91,9 +98,9 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
 
   return {
     probabilities: {
-      hdp_home: hdp_home / totalRates,
-      hdp_away: hdp_away / totalRates,
-      hdp_draw: hdp_draw / totalRates,
+      hdp_home: hdpHome / totalRates,
+      hdp_away: hdpAway / totalRates,
+      hdp_draw: hdpDraw / totalRates,
       home: home / totalRates,
       away: away / totalRates,
       draw: draw / totalRates,
@@ -152,7 +159,7 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
   const fulltime = calculateFulltimeOdds({
     firstHalf: matchConfig.firstHalf,
     secondHalf: matchConfig.secondHalf,
-  });
+  } as MatchConfigType);
 
   const firstHalf = calculateHalfOdds(matchConfig.firstHalf);
 

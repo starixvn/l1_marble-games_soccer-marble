@@ -92,7 +92,7 @@ describe("OddsHelper Tests", () => {
             "0-4": 0.0118,
           },
         },
-      };
+      } as any;
 
       const firstHalfScore = "HH";
 
@@ -441,7 +441,7 @@ describe("OddsHelper Tests", () => {
             "0-1": 0.5,
           },
         },
-      };
+      } as any;
 
       const result = calculateFulltimeOdds(matchConfig);
 

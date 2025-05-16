@@ -43,18 +43,18 @@ export const getSettlementResult = (
 
   const firstHalfSettlementResult = getSettlementResultFromResultString(
     firstHalf.goalSequence,
-    matchConfig.firstHalf.overUnderValue!,
-    matchConfig.firstHalf.handicapValue!
+    matchConfig.firstHalf.overUnderValue,
+    matchConfig.firstHalf.handicapValue
   );
   const secondHalfSettlementResult = getSettlementResultFromResultString(
     secondHalf.goalSequence,
-    matchConfig.secondHalf.overUnderValue!,
-    matchConfig.secondHalf.handicapValue!
+    matchConfig.secondHalf.overUnderValue,
+    matchConfig.secondHalf.handicapValue
   );
   const fullTimeSettlementResult = getSettlementResultFromResultString(
     firstHalf.goalSequence + secondHalf.goalSequence,
-    matchConfig.overUnderValue!,
-    matchConfig.handicapValue!
+    matchConfig.overUnderValue,
+    matchConfig.handicapValue
   );
 
   const finalFirstHalfSettlementResult = {
@@ -97,28 +97,29 @@ export const getSettlementResult = (
   return [finalFirstHalfSettlementResult, finalSecondHalfSettlementResult];
 };
 
+const getHandicapResult = (isHome: boolean, homeGoals: number, awayGoals: number, handicapValue: number) => {
+  const adjustedHomeGoals = homeGoals + handicapValue;
+
+  if (adjustedHomeGoals === awayGoals) {
+    return SettlementStatus.DRAW;
+  }
+
+  const isWin = isHome ? adjustedHomeGoals > awayGoals : adjustedHomeGoals < awayGoals;
+
+  return isWin ? SettlementStatus.WIN : SettlementStatus.LOSE;
+};
+
 const getSettlementResultFromResultString = (resultString: string, overUnderValue: number, handicapValue: number) => {
   const homeGoals = resultString.split("H").length - 1;
   const awayGoals = resultString.split("A").length - 1;
 
   const isOver = homeGoals + awayGoals > overUnderValue;
   const isUnder = homeGoals + awayGoals < overUnderValue;
-
   const isOdd = (homeGoals + awayGoals) % 2 === 1;
 
   return {
-    handicapHome:
-      homeGoals + handicapValue === awayGoals
-        ? SettlementStatus.DRAW
-        : homeGoals + handicapValue > awayGoals
-        ? SettlementStatus.WIN
-        : SettlementStatus.LOSE,
-    handicapAway:
-      homeGoals + handicapValue === awayGoals
-        ? SettlementStatus.DRAW
-        : homeGoals + handicapValue < awayGoals
-        ? SettlementStatus.WIN
-        : SettlementStatus.LOSE,
+    handicapHome: getHandicapResult(true, homeGoals, awayGoals, handicapValue),
+    handicapAway: getHandicapResult(false, homeGoals, awayGoals, handicapValue),
     home: homeGoals > awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
     away: awayGoals > homeGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
     draw: homeGoals === awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,

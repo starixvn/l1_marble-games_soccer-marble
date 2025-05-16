@@ -1,7 +1,7 @@
 import * as rngModule from "sc-core-rng";
 import * as oddsHelper from "../../../src/helpers/odds-helper";
 import * as resultHelper from "../../../src/helpers/result-helper";
-import { MatchConfigType, RoundResultType, SettlementStatus } from "../../../src/types";
+import { HalfConfigType, MatchConfigType, RoundResultType, SettlementStatus } from "../../../src/types";
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { mockContainer } from "../global-stubs";
 import { idHelper } from "../../../src/helpers";
@@ -148,7 +148,7 @@ describe("RoundGeneratorService", () => {
       ];
 
       jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
-      jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig);
+      jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
       jest.spyOn(service, "generateResult").mockReturnValue(mockResult);
       jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult);
       jest.spyOn(service, "getSettlementResult").mockReturnValue(mockSettlementResult);
@@ -179,10 +179,10 @@ describe("RoundGeneratorService", () => {
   describe("generateRoundOddsAndUpdateMatchConfig", () => {
     it("should call calculateOddsForRound with correct parameters", () => {
       // Arrange
-      const matchConfig: MatchConfigType = {
-        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } },
-        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } },
-      };
+      const matchConfig = {
+        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
+        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
+      } as MatchConfigType;
       const firstHalfResult = "1-0";
 
       const expectedResult = {
@@ -219,10 +219,10 @@ describe("RoundGeneratorService", () => {
   describe("generateResult", () => {
     it("should call generateResult helper with correct parameters", () => {
       // Arrange
-      const matchConfig: MatchConfigType = {
+      const matchConfig = {
         firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } },
         secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } },
-      };
+      } as any;
       const numberOfVideos = { "1-0": 2, "0-0": 1 };
       const expectedResult: RoundResultType = {
         drawResults: [
@@ -260,10 +260,10 @@ describe("RoundGeneratorService", () => {
   describe("getSettlementResult", () => {
     it("should call getSettlementResult helper with correct parameters", () => {
       // Arrange
-      const matchConfig: MatchConfigType = {
-        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } },
-        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } },
-      };
+      const matchConfig = {
+        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
+        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
+      } as MatchConfigType;
       const result: RoundResultType = {
         drawResults: [
           {

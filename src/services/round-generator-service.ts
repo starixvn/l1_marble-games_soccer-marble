@@ -24,7 +24,7 @@ export class RoundGeneratorService {
     return {
       firstHalf: rateConfigs[0],
       secondHalf: rateConfigs[1],
-    };
+    } as MatchConfigType;
   }
 
   generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, firstHalfResult: string) {
