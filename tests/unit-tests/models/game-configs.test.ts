@@ -1,53 +1,34 @@
-import mongoose from "mongoose";
 import GameConfigModel from "../../../src/models/game-configs";
-import { mongoDbConnectionUrl } from "../global-stubs";
 
 describe("Game Config Model", () => {
-  beforeAll(async () => {
-    await mongoose.connect(mongoDbConnectionUrl);
-  });
-
-  afterAll(async () => {
-    await mongoose.connection.close();
-  });
-
-  beforeEach(async () => {
-    await GameConfigModel.deleteMany({});
-  });
-
-  it("should create a game config successfully", async () => {
+  it("should create model with default properties", () => {
     const gameConfig = new GameConfigModel({
       gameId: 1,
       enabled: true,
     });
 
-    const savedGameConfig = await gameConfig.save();
-    expect(savedGameConfig._id).toBeDefined();
-    expect(savedGameConfig.gameId).toBe(1);
-    expect(savedGameConfig.enabled).toBe(true);
+    expect(gameConfig.gameId).toBe(1);
+    expect(gameConfig.enabled).toBe(true);
   });
 
-  it("should fail to create a game config without required fields", async () => {
+  it("should verify required properties", () => {
     const gameConfig = new GameConfigModel({});
 
-    await expect(gameConfig.save()).rejects.toThrow();
+    const validationError = gameConfig.validateSync();
+    expect(validationError).toBeDefined();
+    expect(validationError?.errors).toHaveProperty("gameId");
+    expect(validationError?.errors).toHaveProperty("enabled");
   });
 
-  it("should fail to create a game config with invalid gameId type", async () => {
+  it("should verify property types", () => {
     const gameConfig = new GameConfigModel({
       gameId: "invalid",
-      enabled: true,
-    });
-
-    await expect(gameConfig.save()).rejects.toThrow();
-  });
-
-  it("should fail to create a game config with invalid enabled type", async () => {
-    const gameConfig = new GameConfigModel({
-      gameId: 1,
       enabled: "invalid",
     });
 
-    await expect(gameConfig.save()).rejects.toThrow();
+    const validationError = gameConfig.validateSync();
+    expect(validationError).toBeDefined();
+    expect(validationError?.errors).toHaveProperty("gameId");
+    expect(validationError?.errors).toHaveProperty("enabled");
   });
 });

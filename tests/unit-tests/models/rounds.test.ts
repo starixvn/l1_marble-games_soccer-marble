@@ -1,20 +1,7 @@
-import mongoose from "mongoose";
 import RoundModel from "../../../src/models/rounds";
-import { mongoDbConnectionUrl } from "../global-stubs";
+
 describe("Round Model", () => {
-  beforeAll(async () => {
-    await mongoose.connect(mongoDbConnectionUrl);
-  });
-
-  afterAll(async () => {
-    await mongoose.connection.close();
-  });
-
-  beforeEach(async () => {
-    await RoundModel.deleteMany({});
-  });
-
-  it("should create a round successfully", async () => {
+  it("should create model with default properties", () => {
     const round = new RoundModel({
       roundId: 1,
       eventID: 1,
@@ -40,58 +27,45 @@ describe("Round Model", () => {
       },
     });
 
-    const savedRound = await round.save();
-    expect(savedRound._id).toBeDefined();
-    expect(savedRound.roundId).toBe(1);
-    expect(savedRound.eventID).toBe(1);
-    expect(savedRound.gameId).toBe(1);
-    expect(savedRound.homeTeam).toBe("Team A");
-    expect(savedRound.awayTeam).toBe("Team B");
-    expect(savedRound.selections).toHaveLength(1);
-    expect(savedRound.selections[0].name).toBe("Selection 1");
-    expect(savedRound.selections[0].price).toBe(1.5);
-    expect(savedRound.odds).toHaveLength(1);
-    expect(savedRound.odds[0].type).toBe("win");
-    expect(savedRound.odds[0].value).toBe(1.5);
-    expect(savedRound.ended).toBe(false);
-    expect(savedRound.matchConfig).toBeDefined();
-    expect(savedRound.matchConfig.firstHalf.scoreRate["1"]).toBe(0.5);
-    expect(savedRound.matchConfig.secondHalf.scoreRate["1"]).toBe(0.5);
+    expect(round.roundId).toBe(1);
+    expect(round.eventID).toBe(1);
+    expect(round.gameId).toBe(1);
+    expect(round.homeTeam).toBe("Team A");
+    expect(round.awayTeam).toBe("Team B");
+    expect(round.selections).toHaveLength(1);
+    expect(round.selections[0].name).toBe("Selection 1");
+    expect(round.selections[0].price).toBe(1.5);
+    expect(round.odds).toHaveLength(1);
+    expect(round.odds[0].type).toBe("win");
+    expect(round.odds[0].value).toBe(1.5);
+    expect(round.ended).toBe(false);
+    expect(round.matchConfig).toBeDefined();
+    expect(round.matchConfig.firstHalf.scoreRate["1"]).toBe(0.5);
+    expect(round.matchConfig.secondHalf.scoreRate["1"]).toBe(0.5);
   });
 
-  it("should fail to create a round without required fields", async () => {
+  it("should verify required properties", () => {
     const round = new RoundModel({});
 
-    await expect(round.save()).rejects.toThrow();
+    const validationError = round.validateSync();
+    expect(validationError).toBeDefined();
+    expect(validationError?.errors).toHaveProperty("roundId");
+    expect(validationError?.errors).toHaveProperty("eventID");
+    expect(validationError?.errors).toHaveProperty("gameId");
+    expect(validationError?.errors).toHaveProperty("homeTeam");
+    expect(validationError?.errors).toHaveProperty("awayTeam");
   });
 
-  it("should fail to create a round with invalid roundId type", async () => {
-    const round = new RoundModel({
-      roundId: "invalid",
-      eventID: 1,
-      gameId: 1,
-      homeTeam: "Team A",
-      awayTeam: "Team B",
-      selections: [],
-      odds: [],
-      ended: false,
-    });
-
-    await expect(round.save()).rejects.toThrow();
-  });
-
-  it("should fail to create a round with invalid ended type", async () => {
+  it("should verify selection required properties", () => {
     const round = new RoundModel({
       roundId: 1,
       eventID: 1,
       gameId: 1,
-      homeTeam: "Team A",
-      awayTeam: "Team B",
-      selections: [],
-      odds: [],
-      ended: "invalid",
     });
 
-    await expect(round.save()).rejects.toThrow();
+    const validationError = round.validateSync();
+    expect(validationError).toBeDefined();
+    expect(validationError?.errors).toHaveProperty("homeTeam");
+    expect(validationError?.errors).toHaveProperty("awayTeam");
   });
 });

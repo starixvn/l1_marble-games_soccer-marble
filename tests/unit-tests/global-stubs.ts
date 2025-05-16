@@ -154,6 +154,4 @@ const mockContainer: AppContainer = {
   roundRepository: mockRoundRepository,
 };
 
-export const mongoDbConnectionUrl = "mongodb://mongo:27017/test";
-
 export { mockContainer };

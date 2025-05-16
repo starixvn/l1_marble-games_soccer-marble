@@ -1,129 +1,104 @@
 import mongoose from "mongoose";
 import EventModel, { SelectionSchema } from "../../../src/models/events";
 import { SettlementStatus } from "../../../src/types";
-import { mongoDbConnectionUrl } from "../global-stubs";
 
-describe("Event Selection Model Tests", () => {
-  beforeAll(async () => {
-    await mongoose.connect(mongoDbConnectionUrl);
+describe("Event Model", () => {
+  it("should create model with default properties", () => {
+    const event = new EventModel({
+      eventID: 1,
+      eventNameAKey: "Team A",
+      eventNameBKey: "Team B",
+      gameId: 1,
+      eventDetails: [],
+      scheduleStartTs: new Date(),
+    });
+
+    expect(event.eventID).toBe(1);
+    expect(event.eventNameAKey).toBe("Team A");
+    expect(event.eventNameBKey).toBe("Team B");
+    expect(event.gameId).toBe(1);
+    expect(event.eventDetails).toEqual([]);
+    expect(event.scheduleStartTs).toBeInstanceOf(Date);
   });
 
-  afterAll(async () => {
-    await mongoose.connection.close();
+  it("should verify required properties", () => {
+    const event = new EventModel({});
+
+    const validationError = event.validateSync();
+    expect(validationError).toBeDefined();
+    expect(validationError?.errors).toHaveProperty("eventID");
+    expect(validationError?.errors).toHaveProperty("eventNameAKey");
+    expect(validationError?.errors).toHaveProperty("eventNameBKey");
+    expect(validationError?.errors).toHaveProperty("gameId");
+    expect(validationError?.errors).toHaveProperty("scheduleStartTs");
   });
 
-  beforeEach(async () => {
-    await EventModel.deleteMany({});
+  it("should verify property types", () => {
+    const event = new EventModel({
+      eventID: "invalid",
+      eventNameAKey: "Team A",
+      eventNameBKey: "Team B",
+      gameId: 1,
+      eventDetails: [],
+      scheduleStartTs: "invalid",
+    });
+
+    const validationError = event.validateSync();
+    expect(validationError).toBeDefined();
+    expect(validationError?.errors).toHaveProperty("eventID");
+    expect(validationError?.errors).toHaveProperty("scheduleStartTs");
+  });
+});
+
+describe("Selection Schema", () => {
+  it("should create selection with default properties", () => {
+    const SelectionModel = mongoose.model("Selection", SelectionSchema);
+    const selection = {
+      name: "Selection 1",
+      price: 1.5,
+    };
+
+    const doc = new SelectionModel(selection);
+    expect(doc.name).toBe("Selection 1");
+    expect(doc.price).toBe(1.5);
+    expect(doc.point).toBe(0); // default value
+    expect(doc.settlementStatus).toBe(SettlementStatus.PLAY); // default value
   });
 
-  describe("Event Model", () => {
-    it("should create an event successfully", async () => {
-      const event = new EventModel({
-        eventID: 1,
-        eventNameAKey: "Team A",
-        eventNameBKey: "Team B",
-        gameId: 1,
-        eventDetails: [],
-        scheduleStartTs: new Date(),
-      });
+  it("should create selection with all properties", () => {
+    const SelectionModel = mongoose.model("Selection", SelectionSchema);
+    const selection = {
+      name: "Selection 1",
+      price: 1.5,
+      point: 2,
+      settlementStatus: SettlementStatus.WIN,
+    };
 
-      const savedEvent = await event.save();
-      expect(savedEvent._id).toBeDefined();
-      expect(savedEvent.eventID).toBe(1);
-      expect(savedEvent.eventNameAKey).toBe("Team A");
-      expect(savedEvent.eventNameBKey).toBe("Team B");
-      expect(savedEvent.gameId).toBe(1);
-      expect(savedEvent.eventDetails).toEqual([]);
-      expect(savedEvent.scheduleStartTs).toBeInstanceOf(Date);
-    });
-
-    it("should fail to create an event without required fields", async () => {
-      const event = new EventModel({});
-
-      await expect(event.save()).rejects.toThrow();
-    });
-
-    it("should fail to create an event with invalid eventID type", async () => {
-      const event = new EventModel({
-        eventID: "invalid",
-        eventNameAKey: "Team A",
-        eventNameBKey: "Team B",
-        gameId: 1,
-        eventDetails: [],
-        scheduleStartTs: new Date(),
-      });
-
-      await expect(event.save()).rejects.toThrow();
-    });
-
-    it("should fail to create an event with invalid scheduleStartTs type", async () => {
-      const event = new EventModel({
-        eventID: 1,
-        eventNameAKey: "Team A",
-        eventNameBKey: "Team B",
-        gameId: 1,
-        eventDetails: [],
-        scheduleStartTs: "invalid",
-      });
-
-      await expect(event.save()).rejects.toThrow();
-    });
+    const doc = new SelectionModel(selection);
+    expect(doc.name).toBe("Selection 1");
+    expect(doc.price).toBe(1.5);
+    expect(doc.point).toBe(2);
+    expect(doc.settlementStatus).toBe(SettlementStatus.WIN);
   });
 
-  describe("Selection Schema", () => {
-    it("should validate a selection with required fields", () => {
-      const selection = {
-        name: "Selection 1",
-        price: 1.5,
-      };
+  it("should verify selection required properties", () => {
+    const SelectionModel = mongoose.model("Selection", SelectionSchema);
+    const doc = new SelectionModel({});
+    const validationError = doc.validateSync();
+    expect(validationError).toBeDefined();
+    expect(validationError?.errors).toHaveProperty("name");
+    expect(validationError?.errors).toHaveProperty("price");
+  });
 
-      const SelectionModel = mongoose.model("Selection", SelectionSchema);
-      const doc = new SelectionModel(selection);
-      expect(doc.name).toBe("Selection 1");
-      expect(doc.price).toBe(1.5);
-      expect(doc.point).toBe(0); // default value
-      expect(doc.settlementStatus).toBe(SettlementStatus.PLAY); // default value
+  it("should verify selection property types", () => {
+    const SelectionModel = mongoose.model("Selection", SelectionSchema);
+    const doc = new SelectionModel({
+      name: "Selection 1",
+      price: 1.5,
+      settlementStatus: "INVALID",
     });
-
-    it("should validate a selection with all fields", () => {
-      const selection = {
-        name: "Selection 1",
-        price: 1.5,
-        point: 2,
-        settlementStatus: SettlementStatus.WIN,
-      };
-
-      const SelectionModel = mongoose.model("Selection", SelectionSchema);
-      const doc = new SelectionModel(selection);
-      expect(doc.name).toBe("Selection 1");
-      expect(doc.price).toBe(1.5);
-      expect(doc.point).toBe(2);
-      expect(doc.settlementStatus).toBe(SettlementStatus.WIN);
-    });
-
-    it("should fail to validate a selection without required fields", () => {
-      const selection = {};
-
-      const SelectionModel = mongoose.model("Selection", SelectionSchema);
-      const doc = new SelectionModel(selection);
-      const error = doc.validateSync();
-      expect(error).toBeDefined();
-      expect(error?.errors.name).toBeDefined();
-      expect(error?.errors.price).toBeDefined();
-    });
-
-    it("should fail to validate a selection with invalid settlementStatus", () => {
-      const selection = {
-        name: "Selection 1",
-        price: 1.5,
-        settlementStatus: "INVALID",
-      };
-
-      const SelectionModel = mongoose.model("Selection", SelectionSchema);
-      const doc = new SelectionModel(selection);
-      const error = doc.validateSync();
-      expect(error).toBeDefined();
-      expect(error?.errors.settlementStatus).toBeDefined();
-    });
+    const validationError = doc.validateSync();
+    expect(validationError).toBeDefined();
+    expect(validationError?.errors).toHaveProperty("settlementStatus");
   });
 });
