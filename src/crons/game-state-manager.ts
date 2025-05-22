@@ -106,7 +106,7 @@ export class GameStateManager {
   async endCurrentRound() {
     this.round.roundTime = 0;
     this.round.ended = true;
-    await this.roundService.insertOrUpdateRound(this.round as IRound);
+    await this.roundService.updateRound(this.round as IRound);
   }
 
   async createUpcomingRoundAndEvent(offsetFromCurrent: number): Promise<void> {
@@ -119,7 +119,7 @@ export class GameStateManager {
     this.upcomingRounds.push(upcomingRoundId);
     const newRound = this.roundGeneratorService.generateNewRound(upcomingRoundId);
 
-    await this.roundService.insertOrUpdateRound(newRound as IRound);
+    await this.roundService.insertRound(newRound as IRound);
     const event = await this.eventService.createNewEvent(newRound, offsetFromCurrent);
     const firstEventDetail = await this.eventService.fetchEventDetail(event.eventDetails[0]);
 

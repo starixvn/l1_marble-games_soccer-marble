@@ -44,6 +44,7 @@ export class RoundGeneratorService {
 
   generateNewRound(roundId: number) {
     const newRound = {
+      gameId: this.gameSettings.gameId,
       eventID: idHelper.createEventId(this.gameSettings.gameId, roundId),
       roundId,
       ended: false,

@@ -51,12 +51,12 @@ export class RoundService {
     await this.roundRepository.updateOne({ roundId, gameId: this.gameSettings.gameId }, { $set: { ended: true } });
   }
 
-  async insertOrUpdateRound(round: IRound): Promise<void> {
-    await this.roundRepository.updateOne(
-      { roundId: round.roundId, gameId: this.gameSettings.gameId },
-      { $set: round },
-      { upsert: true }
-    );
+  async insertRound(round: IRound): Promise<void> {
+    await this.roundRepository.create(round);
+  }
+
+  async updateRound(round: IRound): Promise<void> {
+    await this.roundRepository.updateOne({ roundId: round.roundId, gameId: this.gameSettings.gameId }, { $set: round });
   }
 
   async updateRoundEventDetailResult(roundId: number, eventDetails: IEventDetail[]): Promise<void> {
