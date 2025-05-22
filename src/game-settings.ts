@@ -4,17 +4,17 @@ export const gameSettings: GameSettings = {
   gameId: 2001,
   upcomingEvents: 3,
   gameTiming: {
-    wholeRound: 120,
+    wholeRound: 180,
     timelines: [
       {
         OddsAvailable: 1,
         ScheduleStart: 31,
-        ResultAvailable: 61,
+        ResultAvailable: 91,
       },
       {
-        OddsAvailable: 56,
-        ScheduleStart: 81,
-        ResultAvailable: 111,
+        OddsAvailable: 91,
+        ScheduleStart: 111,
+        ResultAvailable: 171,
       },
     ],
   },
