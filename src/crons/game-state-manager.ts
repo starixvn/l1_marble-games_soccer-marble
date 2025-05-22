@@ -103,8 +103,11 @@ export class GameStateManager {
     this.eventDetails = await Promise.all(event.eventDetails.map((id) => this.eventService.fetchEventDetail(id)));
   }
 
-  async endCurrentRound() {
+  resetRoundTime() {
     this.round.roundTime = 0;
+  }
+
+  async endCurrentRound() {
     this.round.ended = true;
     await this.roundService.updateRound(this.round as IRound);
   }

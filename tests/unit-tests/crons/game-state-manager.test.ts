@@ -188,7 +188,7 @@ describe("GameStateManager", () => {
 
       // Assert
       expect(mockContainer.roundGeneratorService.generateNewRound).toHaveBeenCalledWith(roundId + offset);
-      expect(mockContainer.roundService.insertOrUpdateRound).toHaveBeenCalledWith(mockRound);
+      expect(mockContainer.roundService.insertRound).toHaveBeenCalledWith(mockRound);
       expect(mockContainer.eventService.createNewEvent).toHaveBeenCalledWith(mockRound, offset);
       expect(mockContainer.eventService.fetchEventDetail).toHaveBeenCalledWith("detail1");
 
@@ -350,7 +350,7 @@ describe("GameStateManager", () => {
         }),
         ["selections"]
       );
-      expect(mockContainer.roundService.insertOrUpdateRound).toHaveBeenCalledWith(
+      expect(mockContainer.roundService.updateRound).toHaveBeenCalledWith(
         expect.objectContaining({
           roundTime: 0,
           ended: true,

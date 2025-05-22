@@ -1,7 +1,7 @@
 import * as rngModule from "sc-core-rng";
 import * as oddsHelper from "../../../src/helpers/odds-helper";
 import * as resultHelper from "../../../src/helpers/result-helper";
-import { HalfConfigType, MatchConfigType, RoundResultType, SettlementStatus } from "../../../src/types";
+import { MatchConfigType, RoundResultType, SettlementStatus } from "../../../src/types";
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { mockContainer } from "../global-stubs";
 import { idHelper } from "../../../src/helpers";
@@ -161,6 +161,7 @@ describe("RoundGeneratorService", () => {
       expect(result).toEqual({
         eventID: 123,
         roundId,
+        gameId: mockContainer.gameSettings.gameId,
         homeTeam: mockMatch.homeTeam,
         awayTeam: mockMatch.awayTeam,
         matchConfig: mockOddsResult.matchConfig,

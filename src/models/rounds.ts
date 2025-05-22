@@ -6,8 +6,8 @@ export interface IRound extends GameRunningRound {
 }
 
 const RoundSchema = new Schema<IRound>({
-  roundId: { type: Number, required: true },
-  eventID: { type: Number, required: true },
+  roundId: { type: Number, required: true, unique: true },
+  eventID: { type: Number, required: true, unique: true },
   gameId: { type: Number, required: true },
   homeTeam: { type: String, required: true },
   awayTeam: { type: String, required: true },

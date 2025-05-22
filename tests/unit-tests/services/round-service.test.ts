@@ -117,8 +117,28 @@ describe("RoundService", () => {
     });
   });
 
-  describe("insertOrUpdateRound", () => {
-    it("should upsert a round", async () => {
+  describe("insertRound", () => {
+    it("should create a new round", async () => {
+      // Arrange
+      const round: Partial<IRound> = {
+        roundId: 42,
+        gameId: mockContainer.gameSettings.gameId,
+        eventID: 123,
+        ended: false,
+      };
+
+      (mockContainer.roundRepository.create as jest.Mock).mockResolvedValue(round);
+
+      // Act
+      await service.insertRound(round as IRound);
+
+      // Assert
+      expect(mockContainer.roundRepository.create).toHaveBeenCalledWith(round);
+    });
+  });
+
+  describe("updateRound", () => {
+    it("should update an existing round", async () => {
       // Arrange
       const round: Partial<IRound> = {
         roundId: 42,
@@ -130,13 +150,12 @@ describe("RoundService", () => {
       (mockContainer.roundRepository.updateOne as jest.Mock).mockResolvedValue({ modifiedCount: 1 });
 
       // Act
-      await service.insertOrUpdateRound(round as IRound);
+      await service.updateRound(round as IRound);
 
       // Assert
       expect(mockContainer.roundRepository.updateOne).toHaveBeenCalledWith(
         { roundId: round.roundId, gameId: mockContainer.gameSettings.gameId },
-        { $set: round },
-        { upsert: true }
+        { $set: round }
       );
     });
   });

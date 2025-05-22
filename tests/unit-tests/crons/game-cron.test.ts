@@ -128,7 +128,7 @@ describe("GameCron", () => {
 
       await gameCron.proceed();
 
-      expect(mockContainer.gameStateManager.endCurrentRound).toHaveBeenCalled();
+      expect(mockContainer.gameStateManager.resetRoundTime).toHaveBeenCalled();
     });
 
     it("should process timelines with current round time", async () => {

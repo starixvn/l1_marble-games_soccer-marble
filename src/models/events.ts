@@ -28,7 +28,7 @@ export const SelectionSchema = new Schema(
 
 // Define the Event Schema
 const EventSchema = new Schema<IEvent>({
-  eventID: { type: Number, required: true },
+  eventID: { type: Number, required: true, unique: true },
   eventNameAKey: { type: String, required: true },
   eventNameBKey: { type: String, required: true },
   gameId: { type: Number, required: true },

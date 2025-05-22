@@ -61,7 +61,7 @@ export class GameCron {
     }
 
     if (this.gameStateManager.isAtRoundEnded()) {
-      await this.gameStateManager.endCurrentRound();
+      this.gameStateManager.resetRoundTime();
     }
 
     const currentRoundTime = this.gameStateManager.getCurrentRoundTime();
