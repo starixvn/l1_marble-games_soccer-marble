@@ -4,7 +4,7 @@ export const gameSettings: GameSettings = {
   gameId: 2001,
   upcomingEvents: 3,
   gameTiming: {
-    wholeRound: 140,
+    wholeRound: 131,
     timelines: [
       {
         OddsAvailable: 1,
