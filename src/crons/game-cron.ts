@@ -55,16 +55,17 @@ export class GameCron {
       this.gameStateManager.advanceRoundTime();
     }
 
+    const currentRoundTime = this.gameStateManager.getCurrentRoundTime();
+
     if (this.gameStateManager.isAtStartNewRound()) {
       await this.gameStateManager.createUpcomingRoundAndEvent(this.gameSettings.upcomingEvents);
       await this.gameStateManager.startNewRound();
     }
 
+    await this.timelineProcessor.processTimelines(currentRoundTime);
+
     if (this.gameStateManager.isAtRoundEnded()) {
       this.gameStateManager.resetRoundTime();
     }
-
-    const currentRoundTime = this.gameStateManager.getCurrentRoundTime();
-    await this.timelineProcessor.processTimelines(currentRoundTime);
   }
 }
