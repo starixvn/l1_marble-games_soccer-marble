@@ -12,7 +12,7 @@ export const gameSettings: GameSettings = {
         ResultAvailable: 71,
       },
       {
-        OddsAvailable: 71,
+        OddsAvailable: 66,
         ScheduleStart: 91,
         ResultAvailable: 131,
       },
