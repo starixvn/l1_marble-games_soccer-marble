@@ -45,6 +45,10 @@ export class GameStateManager {
     return this.round.roundTime >= this.gameSettings.gameTiming.wholeRound;
   }
 
+  isGameDisabledAndAllRoundsEnded() {
+    return !this.enabled && this.upcomingRounds.length === 0 && this.round.ended;
+  }
+
   shouldScheduleUpcomingRounds() {
     return this.enabled && this.upcomingRounds.length === 0;
   }

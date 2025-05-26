@@ -74,4 +74,22 @@ describe("RoundScheduler", () => {
       expect(mockContainer.gameStateManager.createUpcomingRoundAndEvent).not.toHaveBeenCalled();
     });
   });
+
+  describe("isScheduling flag", () => {
+    it("should be false by default", () => {
+      expect(scheduler.isScheduling).toBe(false);
+    });
+
+    it("should be set to true when scheduleUpcomingEvents starts", async () => {
+      await scheduler.scheduleUpcomingEvents();
+      expect(scheduler.isScheduling).toBe(true);
+    });
+
+    it("should maintain scheduling state during multiple event creations", async () => {
+      mockContainer.gameSettings.upcomingEvents = 3;
+      await scheduler.scheduleUpcomingEvents();
+      expect(scheduler.isScheduling).toBe(true);
+      expect(mockContainer.gameStateManager.createUpcomingRoundAndEvent).toHaveBeenCalledTimes(2);
+    });
+  });
 });

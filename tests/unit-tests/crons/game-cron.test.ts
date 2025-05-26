@@ -139,5 +139,42 @@ describe("GameCron", () => {
 
       expect(mockContainer.timelineProcessor.processTimelines).toHaveBeenCalledWith(currentTime);
     });
+
+    it("should reset isScheduling when game is disabled and all rounds ended", async () => {
+      // Set up the state
+      mockContainer.roundScheduler.isScheduling = true;
+      mockContainer.gameStateManager.isGameDisabledAndAllRoundsEnded = jest.fn().mockReturnValue(true);
+
+      // Act
+      await gameCron.proceed();
+
+      // Assert
+      expect(mockContainer.logService.log).toHaveBeenCalledWith("Game is disabled and all rounds ended", "info");
+      expect(mockContainer.roundScheduler.isScheduling).toBe(false);
+    });
+
+    it("should not reset isScheduling when game is not disabled", async () => {
+      // Set up the state
+      mockContainer.roundScheduler.isScheduling = true;
+      mockContainer.gameStateManager.isGameDisabledAndAllRoundsEnded = jest.fn().mockReturnValue(false);
+
+      // Act
+      await gameCron.proceed();
+
+      // Assert
+      expect(mockContainer.roundScheduler.isScheduling).toBe(true);
+    });
+
+    it("should not reset isScheduling when rounds are not all ended", async () => {
+      // Set up the state
+      mockContainer.roundScheduler.isScheduling = true;
+      mockContainer.gameStateManager.isGameDisabledAndAllRoundsEnded = jest.fn().mockReturnValue(false);
+
+      // Act
+      await gameCron.proceed();
+
+      // Assert
+      expect(mockContainer.roundScheduler.isScheduling).toBe(true);
+    });
   });
 });

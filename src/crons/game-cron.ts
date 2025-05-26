@@ -51,6 +51,11 @@ export class GameCron {
       await this.roundScheduler.scheduleUpcomingEvents();
     }
 
+    if (this.gameStateManager.isGameDisabledAndAllRoundsEnded() && this.roundScheduler.isScheduling) {
+      this.logService.log("Game is disabled and all rounds ended", "info");
+      this.roundScheduler.isScheduling = false;
+    }
+
     if (this.gameStateManager.shouldAdvanceRoundTime()) {
       this.gameStateManager.advanceRoundTime();
     }

@@ -404,4 +404,41 @@ describe("GameStateManager", () => {
       expect(result).toBe(true);
     });
   });
+
+  describe("isGameDisabledAndAllRoundsEnded", () => {
+    it("should return true when game is disabled, no upcoming rounds, and current round is ended", () => {
+      // Set up the state
+      manager["enabled"] = false;
+      (manager as any)["upcomingRounds"] = [];
+
+      expect(manager.isGameDisabledAndAllRoundsEnded()).toBe(true);
+    });
+
+    it("should return false when game is enabled", () => {
+      // Set up the state
+      manager["enabled"] = true;
+      (manager as any)["upcomingRounds"] = [];
+      manager["round"].ended = true;
+
+      expect(manager.isGameDisabledAndAllRoundsEnded()).toBe(false);
+    });
+
+    it("should return false when there are upcoming rounds", () => {
+      // Set up the state
+      manager["enabled"] = false;
+      (manager as any)["upcomingRounds"] = [1, 2];
+      manager["round"].ended = true;
+
+      expect(manager.isGameDisabledAndAllRoundsEnded()).toBe(false);
+    });
+
+    it("should return false when current round is not ended", () => {
+      // Set up the state
+      manager["enabled"] = false;
+      (manager as any)["upcomingRounds"] = [];
+      manager["round"].ended = false;
+
+      expect(manager.isGameDisabledAndAllRoundsEnded()).toBe(false);
+    });
+  });
 });

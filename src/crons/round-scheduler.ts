@@ -11,6 +11,8 @@ export class RoundScheduler {
   private readonly eventService: EventService;
   private readonly logService: typeof logger;
 
+  isScheduling = false;
+
   constructor(container: AppContainer) {
     this.roundService = container.roundService;
     this.eventService = container.eventService;
@@ -38,6 +40,7 @@ export class RoundScheduler {
   }
 
   async scheduleUpcomingEvents() {
+    this.isScheduling = true;
     const upcomingEvents = this.gameSettings.upcomingEvents;
 
     for (let offset = 1; offset < upcomingEvents; offset++) {
