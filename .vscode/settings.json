@@ -18,8 +18,8 @@
       "token": "3AsbupPJx4HcB6SOhUdqr7lzFhxE8Y82sCFio0mZi19Lha7WDIA4ASPLgdorOp7G"
     },
     "prod": {
-      "host": "https://soccer-marble.lumigame.com",
-      "token": "Ir8TAKQCcs0bRheTZ1XXEvqPjJPAcXlapxmh1Ff639ZVLozSl4gPE4PFVCI2LuET"
+      "host": "https://mgproxy.sabagame.com/soccer-marble",
+      "token": "Q1ePtW0DtXzPuGAqF85Q1kdcB6LAuU9V91PfybReWS56OJJkIwHfkr0LhpQtaTZo"
     }
   },
   "sonarlint.connectedMode.project": {
