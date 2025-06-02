@@ -9,6 +9,7 @@ import { GameConfigService } from "../services/game-config-service";
 import { GameStateManager } from "../crons/game-state-manager";
 import { TimelineProcessor } from "../crons/timeline-processor";
 import { RoundScheduler } from "../crons/round-scheduler";
+import { rateConfigs } from "../rate-config";
 
 export type RateConfig = {
   scoreRate: Record<string, number>;
@@ -84,7 +85,7 @@ export interface AppContainer {
   appConfigs: typeof appConfig;
   logService: typeof logger;
   gameSettings: GameSettings;
-  rateConfigs: RateConfig[];
+  rateConfigs: typeof rateConfigs;
   eventDetailsRepository: typeof EventDetailModel;
   eventRepository: typeof EventModel;
   roundRepository: typeof RoundModel;
