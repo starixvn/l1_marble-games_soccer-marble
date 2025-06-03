@@ -250,8 +250,8 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     secondHalfSelections[key] = selection;
   });
 
-  secondHalfSelections["ft_hdp_home"].point = secondHalf.handicapValue - fhHomeGoals + fhAwayGoals;
-  secondHalfSelections["ft_hdp_away"].point = -secondHalf.handicapValue + fhHomeGoals - fhAwayGoals;
+  secondHalfSelections["ft_hdp_home"].point = secondHalf.handicapValue;
+  secondHalfSelections["ft_hdp_away"].point = -secondHalf.handicapValue;
   secondHalfSelections["ft_ou_over"].point = secondHalf.overUnderValue + fhTotalGoals;
   secondHalfSelections["ft_ou_under"].point = secondHalf.overUnderValue + fhTotalGoals;
 

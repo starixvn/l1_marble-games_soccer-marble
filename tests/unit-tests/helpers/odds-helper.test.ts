@@ -285,13 +285,13 @@ describe("OddsHelper Tests", () => {
           {
             ft_hdp_away: {
               name: "ft_hdp_away",
-              point: 2.5,
+              point: 0.5,
               price: 2.17,
               settlementStatus: "P",
             },
             ft_hdp_home: {
               name: "ft_hdp_home",
-              point: -2.5,
+              point: -0.5,
               price: 1.84,
               settlementStatus: "P",
             },
