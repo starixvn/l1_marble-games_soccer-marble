@@ -7,10 +7,21 @@ import { verifyAdminToken } from "./middleware/verify-token";
 import { setSecurityHeaders } from "./middleware/security-header";
 import { errorHandler } from "./middleware/error-handler";
 import { enableGame } from "./handlers/game-enable-handler";
+import Agenda from "agenda";
+import { asValue } from "awilix";
 
 const run = async () => {
   const container = new ContainerRegistry().register();
   const appConfigs = container.resolve("appConfigs");
+  const agenda = new Agenda({
+    db: { address: `${appConfigs.database.url}/${appConfigs.database.options.dbName}`, collection: "jobs" },
+    processEvery: "1 second",
+    defaultLockLifetime: 5000,
+  });
+
+  container.register({
+    agenda: asValue(agenda),
+  });
   const gameConfigService = container.resolve("gameConfigService");
   const startUp = new StartUp(container);
 

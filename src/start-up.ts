@@ -1,17 +1,20 @@
-import { GameCron } from "./crons/game-cron";
 import { AppContainer } from "./types";
 import appConfig from "./game-config";
 import { logger } from "sc-common";
 import { AwilixContainer } from "awilix";
 import mongoose from "mongoose";
+import { Scheduler } from "./crons/scheduler";
+import { Consumer } from "./crons/consumer";
 
 export class StartUp {
-  gameCron: GameCron;
   appConfigs: typeof appConfig;
+  scheduler: Scheduler;
+  consumer: Consumer;
 
   constructor(container: AwilixContainer<AppContainer>) {
-    this.gameCron = container.resolve("gameCron");
     this.appConfigs = container.resolve("appConfigs");
+    this.scheduler = container.resolve("scheduler");
+    this.consumer = container.resolve("consumer");
   }
 
   async configureDatabaseAndSentry() {
@@ -20,7 +23,8 @@ export class StartUp {
   }
 
   async start() {
-    await this.gameCron.start();
+    await this.scheduler.start();
+    await this.consumer.start();
   }
 
   async configureDatabase({ url = "", options = {} }) {
