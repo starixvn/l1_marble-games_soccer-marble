@@ -6,6 +6,12 @@ export default {
       dbName: "marble_odds_feed",
     },
   },
+  agenda: {
+    url: "mongodb://marble_backend:MarbleBackend%40517@10.99.99.53:39530,10.99.99.54:39530,10.99.99.188:39530,10.99.99.187:39530",
+    authSource: "admin",
+    dbName: "marble_odds_feed",
+    replicaSet: "SP-SIT",
+  },
   sentry: {
     sentryUrl: "http://9046cc701dad8bd271f2256cc4f0329a@sentryuat-sc.nebula.prod/17",
     logIdentifier: "Soccer-Marble-Service",

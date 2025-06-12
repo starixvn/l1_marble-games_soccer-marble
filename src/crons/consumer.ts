@@ -36,12 +36,9 @@ export class Consumer {
           ? new Date(lastEvent.scheduleStartTs.getTime() + this.gameSettings.gameTiming.wholeRound * 1000)
           : new Date();
 
-        console.log("upcomingRoundId: ", upcomingRoundId);
-        console.log("upcomingScheduleStartTs: ", upcomingScheduleStartTs);
         await this.gameHandler.createUpcomingRoundAndEvent(upcomingRoundId, upcomingScheduleStartTs);
       } catch (error) {
         this.logService.logError(`Error in scheduleUpComingEvent: ${error}`);
-        console.log("error: ", error);
       } finally {
         await job.remove();
       }
@@ -49,19 +46,13 @@ export class Consumer {
 
     this.agenda.define(JobName.UpdateEventDetailOdds, async (job: Job) => {
       try {
-        console.log("JobName.UpdateEventDetailOdds");
-
         const { eventDetailId, eventID, drawIndex } = job.attrs.data;
 
-        console.log("eventDetailId: ", eventDetailId);
-        console.log("eventID: ", eventID);
         const roundId = idHelper.extractRoundId(eventID);
-        console.log("drawIndex: ", drawIndex);
-        console.log("roundId: ", roundId);
+
         await this.gameHandler.handleOddsAvailableForEventDetail(drawIndex, eventDetailId, roundId);
       } catch (error) {
         this.logService.logError(`Error in updateEventDetailOdds: ${error}`);
-        console.log("error: ", error);
       } finally {
         await job.remove();
       }
@@ -69,17 +60,12 @@ export class Consumer {
 
     this.agenda.define(JobName.UpdateEventDetailVideoInfo, async (job: Job) => {
       try {
-        console.log("JobName.UpdateEventDetailVideoInfo");
-
         const { eventDetailId, eventID, drawIndex } = job.attrs.data;
         const roundId = idHelper.extractRoundId(eventID);
-        console.log("eventDetailId: ", eventDetailId);
-        console.log("drawIndex: ", drawIndex);
-        console.log("roundId: ", roundId);
+
         await this.gameHandler.handleVideoInfoAvailableForEventDetail(drawIndex, eventDetailId, roundId);
       } catch (error) {
         this.logService.logError(`Error in updateEventDetailVideoInfo: ${error}`);
-        console.log("error: ", error);
       } finally {
         await job.remove();
       }
@@ -87,17 +73,12 @@ export class Consumer {
 
     this.agenda.define(JobName.UpdateEventDetailResult, async (job: Job) => {
       try {
-        console.log("JobName.UpdateEventDetailResult");
-
         const { eventDetailId, eventID, drawIndex } = job.attrs.data;
         const roundId = idHelper.extractRoundId(eventID);
-        console.log("eventDetailId: ", eventDetailId);
-        console.log("drawIndex: ", drawIndex);
-        console.log("roundId: ", roundId);
+
         await this.gameHandler.handleResultAvailableForEventDetail(drawIndex, eventDetailId, roundId);
       } catch (error) {
         this.logService.logError(`Error in updateEventDetailResult: ${error}`);
-        console.log("error: ", error);
       } finally {
         await job.remove();
       }

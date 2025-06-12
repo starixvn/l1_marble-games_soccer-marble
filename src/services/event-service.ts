@@ -22,7 +22,6 @@ export class EventService {
     const eventId = roundData.eventID;
     const eventStartTimeTs = Math.max(scheduleStartTs.getTime(), new Date().getTime() + 2000); // 2 seconds delay
 
-    console.log("eventStartTimeTs: ", eventStartTimeTs);
     const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs));
 
     const event = {

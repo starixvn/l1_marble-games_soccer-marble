@@ -23,8 +23,12 @@ export class StartUp {
   }
 
   async start() {
-    await this.scheduler.start();
-    await this.consumer.start();
+    try {
+      await this.scheduler.start();
+      await this.consumer.start();
+    } catch (error) {
+      logger.logError(`Failed to start scheduler or consumer: ${error}`);
+    }
   }
 
   async configureDatabase({ url = "", options = {} }) {

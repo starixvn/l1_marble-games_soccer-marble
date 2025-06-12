@@ -57,8 +57,6 @@ export class GameHandler {
       return;
     }
 
-    console.log("createUpcomingRoundAndEvent: ", roundId);
-
     const newRound = this.roundGeneratorService.generateNewRound(roundId);
 
     await this.roundService.insertRound(newRound as IRound);
@@ -84,6 +82,7 @@ export class GameHandler {
     const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
     const round = await this.loadRoundFromRoundId(roundId);
     eventDetail.selections = Object.values(round.selections[drawIndex]);
+
     await this.eventService.updateEventDetail(eventDetail, ["selections"]);
   }
 

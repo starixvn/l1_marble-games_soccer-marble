@@ -96,8 +96,6 @@ export class Scheduler {
   }
 
   async start() {
-    await this.agenda.start();
-
     this.gameStatusInterval = setInterval(async () => {
       await this.checkGameStatus();
     }, 1000);

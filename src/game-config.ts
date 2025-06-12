@@ -6,6 +6,12 @@ export default {
       dbName: "marble-football",
     },
   },
+  agenda: {
+    url: "mongodb://localhost:27017",
+    authSource: "",
+    dbName: "marble-football",
+    replicaSet: "",
+  },
   sentry: {
     sentryUrl: "https://6b0f71afab190ba976d8bdc7a43969fe@sentry-k8s.lumigame.com/15",
     logIdentifier: "Soccer-Marble-Service",

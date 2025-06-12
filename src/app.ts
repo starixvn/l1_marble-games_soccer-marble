@@ -9,19 +9,58 @@ import { errorHandler } from "./middleware/error-handler";
 import { enableGame } from "./handlers/game-enable-handler";
 import Agenda from "agenda";
 import { asValue } from "awilix";
+import gameConfig from "./game-config";
+import { logger } from "sc-common";
+
+const buildAgendaMongoUri = (config: typeof gameConfig): string => {
+  const params = new URLSearchParams();
+
+  if (config.agenda.authSource) {
+    params.append("authSource", config.agenda.authSource);
+  }
+
+  if (config.agenda.replicaSet) {
+    params.append("replicaSet", config.agenda.replicaSet);
+  }
+
+  return `${config.agenda.url}/${config.agenda.dbName}?${params.toString()}`;
+};
+
+const configureAgenda = async (appConfigs: typeof gameConfig, logService: typeof logger) => {
+  try {
+    const agenda = new Agenda({
+      db: {
+        address: buildAgendaMongoUri(appConfigs),
+        collection: "jobs",
+      },
+      processEvery: "1 second",
+      defaultLockLifetime: 5000,
+    });
+
+    await agenda.start();
+    logService.log("Agenda connected to MongoDB successfully", "info");
+
+    return { agenda, connected: true };
+  } catch (error) {
+    logService.logError(`Agenda connection error: ${error}`);
+    return { agenda: null, connected: false };
+  }
+};
 
 const run = async () => {
   const container = new ContainerRegistry().register();
   const appConfigs = container.resolve("appConfigs");
-  const agenda = new Agenda({
-    db: { address: `${appConfigs.database.url}/${appConfigs.database.options.dbName}`, collection: "jobs" },
-    processEvery: "1 second",
-    defaultLockLifetime: 5000,
-  });
+  const logService = container.resolve("logService");
+  const { agenda, connected: agendaConnected } = await configureAgenda(appConfigs, logService);
+
+  if (!agenda) {
+    throw new Error("Agenda connection failed! Please check the MongoDB connection details.");
+  }
 
   container.register({
     agenda: asValue(agenda),
   });
+
   const gameConfigService = container.resolve("gameConfigService");
   const startUp = new StartUp(container);
 
@@ -39,7 +78,7 @@ const run = async () => {
 
   // Routes
   app.get("/", (req: Request, res: Response) => {
-    const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    const dbStatus = mongoose.connection.readyState === 1 && agendaConnected ? "connected" : "disconnected";
     res.status(dbStatus === "connected" ? 200 : 500).json({
       status: dbStatus === "connected" ? "ok" : "error",
       message: "Soccer marble service running",
@@ -56,7 +95,7 @@ const run = async () => {
     console.log(`Express server started and running on port ${app.get("port")}!`);
   });
 
-  startUp.start();
+  await startUp.start();
 };
 
 run().catch((error) => {
