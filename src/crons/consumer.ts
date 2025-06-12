@@ -26,17 +26,20 @@ export class Consumer {
   async start() {
     this.agenda.define(JobName.ScheduleUpcomingEvent, async (job: Job) => {
       try {
-        const lastRoundId = await this.roundService.initializeRoundId();
+        const upcomingEvents = await this.eventService.fetchAllUpcomingEvents();
 
-        const lastEventId = idHelper.createEventId(this.gameSettings.gameId, lastRoundId);
-        const lastEvent = await this.eventService.fetchEvent(lastEventId, true);
+        if (upcomingEvents.length < this.gameSettings.upcomingEvents) {
+          const lastRoundId = await this.roundService.initializeRoundId();
+          const lastEventId = idHelper.createEventId(this.gameSettings.gameId, lastRoundId);
+          const lastEvent = await this.eventService.fetchEvent(lastEventId, true);
 
-        const upcomingRoundId = lastRoundId + 1;
-        const upcomingScheduleStartTs = lastEvent
-          ? new Date(lastEvent.scheduleStartTs.getTime() + this.gameSettings.gameTiming.wholeRound * 1000)
-          : new Date();
+          const upcomingRoundId = lastRoundId + 1;
+          const upcomingScheduleStartTs = lastEvent
+            ? new Date(lastEvent.scheduleStartTs.getTime() + this.gameSettings.gameTiming.wholeRound * 1000)
+            : new Date();
 
-        await this.gameHandler.createUpcomingRoundAndEvent(upcomingRoundId, upcomingScheduleStartTs);
+          await this.gameHandler.createUpcomingRoundAndEvent(upcomingRoundId, upcomingScheduleStartTs);
+        }
       } catch (error) {
         this.logService.logError(`Error in scheduleUpComingEvent: ${error}`);
       } finally {
