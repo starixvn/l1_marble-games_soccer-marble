@@ -10,6 +10,8 @@ import { Scheduler } from "./scheduler";
 import { Schema } from "mongoose";
 import { IEventDetail } from "../models/event-details";
 
+const maxDelay = 1000;
+
 export class GameHandler {
   private readonly roundService: RoundService;
   private readonly eventService: EventService;
@@ -83,6 +85,12 @@ export class GameHandler {
     const round = await this.loadRoundFromRoundId(roundId);
     eventDetail.selections = Object.values(round.selections[drawIndex]);
 
+    const delay = new Date().getTime() - eventDetail.oddsAvailableTs.getTime();
+
+    if (drawIndex > 0 && Math.abs(delay) > maxDelay) {
+      this.logService.logError(`Odds available for event detail ${eventDetailId} is late by: ${delay}ms`);
+    }
+
     await this.eventService.updateEventDetail(eventDetail, ["selections"]);
   }
 
@@ -91,6 +99,12 @@ export class GameHandler {
     const round = await this.loadRoundFromRoundId(roundId);
     eventDetail.playlist = round.result.drawResults[drawIndex].playlist;
     eventDetail.goalInfo = round.result.drawResults[drawIndex].goalInfo;
+
+    const delay = new Date().getTime() - eventDetail.scheduleStartTs.getTime();
+
+    if (Math.abs(delay) > maxDelay) {
+      this.logService.logError(`Video info available for event detail ${eventDetailId} is late by: ${delay}ms`);
+    }
 
     await this.eventService.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
   }
@@ -103,6 +117,12 @@ export class GameHandler {
     eventDetail.selections?.forEach((selection: Selection) => {
       selection.settlementStatus = round.settlementResult[drawIndex][selection.name];
     });
+
+    const delay = new Date().getTime() - eventDetail.resultsAvailableTs.getTime();
+
+    if (Math.abs(delay) > maxDelay) {
+      this.logService.logError(`Result available for event detail ${eventDetailId} is late by: ${delay}ms`);
+    }
 
     await this.eventService.updateEventDetail(eventDetail, ["result", "hasResults", "selections"]);
 
