@@ -9,8 +9,8 @@ import { errorHandler } from "./middleware/error-handler";
 import { enableGame } from "./handlers/game-enable-handler";
 import Agenda from "agenda";
 import { asValue } from "awilix";
-import gameConfig from "./game-config";
 import { logger } from "sc-common";
+import { Configuration } from "./configuration";
 
 let shuttingDown = false;
 
@@ -31,46 +31,13 @@ const gracefulShutdown = async (agenda: Agenda, logService: typeof logger) => {
   }
 };
 
-const buildAgendaMongoUri = (config: typeof gameConfig): string => {
-  const params = new URLSearchParams();
-
-  if (config.agenda.authSource) {
-    params.append("authSource", config.agenda.authSource);
-  }
-
-  if (config.agenda.replicaSet) {
-    params.append("replicaSet", config.agenda.replicaSet);
-  }
-
-  return `${config.agenda.url}/${config.agenda.dbName}?${params.toString()}`;
-};
-
-const configureAgenda = async (appConfigs: typeof gameConfig, logService: typeof logger) => {
-  try {
-    const agenda = new Agenda({
-      db: {
-        address: buildAgendaMongoUri(appConfigs),
-        collection: "jobs",
-      },
-      processEvery: "1 second",
-      defaultLockLifetime: 5000,
-    });
-
-    await agenda.start();
-    logService.log("Agenda connected to MongoDB successfully", "info");
-
-    return { agenda, connected: true };
-  } catch (error) {
-    logService.logError(`Agenda connection error: ${error}`);
-    return { agenda: null, connected: false };
-  }
-};
-
 const run = async () => {
   const container = new ContainerRegistry().register();
   const appConfigs = container.resolve("appConfigs");
   const logService = container.resolve("logService");
-  const { agenda, connected: agendaConnected } = await configureAgenda(appConfigs, logService);
+  const configuration = new Configuration();
+  await configuration.configureDatabaseAndSentry(appConfigs);
+  const { agenda, connected: agendaConnected } = await configuration.configureAgenda(appConfigs);
 
   if (!agenda) {
     throw new Error("Agenda connection failed! Please check the MongoDB connection details.");
@@ -82,8 +49,6 @@ const run = async () => {
 
   const gameConfigService = container.resolve("gameConfigService");
   const startUp = new StartUp(container);
-
-  await startUp.configureDatabaseAndSentry();
 
   // Create Express app
   const app = express();

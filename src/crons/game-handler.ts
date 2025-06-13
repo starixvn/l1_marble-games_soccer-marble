@@ -114,9 +114,6 @@ export class GameHandler {
     const round = await this.loadRoundFromRoundId(roundId);
     eventDetail.hasResults = true;
     eventDetail.result = round.result.drawResults[drawIndex].result;
-    eventDetail.selections?.forEach((selection: Selection) => {
-      selection.settlementStatus = round.settlementResult[drawIndex][selection.name];
-    });
 
     const delay = new Date().getTime() - eventDetail.resultsAvailableTs.getTime();
 
@@ -124,11 +121,25 @@ export class GameHandler {
       this.logService.logError(`Result available for event detail ${eventDetailId} is late by: ${delay}ms`);
     }
 
-    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResults", "selections"]);
+    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResults"]);
 
     if (drawIndex === this.gameSettings.gameTiming.timelines.length - 1) {
+      await this.handleUpdateSettlementResult(round);
       await this.handleRoundEnded(roundId);
     }
+  }
+
+  async handleUpdateSettlementResult(round: GameRunningRound) {
+    const eventDetails = await this.loadEventDetailsFromEventId(round.eventID);
+
+    await Promise.all(
+      eventDetails.map((eventDetail, drawIndex) => {
+        eventDetail.selections?.forEach((selection: Selection) => {
+          selection.settlementStatus = round.settlementResult[drawIndex][selection.name];
+        });
+        return this.eventService.updateEventDetail(eventDetail, ["selections"]);
+      })
+    );
   }
 
   async handleRoundEnded(roundId: number) {
