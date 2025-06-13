@@ -12,6 +12,25 @@ import { asValue } from "awilix";
 import gameConfig from "./game-config";
 import { logger } from "sc-common";
 
+let shuttingDown = false;
+
+const gracefulShutdown = async (agenda: Agenda, logService: typeof logger) => {
+  if (shuttingDown) {
+    return;
+  }
+
+  shuttingDown = true;
+
+  try {
+    await agenda.stop();
+    await mongoose.disconnect();
+    logService.log("Agenda and Mongoose disconnected. Gracefully shutting down...", "info");
+  } catch (err) {
+    logService.logError(`Error during shutdown: ${err}`);
+    process.exit(1);
+  }
+};
+
 const buildAgendaMongoUri = (config: typeof gameConfig): string => {
   const params = new URLSearchParams();
 
@@ -93,6 +112,10 @@ const run = async () => {
 
   httpServer.listen(app.get("port"), () => {
     console.log(`Express server started and running on port ${app.get("port")}!`);
+  });
+
+  process.on("SIGTERM", async () => {
+    await gracefulShutdown(agenda, logService);
   });
 
   await startUp.start();
