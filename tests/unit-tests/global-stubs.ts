@@ -5,15 +5,16 @@ import { GameConfigService } from "../../src/services/game-config-service";
 import { EventService } from "../../src/services/event-service";
 import { RoundService } from "../../src/services/round-service";
 import { RoundGeneratorService } from "../../src/services/round-generator-service";
-import { GameCron } from "../../src/crons/game-cron";
 import { rateConfigs } from "../../src/rate-config";
 import { IEvent } from "../../src/models/events";
 import mongoose from "mongoose";
 import { IEventDetail } from "../../src/models/event-details";
 import { IRound } from "../../src/models/rounds";
-import { GameStateManager } from "../../src/crons/game-state-manager";
-import { TimelineProcessor } from "../../src/crons/timeline-processor";
-import { RoundScheduler } from "../../src/crons/round-scheduler";
+import { GameHandler } from "../../src/crons/game-handler";
+import { GameData } from "../../src/crons/game-data";
+import { Scheduler } from "../../src/crons/scheduler";
+import { Consumer } from "../../src/crons/consumer";
+import { Agenda } from "agenda";
 const mockLogService: typeof logger = {
   log: jest.fn(),
   logError: jest.fn(),
@@ -82,11 +83,16 @@ const gameSettings: GameSettings = {
   },
   choices: [],
 };
-const mockGameCron = stub<GameCron>();
 const mockRoundGeneratorService = stub<RoundGeneratorService>();
 const mockRoundService = stub<RoundService>();
 const mockEventService = stub<EventService>();
 const mockGameConfigService = stub<GameConfigService>();
+
+const mockGameHandler = stub<GameHandler>();
+const mockGameData = stub<GameData>();
+const mockScheduler = stub<Scheduler>();
+const mockConsumer = stub<Consumer>();
+const mockAgenda = stub<Agenda>();
 
 const mockEventRepository = {
   create: jest.fn(),
@@ -128,19 +134,16 @@ const mockRoundRepository = {
   exec: jest.fn(),
 } as unknown as mongoose.Model<IRound>;
 
-const mockGameStateManager = stub<GameStateManager>();
-const mockTimelineProcessor = stub<TimelineProcessor>();
-const mockRoundScheduler = stub<RoundScheduler>();
-
 const mockContainer: AppContainer = {
   gameSettings,
   appConfigs: {} as any,
   rateConfigs: rateConfigs,
 
-  gameCron: mockGameCron,
-  gameStateManager: mockGameStateManager,
-  timelineProcessor: mockTimelineProcessor,
-  roundScheduler: mockRoundScheduler,
+  gameHandler: mockGameHandler,
+  agenda: mockAgenda,
+  scheduler: mockScheduler,
+  consumer: mockConsumer,
+  gameData: mockGameData,
 
   logService: mockLogService,
   roundGeneratorService: mockRoundGeneratorService,

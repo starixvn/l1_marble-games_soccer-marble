@@ -41,8 +41,10 @@ describe("EventService", () => {
         .mockResolvedValueOnce(fakeEventDetails[1]);
       mockEventRepository.create.mockResolvedValue({ eventID: 123 });
 
+      const mockScheduleStartTs = new Date(Date.now() + 1000);
+
       // Act
-      const result = await eventService.createNewEvent(roundData as any, 2);
+      const result = await eventService.createNewEvent(roundData as any, mockScheduleStartTs);
 
       // Assert
       expect(mockEventDetailsRepository.create).toHaveBeenCalledTimes(2);
