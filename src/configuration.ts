@@ -1,10 +1,10 @@
 import { logger } from "sc-common";
 import mongoose from "mongoose";
-import gameConfig from "./game-config";
+import { appConfigs } from "./game-config";
 import { Agenda } from "agenda";
 
 export class Configuration {
-  private buildAgendaMongoUri(config: typeof gameConfig): string {
+  private buildAgendaMongoUri(config: typeof appConfigs): string {
     const params = new URLSearchParams();
 
     if (config.agenda.authSource) {
@@ -18,11 +18,11 @@ export class Configuration {
     return `${config.agenda.url}/${config.agenda.dbName}?${params.toString()}`;
   }
 
-  async configureAgenda(appConfigs: typeof gameConfig) {
+  async configureAgenda(config: typeof appConfigs) {
     try {
       const agenda = new Agenda({
         db: {
-          address: this.buildAgendaMongoUri(appConfigs),
+          address: this.buildAgendaMongoUri(config),
           collection: "jobs",
         },
         processEvery: "1 second",
@@ -39,9 +39,9 @@ export class Configuration {
     }
   }
 
-  async configureDatabaseAndSentry(appConfigs: typeof gameConfig) {
-    logger.start(appConfigs.sentry as any);
-    await this.configureDatabase(appConfigs.database);
+  async configureDatabaseAndSentry(config: typeof appConfigs) {
+    logger.start(config.sentry as any);
+    await this.configureDatabase(config.database);
   }
 
   async configureDatabase({ url = "", options = {} }) {

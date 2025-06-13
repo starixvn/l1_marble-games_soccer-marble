@@ -1,6 +1,5 @@
 import Agenda from "agenda";
-import { gameSettings } from "../game-settings";
-import { AppContainer, JobName } from "../types";
+import { AppContainer, GameSettings, JobName } from "../types";
 import { EventService } from "../services/event-service";
 import { GameData } from "./game-data";
 import { IEventDetail } from "../models/event-details";
@@ -9,6 +8,7 @@ export class Scheduler {
   private readonly agenda: Agenda;
   private readonly eventService: EventService;
   private readonly gameData: GameData;
+  private readonly gameSettings: GameSettings;
   private gameStatusInterval: NodeJS.Timeout | null = null;
   private wholeRoundInterval: NodeJS.Timeout | null = null;
 
@@ -16,6 +16,7 @@ export class Scheduler {
     this.agenda = container.agenda;
     this.eventService = container.eventService;
     this.gameData = container.gameData;
+    this.gameSettings = container.gameSettings;
   }
 
   private clearIntervals() {
@@ -32,13 +33,13 @@ export class Scheduler {
   private async checkGameStatus() {
     await this.gameData.loadGameConfig();
 
-    if (this.gameData.gameConfig?.enabled) {
+    if (this.gameData.gameConfig?.config?.enabled) {
       this.clearIntervals();
       await this.scheduleUpcomingEvents();
 
       this.wholeRoundInterval = setInterval(async () => {
         await this.schedule();
-      }, gameSettings.gameTiming.wholeRound * 1000);
+      }, this.gameSettings.gameTiming.wholeRound * 1000);
     }
   }
 
@@ -48,7 +49,7 @@ export class Scheduler {
 
   async scheduleUpcomingEvents() {
     const upcomingEvents = await this.eventService.fetchAllUpcomingEvents();
-    const upcomingEventsToSchedule = Math.max(gameSettings.upcomingEvents - upcomingEvents.length, 0);
+    const upcomingEventsToSchedule = Math.max(this.gameSettings.upcomingEvents - upcomingEvents.length, 0);
 
     for (let i = 1; i <= upcomingEventsToSchedule; i++) {
       const delay = i * 2000; // 2 seconds delay
@@ -82,7 +83,7 @@ export class Scheduler {
   async schedule() {
     await this.gameData.loadGameConfig();
 
-    if (!this.gameData.gameConfig?.enabled) {
+    if (!this.gameData.gameConfig?.config?.enabled) {
       this.clearIntervals();
 
       this.gameStatusInterval = setInterval(async () => {

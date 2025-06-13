@@ -5,7 +5,7 @@ import { GameConfigService } from "../../src/services/game-config-service";
 import { EventService } from "../../src/services/event-service";
 import { RoundService } from "../../src/services/round-service";
 import { RoundGeneratorService } from "../../src/services/round-generator-service";
-import { rateConfigs } from "../../src/rate-config";
+import { rateConfigs } from "../../src/game-config";
 import { IEvent } from "../../src/models/events";
 import mongoose from "mongoose";
 import { IEventDetail } from "../../src/models/event-details";
@@ -81,7 +81,6 @@ const gameSettings: GameSettings = {
     HH: 4,
     H: 19,
   },
-  choices: [],
 };
 const mockRoundGeneratorService = stub<RoundGeneratorService>();
 const mockRoundService = stub<RoundService>();

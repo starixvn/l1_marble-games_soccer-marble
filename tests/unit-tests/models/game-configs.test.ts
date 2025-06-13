@@ -4,11 +4,13 @@ describe("Game Config Model", () => {
   it("should create model with default properties", () => {
     const gameConfig = new GameConfigModel({
       gameId: 1,
-      enabled: true,
+      config: {
+        enabled: true,
+      },
     });
 
     expect(gameConfig.gameId).toBe(1);
-    expect(gameConfig.enabled).toBe(true);
+    expect(gameConfig.config.enabled).toBe(true);
   });
 
   it("should verify required properties", () => {
@@ -17,7 +19,7 @@ describe("Game Config Model", () => {
     const validationError = gameConfig.validateSync();
     expect(validationError).toBeDefined();
     expect(validationError?.errors).toHaveProperty("gameId");
-    expect(validationError?.errors).toHaveProperty("enabled");
+    expect(validationError?.errors).toHaveProperty("config");
   });
 
   it("should verify property types", () => {
@@ -29,6 +31,6 @@ describe("Game Config Model", () => {
     const validationError = gameConfig.validateSync();
     expect(validationError).toBeDefined();
     expect(validationError?.errors).toHaveProperty("gameId");
-    expect(validationError?.errors).toHaveProperty("enabled");
+    expect(validationError?.errors).toHaveProperty("config");
   });
 });

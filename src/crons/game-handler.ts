@@ -54,7 +54,7 @@ export class GameHandler {
   }
 
   async createUpcomingRoundAndEvent(roundId: number, scheduleStartTs: Date): Promise<void> {
-    if (!this.gameData.gameConfig?.enabled) {
+    if (!this.gameData.gameConfig?.config?.enabled) {
       this.logService.log("Game is not enabled, skipping upcoming round and event creation", "info");
       return;
     }

@@ -3,10 +3,8 @@ import http from "http";
 import { ContainerRegistry } from "./container-registry";
 import { StartUp } from "./start-up";
 import mongoose from "mongoose";
-import { verifyAdminToken } from "./middleware/verify-token";
 import { setSecurityHeaders } from "./middleware/security-header";
 import { errorHandler } from "./middleware/error-handler";
-import { enableGame } from "./handlers/game-enable-handler";
 import Agenda from "agenda";
 import { asValue } from "awilix";
 import { logger } from "sc-common";
@@ -47,7 +45,6 @@ const run = async () => {
     agenda: asValue(agenda),
   });
 
-  const gameConfigService = container.resolve("gameConfigService");
   const startUp = new StartUp(container);
 
   // Create Express app
@@ -70,8 +67,6 @@ const run = async () => {
       timestamp: new Date().toISOString(),
     });
   });
-
-  app.post("/game/enable", verifyAdminToken(appConfigs.adminToken), enableGame(gameConfigService));
 
   const httpServer = http.createServer(app);
 

@@ -4,19 +4,23 @@ import { calculateOddsForRound } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
 import { encrypt } from "../helpers/crypto-helper";
 import { idHelper } from "../helpers";
-import { rateConfigs } from "../rate-config";
+import { rateConfigs } from "../game-config";
+import { GameData } from "../crons/game-data";
 
 export class RoundGeneratorService {
   private readonly gameSettings: GameSettings;
   private readonly rateConfigs: typeof rateConfigs;
+  private readonly gameData: GameData;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
     this.rateConfigs = container.rateConfigs;
+    this.gameData = container.gameData;
   }
 
   createNewMatch(): { homeTeam: string; awayTeam: string } {
-    const [homeTeam, awayTeam] = secureShuffle(this.gameSettings.teams);
+    const teams = (this.gameData.gameConfig?.config?.teams as string[]) ?? this.gameSettings.teams;
+    const [homeTeam, awayTeam] = secureShuffle(teams);
     return { homeTeam, awayTeam };
   }
 
@@ -59,7 +63,9 @@ export class RoundGeneratorService {
 
     newRound.matchConfig = this.createNewMatchConfig();
 
-    const result = this.generateResult(newRound.matchConfig, this.gameSettings.numberOfVideos);
+    const numberOfVideos = this.gameData.gameConfig?.config?.numberOfVideos ?? this.gameSettings.numberOfVideos;
+
+    const result = this.generateResult(newRound.matchConfig, numberOfVideos);
 
     const { odds, matchConfig, selections } = this.generateRoundOddsAndUpdateMatchConfig(
       newRound.matchConfig,

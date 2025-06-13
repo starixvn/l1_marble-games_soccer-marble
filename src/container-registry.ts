@@ -1,10 +1,8 @@
 import { AppContainer } from "./types/index";
 import { createContainer, AwilixContainer, InjectionMode, asValue, asClass } from "awilix";
-import { gameSettings } from "./game-settings";
-import { rateConfigs } from "./rate-config";
 import { logger } from "sc-common";
 import { EventDetailModel, EventModel, RoundModel, GameConfigModel } from "./models";
-import appConfig from "./game-config";
+import { appConfigs, gameSettings, rateConfigs } from "./game-config";
 import { RoundGeneratorService } from "./services/round-generator-service";
 import { RoundService } from "./services/round-service";
 import { EventService } from "./services/event-service";
@@ -34,7 +32,7 @@ export class ContainerRegistry {
 
   registerConfigs() {
     this.container.register({
-      appConfigs: asValue(appConfig),
+      appConfigs: asValue(appConfigs),
       gameSettings: asValue(gameSettings),
       rateConfigs: asValue(rateConfigs),
     });

@@ -1,6 +1,96 @@
-import { RateConfig } from "./types";
+export const appConfigs = {
+  hostingPort: 3000,
+  database: {
+    url: "mongodb://marble_backend:hONLdHsFt~fqGfC%3FL6*iwUexW*Q%60KeKF@10.99.99.53:39510,10.99.99.54:39510,10.99.99.188:39510,10.99.99.187:39510/?authSource=admin&replicaSet=SP-Main",
+    options: {
+      dbName: "marble_odds_feed",
+    },
+  },
+  agenda: {
+    url: "mongodb://marble_backend:hONLdHsFt~fqGfC%3FL6*iwUexW*Q%60KeKF@10.99.99.53:39510,10.99.99.54:39510,10.99.99.188:39510,10.99.99.187:39510",
+    authSource: "admin",
+    dbName: "marble_odds_feed",
+    replicaSet: "SP-Main",
+  },
+  sentry: {
+    sentryUrl: "http://18c14f2b9e99e35084c50110359e1592@sentrypro-sc.nebula.prod/16",
+    logIdentifier: "Soccer-Marble-Service",
+    env: "PROD",
+  },
+  adminToken: "Q1ePtW0DtXzPuGAqF85Q1kdcB6LAuU9V91PfybReWS56OJJkIwHfkr0LhpQtaTZo",
+};
 
-const halfConfig1: RateConfig = {
+export const gameSettings = {
+  gameId: 2001,
+  upcomingEvents: 3,
+  gameTiming: {
+    wholeRound: 131,
+    timelines: [
+      {
+        OddsAvailable: 1,
+        ScheduleStart: 31,
+        ResultAvailable: 71,
+      },
+      {
+        OddsAvailable: 66,
+        ScheduleStart: 91,
+        ResultAvailable: 131,
+      },
+    ],
+  },
+  teams: [
+    "clb_rma",
+    "clb_mci",
+    "clb_fcb",
+    "clb_psg",
+    "clb_che",
+    "clb_int",
+    "clb_juv",
+    "clb_atm",
+    "clb_bvb",
+    "clb_ben",
+    "clb_por",
+    "clb_fla",
+    "clb_riv",
+    "clb_pal",
+    "clb_boj",
+    "clb_mon",
+  ],
+  numberOfVideos: {
+    AAAA: 11,
+    AAAH: 12,
+    AAA: 48,
+    AAHA: 12,
+    AAHH: 11,
+    AAH: 25,
+    AA: 92,
+    AHAA: 12,
+    AHAH: 11,
+    AHA: 25,
+    AHHA: 11,
+    AHHH: 12,
+    AHH: 25,
+    AH: 94,
+    A: 131,
+    HAAA: 12,
+    HAAH: 11,
+    HAA: 25,
+    HAHA: 11,
+    HAHH: 12,
+    HAH: 25,
+    HA: 91,
+    HHAA: 11,
+    HHAH: 12,
+    HHA: 25,
+    HHHA: 12,
+    HHHH: 11,
+    HHH: 47,
+    HH: 85,
+    H: 131,
+  },
+};
+
+const halfConfig1 = {
   scoreRate: {
     "1-0": 0.1285,
     "0-1": 0.1285,
@@ -19,7 +109,7 @@ const halfConfig1: RateConfig = {
   },
 };
 
-const halfConfig2: RateConfig = {
+const halfConfig2 = {
   scoreRate: {
     "1-0": 0.0824,
     "0-1": 0.1176,
@@ -38,7 +128,7 @@ const halfConfig2: RateConfig = {
   },
 };
 
-const halfConfig3: RateConfig = {
+const halfConfig3 = {
   scoreRate: {
     "1-0": 0.1024,
     "0-1": 0.1076,
@@ -57,7 +147,7 @@ const halfConfig3: RateConfig = {
   },
 };
 
-const halfConfig4: RateConfig = {
+const halfConfig4 = {
   scoreRate: {
     "1-0": 0.129,
     "0-1": 0.128,
@@ -76,7 +166,7 @@ const halfConfig4: RateConfig = {
   },
 };
 
-const halfConfig5: RateConfig = {
+const halfConfig5 = {
   scoreRate: {
     "1-0": 0.1176,
     "0-1": 0.0824,
@@ -95,7 +185,7 @@ const halfConfig5: RateConfig = {
   },
 };
 
-const halfConfig6: RateConfig = {
+const halfConfig6 = {
   scoreRate: {
     "1-0": 0.1076,
     "0-1": 0.1024,

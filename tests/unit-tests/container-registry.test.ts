@@ -4,9 +4,7 @@ import { RoundService } from "../../src/services/round-service";
 import { EventService } from "../../src/services/event-service";
 import { GameConfigService } from "../../src/services/game-config-service";
 import { EventDetailModel, EventModel, RoundModel, GameConfigModel } from "../../src/models";
-import appConfig from "../../src/game-config";
-import { gameSettings } from "../../src/game-settings";
-import { rateConfigs } from "../../src/rate-config";
+import { appConfigs, gameSettings, rateConfigs } from "../../src/game-config";
 import { logger } from "sc-common";
 import { GameData } from "../../src/crons/game-data";
 import { GameHandler } from "../../src/crons/game-handler";
@@ -55,7 +53,7 @@ describe("ContainerRegistry", () => {
       const container = containerRegistry.register();
 
       // Test configs registration
-      expect(container.resolve("appConfigs")).toBe(appConfig);
+      expect(container.resolve("appConfigs")).toBe(appConfigs);
       expect(container.resolve("gameSettings")).toBe(gameSettings);
       expect(container.resolve("rateConfigs")).toBe(rateConfigs);
 
@@ -85,7 +83,7 @@ describe("ContainerRegistry", () => {
       containerRegistry.registerConfigs();
       const container = containerRegistry.container;
 
-      expect(container.resolve("appConfigs")).toBe(appConfig);
+      expect(container.resolve("appConfigs")).toBe(appConfigs);
       expect(container.resolve("gameSettings")).toBe(gameSettings);
       expect(container.resolve("rateConfigs")).toBe(rateConfigs);
     });

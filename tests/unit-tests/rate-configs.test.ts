@@ -1,4 +1,4 @@
-import { rateConfigs } from "../../src/rate-config";
+import { rateConfigs } from "../../src/game-config";
 import { calculateOddsForRound } from "../../src/helpers/odds-helper";
 import { MatchConfigType } from "../../src/types";
 

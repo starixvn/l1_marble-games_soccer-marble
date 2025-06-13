@@ -51,35 +51,4 @@ describe("GameConfigService", () => {
       expect(result).toBeNull();
     });
   });
-
-  describe("setGameEnabled", () => {
-    it("should update game enabled status", async () => {
-      // Arrange
-      const mockGameConfig = {
-        _id: new mongoose.Types.ObjectId(),
-        gameId: 1,
-        enabled: true,
-      };
-
-      (mockContainer.gameConfigRepository.findOneAndUpdate as jest.Mock).mockReturnValue({
-        lean: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(mockGameConfig),
-        }),
-      });
-
-      // Act
-      await gameConfigService.setGameEnabled(true);
-
-      // Assert
-      expect(mockContainer.gameConfigRepository.findOneAndUpdate).toHaveBeenCalledWith(
-        {
-          gameId: mockContainer.gameSettings.gameId,
-        },
-        { enabled: true },
-        { new: true, upsert: true }
-      );
-
-      expect(mockContainer.logService.log).toHaveBeenCalledWith("Game Configs: set game enabled to true", "info");
-    });
-  });
 });

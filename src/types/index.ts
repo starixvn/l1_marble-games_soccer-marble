@@ -1,12 +1,11 @@
 import { logger } from "sc-common";
 import { EventDetailModel, EventModel, GameConfigModel, RoundModel } from "../models";
-import appConfig from "../game-config";
+import { appConfigs, rateConfigs } from "../game-config";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { RoundGeneratorService } from "../services/round-generator-service";
 import { GameConfigService } from "../services/game-config-service";
 import { GameHandler } from "../crons/game-handler";
-import { rateConfigs } from "../rate-config";
 import Agenda from "agenda";
 import { Scheduler } from "../crons/scheduler";
 import { Consumer } from "../crons/consumer";
@@ -83,7 +82,7 @@ export type Event = {
 };
 
 export interface AppContainer {
-  appConfigs: typeof appConfig;
+  appConfigs: typeof appConfigs;
   logService: typeof logger;
   gameSettings: GameSettings;
   rateConfigs: typeof rateConfigs;
@@ -108,7 +107,6 @@ export type GameSettings = {
   gameTiming: GameTiming;
   teams: string[];
   numberOfVideos: Record<string, number>;
-  choices: string[];
 };
 
 export type GameTiming = {
@@ -151,7 +149,7 @@ export type GameRunningRound = {
 
 export type GameConfig = {
   gameId: number;
-  enabled: boolean;
+  config: any;
 };
 
 export enum JobName {

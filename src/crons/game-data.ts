@@ -16,10 +16,10 @@ export class GameData {
     const gameConfig = await this.gameConfigService.getGameConfig();
 
     if (!gameConfig) {
-      this.logService.logError("Game config not found");
-      return;
+      this.logService.logError("Game config not found, creating new game config");
+      this.gameConfig = await this.gameConfigService.createNewGameConfig();
+    } else {
+      this.gameConfig = gameConfig;
     }
-
-    this.gameConfig = gameConfig;
   }
 }

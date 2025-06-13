@@ -1,12 +1,12 @@
 import { AppContainer } from "./types";
-import appConfig from "./game-config";
+import { appConfigs } from "./game-config";
 import { logger } from "sc-common";
 import { AwilixContainer } from "awilix";
 import { Scheduler } from "./crons/scheduler";
 import { Consumer } from "./crons/consumer";
 
 export class StartUp {
-  appConfigs: typeof appConfig;
+  appConfigs: typeof appConfigs;
   scheduler: Scheduler;
   consumer: Consumer;
 
