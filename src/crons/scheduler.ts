@@ -61,11 +61,12 @@ export class Scheduler {
     const eventDetailId = eventDetail._id;
     const eventID = eventDetail.eventID;
 
-    await this.agenda.schedule(eventDetail.oddsAvailableTs, JobName.UpdateEventDetailOdds, {
-      eventDetailId,
-      eventID,
-      drawIndex,
-    });
+    drawIndex !== 0 &&
+      (await this.agenda.schedule(eventDetail.oddsAvailableTs, JobName.UpdateEventDetailOdds, {
+        eventDetailId,
+        eventID,
+        drawIndex,
+      }));
 
     await this.agenda.schedule(eventDetail.scheduleStartTs, JobName.UpdateEventDetailVideoInfo, {
       eventDetailId,

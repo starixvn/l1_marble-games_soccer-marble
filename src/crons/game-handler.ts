@@ -31,6 +31,10 @@ export class GameHandler {
     this.gameSettings = container.gameSettings;
   }
 
+  private async delayTime(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   async loadRoundFromRoundId(roundId: number) {
     const newRound = await this.roundService.fetchRoundData(roundId);
 
@@ -130,7 +134,12 @@ export class GameHandler {
   }
 
   async handleUpdateSettlementResult(round: GameRunningRound) {
-    const eventDetails = await this.loadEventDetailsFromEventId(round.eventID);
+    let eventDetails = await this.loadEventDetailsFromEventId(round.eventID);
+
+    if (!eventDetails[this.gameSettings.gameTiming.timelines.length - 1].selections?.length) {
+      await this.delayTime(1000); // delay to ensure event detail selections are updated
+      eventDetails = await this.loadEventDetailsFromEventId(round.eventID);
+    }
 
     await Promise.all(
       eventDetails.map((eventDetail, drawIndex) => {
