@@ -89,13 +89,13 @@ export class GameHandler {
     const round = await this.loadRoundFromRoundId(roundId);
     eventDetail.selections = Object.values(round.selections[drawIndex]);
 
+    await this.eventService.updateEventDetail(eventDetail, ["selections"]);
+
     const delay = new Date().getTime() - eventDetail.oddsAvailableTs.getTime();
 
     if (drawIndex > 0 && Math.abs(delay) > maxDelay) {
       this.logService.logError(`Odds available for event detail ${eventDetailId} is late by: ${delay}ms`);
     }
-
-    await this.eventService.updateEventDetail(eventDetail, ["selections"]);
   }
 
   async handleVideoInfoAvailableForEventDetail(drawIndex: number, eventDetailId: Schema.Types.ObjectId, roundId: number) {
@@ -104,13 +104,13 @@ export class GameHandler {
     eventDetail.playlist = round.result.drawResults[drawIndex].playlist;
     eventDetail.goalInfo = round.result.drawResults[drawIndex].goalInfo;
 
+    await this.eventService.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
+
     const delay = new Date().getTime() - eventDetail.scheduleStartTs.getTime();
 
     if (Math.abs(delay) > maxDelay) {
       this.logService.logError(`Video info available for event detail ${eventDetailId} is late by: ${delay}ms`);
     }
-
-    await this.eventService.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
   }
 
   async handleResultAvailableForEventDetail(drawIndex: number, eventDetailId: Schema.Types.ObjectId, roundId: number) {
@@ -119,13 +119,13 @@ export class GameHandler {
     eventDetail.hasResults = true;
     eventDetail.result = round.result.drawResults[drawIndex].result;
 
+    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResults"]);
+
     const delay = new Date().getTime() - eventDetail.resultsAvailableTs.getTime();
 
     if (Math.abs(delay) > maxDelay) {
       this.logService.logError(`Result available for event detail ${eventDetailId} is late by: ${delay}ms`);
     }
-
-    await this.eventService.updateEventDetail(eventDetail, ["result", "hasResults"]);
 
     if (drawIndex === this.gameSettings.gameTiming.timelines.length - 1) {
       await this.handleUpdateSettlementResult(round);

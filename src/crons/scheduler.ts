@@ -11,6 +11,7 @@ export class Scheduler {
   private readonly gameSettings: GameSettings;
   private gameStatusInterval: NodeJS.Timeout | null = null;
   private wholeRoundInterval: NodeJS.Timeout | null = null;
+  private readonly scheduleBufferMs = 100;
 
   constructor(container: AppContainer) {
     this.agenda = container.agenda;
@@ -62,23 +63,35 @@ export class Scheduler {
     const eventID = eventDetail.eventID;
 
     drawIndex !== 0 &&
-      (await this.agenda.schedule(eventDetail.oddsAvailableTs, JobName.UpdateEventDetailOdds, {
+      (await this.agenda.schedule(
+        new Date(eventDetail.oddsAvailableTs.getTime() - this.scheduleBufferMs),
+        JobName.UpdateEventDetailOdds,
+        {
+          eventDetailId,
+          eventID,
+          drawIndex,
+        }
+      ));
+
+    await this.agenda.schedule(
+      new Date(eventDetail.scheduleStartTs.getTime() - this.scheduleBufferMs),
+      JobName.UpdateEventDetailVideoInfo,
+      {
         eventDetailId,
         eventID,
         drawIndex,
-      }));
+      }
+    );
 
-    await this.agenda.schedule(eventDetail.scheduleStartTs, JobName.UpdateEventDetailVideoInfo, {
-      eventDetailId,
-      eventID,
-      drawIndex,
-    });
-
-    await this.agenda.schedule(eventDetail.resultsAvailableTs, JobName.UpdateEventDetailResult, {
-      eventDetailId,
-      eventID,
-      drawIndex,
-    });
+    await this.agenda.schedule(
+      new Date(eventDetail.resultsAvailableTs.getTime() - this.scheduleBufferMs),
+      JobName.UpdateEventDetailResult,
+      {
+        eventDetailId,
+        eventID,
+        drawIndex,
+      }
+    );
   }
 
   async schedule() {
