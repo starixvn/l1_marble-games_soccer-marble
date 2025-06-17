@@ -10,6 +10,7 @@ export const appConfigs = {
     url: "mongodb://marble_backend:MarbleBackend@10.10.50.12:39400,10.10.50.13:39400,10.10.50.14:39400",
     authSource: "admin",
     dbName: "marble_odds_feed",
+    collectionName: "soccer_marble_jobs",
     replicaSet: "SPLocal0",
   },
   sentry: {
@@ -22,6 +23,7 @@ export const appConfigs = {
 
 export const gameSettings = {
   gameId: 2001,
+  modelPrefix: "soccer_marble",
   upcomingEvents: 3,
   gameTiming: {
     wholeRound: 131,

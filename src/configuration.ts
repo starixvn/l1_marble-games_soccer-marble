@@ -23,7 +23,7 @@ export class Configuration {
       const agenda = new Agenda({
         db: {
           address: this.buildAgendaMongoUri(config),
-          collection: "soccer_marble_jobs",
+          collection: config.agenda.collectionName,
         },
         processEvery: "1 second",
         defaultLockLifetime: 5000,
