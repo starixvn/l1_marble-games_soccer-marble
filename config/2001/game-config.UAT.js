@@ -18,7 +18,6 @@ export const appConfigs = {
     logIdentifier: "Soccer-Marble-Service",
     env: "UAT",
   },
-  adminToken: "3AsbupPJx4HcB6SOhUdqr7lzFhxE8Y82sCFio0mZi19Lha7WDIA4ASPLgdorOp7G",
 };
 
 export const gameSettings = {
