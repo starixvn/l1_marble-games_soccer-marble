@@ -22,10 +22,6 @@ export class RoundService {
     return round?.roundId ?? 0;
   }
 
-  async fetchLastRound(roundId: number): Promise<IRound | null> {
-    return this.roundRepository.findOne({ gameId: this.gameSettings.gameId, roundId }).lean().exec();
-  }
-
   async fetchAllUnfinishedRounds() {
     return this.roundRepository
       .find({

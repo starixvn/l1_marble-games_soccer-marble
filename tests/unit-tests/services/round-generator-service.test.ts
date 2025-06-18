@@ -34,20 +34,41 @@ describe("RoundGeneratorService", () => {
   });
 
   describe("createNewMatchConfig", () => {
-    it("should create match config with shuffled first and second half", () => {
+    it("should create match config with shuffled first and second half when home is favorite", () => {
       // Arrange
+      const secureRandomBoolMock = jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
       const shuffleMock = jest
         .spyOn(rngModule, "secureShuffle")
-        .mockReturnValue([mockContainer.rateConfigs[1], mockContainer.rateConfigs[0]]);
+        .mockReturnValue([mockContainer.rateConfigs.homeFavorite[1], mockContainer.rateConfigs.homeFavorite[0]]);
 
       // Act
       const result = service.createNewMatchConfig();
 
       // Assert
-      expect(shuffleMock).toHaveBeenCalledWith(mockContainer.rateConfigs);
+      expect(secureRandomBoolMock).toHaveBeenCalled();
+      expect(shuffleMock).toHaveBeenCalledWith(mockContainer.rateConfigs.homeFavorite);
       expect(result).toEqual({
-        firstHalf: mockContainer.rateConfigs[1],
-        secondHalf: mockContainer.rateConfigs[0],
+        firstHalf: mockContainer.rateConfigs.homeFavorite[1],
+        secondHalf: mockContainer.rateConfigs.homeFavorite[0],
+      });
+    });
+
+    it("should create match config with shuffled first and second half when away is favorite", () => {
+      // Arrange
+      const secureRandomBoolMock = jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(false);
+      const shuffleMock = jest
+        .spyOn(rngModule, "secureShuffle")
+        .mockReturnValue([mockContainer.rateConfigs.awayFavorite[1], mockContainer.rateConfigs.awayFavorite[0]]);
+
+      // Act
+      const result = service.createNewMatchConfig();
+
+      // Assert
+      expect(secureRandomBoolMock).toHaveBeenCalled();
+      expect(shuffleMock).toHaveBeenCalledWith(mockContainer.rateConfigs.awayFavorite);
+      expect(result).toEqual({
+        firstHalf: mockContainer.rateConfigs.awayFavorite[1],
+        secondHalf: mockContainer.rateConfigs.awayFavorite[0],
       });
     });
   });
@@ -58,8 +79,8 @@ describe("RoundGeneratorService", () => {
       const roundId = 1;
       const mockMatch = { homeTeam: "Team A", awayTeam: "Team B" };
       const mockConfig = {
-        firstHalf: mockContainer.rateConfigs[0],
-        secondHalf: mockContainer.rateConfigs[1],
+        firstHalf: mockContainer.rateConfigs.homeFavorite[0],
+        secondHalf: mockContainer.rateConfigs.homeFavorite[1],
       };
       const mockResult = {
         drawResults: [

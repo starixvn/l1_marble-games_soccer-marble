@@ -18,13 +18,11 @@ export class EventService {
     this.logService = container.logService;
   }
 
-  async createNewEvent(roundData: GameRunningRound, offsetFromCurrent: number) {
-    const currentTime = new Date();
-    const timeIncrement = this.gameSettings.gameTiming.wholeRound * (offsetFromCurrent - 1) - 1;
-    const startTime = new Date(currentTime.getTime() + timeIncrement * 1000);
+  async createNewEvent(roundData: GameRunningRound, scheduleStartTs: Date) {
     const eventId = roundData.eventID;
+    const eventStartTimeTs = Math.max(scheduleStartTs.getTime(), new Date().getTime() + 2000); // 2 seconds delay
 
-    const eventDetails = await this.createNewEventDetails(eventId, startTime);
+    const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs));
 
     const event = {
       eventID: eventId,
@@ -32,7 +30,7 @@ export class EventService {
       eventNameBKey: roundData.awayTeam,
       gameId: this.gameSettings.gameId,
       eventDetails: eventDetails.map((eventDetail) => eventDetail._id),
-      scheduleStartTs: startTime,
+      scheduleStartTs: new Date(eventStartTimeTs),
     };
 
     return this.eventRepository.create(event);
@@ -60,10 +58,10 @@ export class EventService {
     await this.eventDetailsRepository.updateOne({ _id: eventDetail._id }, { $set: updateFields });
   }
 
-  async fetchEvent(eventId: number): Promise<IEvent> {
+  async fetchEvent(eventId: number, nullable = false): Promise<IEvent | null> {
     const event = await this.eventRepository.findOne({ eventID: eventId }).lean().exec();
 
-    if (!event) {
+    if (!event && !nullable) {
       this.logService.logError(`Event not found for eventId ${eventId}`);
       throw new Error(`Event not found for eventId ${eventId}`);
     }

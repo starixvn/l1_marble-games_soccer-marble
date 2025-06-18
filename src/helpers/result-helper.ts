@@ -1,6 +1,5 @@
-import Chance from "chance";
 import crypto from "crypto";
-import { secureShuffle, secureWeightedPick } from "sc-core-rng";
+import { secureShuffle, secureWeightedPick, secureRandomRange } from "sc-core-rng";
 import {
   RoundResultType,
   DataResultType,
@@ -169,9 +168,8 @@ export const generateVideoName = (
   videoDefault = false,
   ignoredVideo = ""
 ) => {
-  const chance = new Chance();
   const currentNumberOfVideos = numberOfVideos[result];
-  let videoIndex = videoDefault ? 0 : chance.integer({ min: 1, max: currentNumberOfVideos }) - 1;
+  let videoIndex = videoDefault ? 0 : secureRandomRange(0, currentNumberOfVideos - 1);
   let videoName = crypto.createHash("sha256").update(`${result}-${videoIndex}`).digest("hex");
 
   if (videoName === ignoredVideo && !videoDefault) {

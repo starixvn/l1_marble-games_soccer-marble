@@ -1,29 +1,36 @@
-import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, RateConfig, AppContainer } from "../types";
-import { secureShuffle } from "sc-core-rng";
+import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, AppContainer } from "../types";
+import { secureShuffle, secureRandomBool } from "sc-core-rng";
 import { calculateOddsForRound } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
 import { encrypt } from "../helpers/crypto-helper";
 import { idHelper } from "../helpers";
+import { rateConfigs } from "../game-config";
+import { GameData } from "../crons/game-data";
 
 export class RoundGeneratorService {
   private readonly gameSettings: GameSettings;
-  private readonly rateConfigs: RateConfig[];
+  private readonly rateConfigs: typeof rateConfigs;
+  private readonly gameData: GameData;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
     this.rateConfigs = container.rateConfigs;
+    this.gameData = container.gameData;
   }
 
   createNewMatch(): { homeTeam: string; awayTeam: string } {
-    const [homeTeam, awayTeam] = secureShuffle(this.gameSettings.teams);
+    const teams = (this.gameData.gameConfig?.config?.teams as string[]) ?? this.gameSettings.teams;
+    const [homeTeam, awayTeam] = secureShuffle(teams);
     return { homeTeam, awayTeam };
   }
 
   createNewMatchConfig(): MatchConfigType {
-    const rateConfigs = secureShuffle(this.rateConfigs);
+    const isHomeFavorite = secureRandomBool();
+    const configs = secureShuffle(isHomeFavorite ? this.rateConfigs.homeFavorite : this.rateConfigs.awayFavorite);
+
     return {
-      firstHalf: rateConfigs[0],
-      secondHalf: rateConfigs[1],
+      firstHalf: configs[0],
+      secondHalf: configs[1],
     } as MatchConfigType;
   }
 
@@ -56,7 +63,9 @@ export class RoundGeneratorService {
 
     newRound.matchConfig = this.createNewMatchConfig();
 
-    const result = this.generateResult(newRound.matchConfig, this.gameSettings.numberOfVideos);
+    const numberOfVideos = this.gameData.gameConfig?.config?.numberOfVideos ?? this.gameSettings.numberOfVideos;
+
+    const result = this.generateResult(newRound.matchConfig, numberOfVideos);
 
     const { odds, matchConfig, selections } = this.generateRoundOddsAndUpdateMatchConfig(
       newRound.matchConfig,

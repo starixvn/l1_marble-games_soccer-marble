@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { GameRunningRound } from "../types";
+import { gameSettings } from "../game-config";
 
 export interface IRound extends GameRunningRound {
   _id: mongoose.Schema.Types.ObjectId;
@@ -22,4 +23,4 @@ const RoundSchema = new Schema<IRound>({
   encryptedSelections: { type: Schema.Types.Mixed },
 });
 
-export default mongoose.model<IRound>("soccer_marble_rounds", RoundSchema);
+export default mongoose.model<IRound>(`${gameSettings.modelPrefix}_rounds`, RoundSchema);

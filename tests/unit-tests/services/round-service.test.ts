@@ -52,54 +52,6 @@ describe("RoundService", () => {
     });
   });
 
-  describe("fetchLastRound", () => {
-    it("should fetch a round by id", async () => {
-      // Arrange
-      const roundId = 42;
-      const mockRound: Partial<IRound> = {
-        roundId,
-        gameId: mockContainer.gameSettings.gameId,
-        eventID: 123,
-      };
-
-      (mockContainer.roundRepository.findOne as jest.Mock).mockReturnValue({
-        lean: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(mockRound),
-        }),
-      });
-
-      // Act
-      const result = await service.fetchLastRound(roundId);
-
-      // Assert
-      expect(mockContainer.roundRepository.findOne).toHaveBeenCalledWith({
-        gameId: mockContainer.gameSettings.gameId,
-        roundId,
-      });
-      expect(result).toEqual(mockRound);
-    });
-
-    it("should return null when no round found", async () => {
-      // Arrange
-      const roundId = 42;
-      (mockContainer.roundRepository.findOne as jest.Mock).mockReturnValue({
-        lean: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(null),
-        }),
-      });
-
-      // Act
-      const result = await service.fetchLastRound(roundId);
-
-      // Assert
-      expect(mockContainer.roundRepository.findOne).toHaveBeenCalledWith({
-        gameId: mockContainer.gameSettings.gameId,
-        roundId,
-      });
-      expect(result).toBeNull();
-    });
-  });
-
   describe("markRoundAsEnded", () => {
     it("should update round as ended", async () => {
       // Arrange

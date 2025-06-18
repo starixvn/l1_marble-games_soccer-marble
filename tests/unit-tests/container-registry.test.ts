@@ -1,17 +1,15 @@
 import { ContainerRegistry } from "../../src/container-registry";
-import { GameCron } from "../../src/crons/game-cron";
-import { GameStateManager } from "../../src/crons/game-state-manager";
-import { TimelineProcessor } from "../../src/crons/timeline-processor";
-import { RoundScheduler } from "../../src/crons/round-scheduler";
 import { RoundGeneratorService } from "../../src/services/round-generator-service";
 import { RoundService } from "../../src/services/round-service";
 import { EventService } from "../../src/services/event-service";
 import { GameConfigService } from "../../src/services/game-config-service";
 import { EventDetailModel, EventModel, RoundModel, GameConfigModel } from "../../src/models";
-import appConfig from "../../src/game-config";
-import { gameSettings } from "../../src/game-settings";
-import { rateConfigs } from "../../src/rate-config";
+import { appConfigs, gameSettings, rateConfigs } from "../../src/game-config";
 import { logger } from "sc-common";
+import { GameData } from "../../src/crons/game-data";
+import { GameHandler } from "../../src/crons/game-handler";
+import { Consumer } from "../../src/crons/consumer";
+import { Scheduler } from "../../src/crons/scheduler";
 
 // Mock all dependencies
 jest.mock("sc-common", () => ({
@@ -23,10 +21,11 @@ jest.mock("sc-common", () => ({
   },
 }));
 
-jest.mock("../../src/crons/game-cron");
-jest.mock("../../src/crons/game-state-manager");
-jest.mock("../../src/crons/timeline-processor");
-jest.mock("../../src/crons/round-scheduler");
+jest.mock("../../src/crons/game-handler");
+jest.mock("../../src/crons/game-data");
+jest.mock("../../src/crons/scheduler");
+jest.mock("../../src/crons/consumer");
+
 jest.mock("../../src/services/round-generator-service");
 jest.mock("../../src/services/round-service");
 jest.mock("../../src/services/event-service");
@@ -54,7 +53,7 @@ describe("ContainerRegistry", () => {
       const container = containerRegistry.register();
 
       // Test configs registration
-      expect(container.resolve("appConfigs")).toBe(appConfig);
+      expect(container.resolve("appConfigs")).toBe(appConfigs);
       expect(container.resolve("gameSettings")).toBe(gameSettings);
       expect(container.resolve("rateConfigs")).toBe(rateConfigs);
 
@@ -72,10 +71,10 @@ describe("ContainerRegistry", () => {
       expect(container.resolve("logService")).toBe(logger);
 
       // Test crons registration
-      expect(container.resolve("gameCron")).toBeInstanceOf(GameCron);
-      expect(container.resolve("gameStateManager")).toBeInstanceOf(GameStateManager);
-      expect(container.resolve("timelineProcessor")).toBeInstanceOf(TimelineProcessor);
-      expect(container.resolve("roundScheduler")).toBeInstanceOf(RoundScheduler);
+      expect(container.resolve("gameHandler")).toBeInstanceOf(GameHandler);
+      expect(container.resolve("gameData")).toBeInstanceOf(GameData);
+      expect(container.resolve("scheduler")).toBeInstanceOf(Scheduler);
+      expect(container.resolve("consumer")).toBeInstanceOf(Consumer);
     });
   });
 
@@ -84,7 +83,7 @@ describe("ContainerRegistry", () => {
       containerRegistry.registerConfigs();
       const container = containerRegistry.container;
 
-      expect(container.resolve("appConfigs")).toBe(appConfig);
+      expect(container.resolve("appConfigs")).toBe(appConfigs);
       expect(container.resolve("gameSettings")).toBe(gameSettings);
       expect(container.resolve("rateConfigs")).toBe(rateConfigs);
     });
@@ -127,15 +126,15 @@ describe("ContainerRegistry", () => {
       const container = containerRegistry.container;
 
       // Test cron instances
-      const cron1 = container.resolve("gameCron");
-      const cron2 = container.resolve("gameCron");
+      const cron1 = container.resolve("gameHandler");
+      const cron2 = container.resolve("gameHandler");
       expect(cron1).toBe(cron2);
 
       // Test all crons are registered
-      expect(container.resolve("gameCron")).toBeInstanceOf(GameCron);
-      expect(container.resolve("gameStateManager")).toBeInstanceOf(GameStateManager);
-      expect(container.resolve("timelineProcessor")).toBeInstanceOf(TimelineProcessor);
-      expect(container.resolve("roundScheduler")).toBeInstanceOf(RoundScheduler);
+      expect(container.resolve("gameHandler")).toBeInstanceOf(GameHandler);
+      expect(container.resolve("gameData")).toBeInstanceOf(GameData);
+      expect(container.resolve("scheduler")).toBeInstanceOf(Scheduler);
+      expect(container.resolve("consumer")).toBeInstanceOf(Consumer);
     });
   });
 

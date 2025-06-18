@@ -1,14 +1,15 @@
 import { logger } from "sc-common";
 import { EventDetailModel, EventModel, GameConfigModel, RoundModel } from "../models";
-import { GameCron } from "../crons/game-cron";
-import appConfig from "../game-config";
+import { appConfigs, rateConfigs } from "../game-config";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { RoundGeneratorService } from "../services/round-generator-service";
 import { GameConfigService } from "../services/game-config-service";
-import { GameStateManager } from "../crons/game-state-manager";
-import { TimelineProcessor } from "../crons/timeline-processor";
-import { RoundScheduler } from "../crons/round-scheduler";
+import { GameHandler } from "../crons/game-handler";
+import Agenda from "agenda";
+import { Scheduler } from "../crons/scheduler";
+import { Consumer } from "../crons/consumer";
+import { GameData } from "../crons/game-data";
 
 export type RateConfig = {
   scoreRate: Record<string, number>;
@@ -81,22 +82,23 @@ export type Event = {
 };
 
 export interface AppContainer {
-  appConfigs: typeof appConfig;
+  appConfigs: typeof appConfigs;
   logService: typeof logger;
   gameSettings: GameSettings;
-  rateConfigs: RateConfig[];
+  rateConfigs: typeof rateConfigs;
   eventDetailsRepository: typeof EventDetailModel;
   eventRepository: typeof EventModel;
   roundRepository: typeof RoundModel;
   gameConfigRepository: typeof GameConfigModel;
-  gameCron: GameCron;
   roundGeneratorService: RoundGeneratorService;
   roundService: RoundService;
   eventService: EventService;
   gameConfigService: GameConfigService;
-  gameStateManager: GameStateManager;
-  timelineProcessor: TimelineProcessor;
-  roundScheduler: RoundScheduler;
+  gameHandler: GameHandler;
+  agenda: Agenda;
+  scheduler: Scheduler;
+  consumer: Consumer;
+  gameData: GameData;
 }
 
 export type GameSettings = {
@@ -105,7 +107,6 @@ export type GameSettings = {
   gameTiming: GameTiming;
   teams: string[];
   numberOfVideos: Record<string, number>;
-  choices: string[];
 };
 
 export type GameTiming = {
@@ -148,5 +149,12 @@ export type GameRunningRound = {
 
 export type GameConfig = {
   gameId: number;
-  enabled: boolean;
+  config: any;
 };
+
+export enum JobName {
+  ScheduleUpcomingEvent = "ScheduleUpcomingEvent",
+  UpdateEventDetailOdds = "UpdateEventDetailOdds",
+  UpdateEventDetailVideoInfo = "UpdateEventDetailVideoInfo",
+  UpdateEventDetailResult = "UpdateEventDetailResult",
+}
