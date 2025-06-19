@@ -367,7 +367,6 @@ describe("OddsHelper Tests", () => {
       expect(result.probabilities).toEqual({
         hdp_home: expect.any(Number),
         hdp_away: expect.any(Number),
-        hdp_draw: expect.any(Number),
         home: 0.4,
         away: 0.3,
         draw: 0.3,
