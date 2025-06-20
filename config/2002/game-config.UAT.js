@@ -10,19 +10,19 @@ export const appConfigs = {
     url: "mongodb://marble_backend:MarbleBackend%4022027@10.99.99.53:39520,10.99.99.54:39520,10.99.99.188:39520,10.99.99.187:39520",
     authSource: "admin",
     dbName: "marble_odds_feed",
-    collectionName: "soccer_marble_2_jobs",
+    collectionName: "soccer_marble_2002_jobs",
     replicaSet: "SP-UAT",
   },
   sentry: {
     sentryUrl: "http://9046cc701dad8bd271f2256cc4f0329a@sentryuat-sc.nebula.prod/17",
-    logIdentifier: "Soccer-Marble-2-Service",
+    logIdentifier: "Soccer-Marble-2002-Service",
     env: "UAT",
   },
 };
 
 export const gameSettings = {
   gameId: 2002,
-  modelPrefix: "soccer_marble_2",
+  modelPrefix: "soccer_marble_2002",
   upcomingEvents: 3,
   gameTiming: {
     wholeRound: 131,
