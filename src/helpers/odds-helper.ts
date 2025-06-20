@@ -96,11 +96,12 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
     }
   }
 
+  const hdpDrawRate = hdpDraw / totalRates;
+
   return {
     probabilities: {
-      hdp_home: hdpHome / totalRates,
-      hdp_away: hdpAway / totalRates,
-      hdp_draw: hdpDraw / totalRates,
+      hdp_home: hdpHome / totalRates / (1 - hdpDrawRate),
+      hdp_away: hdpAway / totalRates / (1 - hdpDrawRate),
       home: home / totalRates,
       away: away / totalRates,
       draw: draw / totalRates,
