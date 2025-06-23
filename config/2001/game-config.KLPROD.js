@@ -14,7 +14,7 @@ export const appConfigs = {
     replicaSet: "SP-Main",
   },
   sentry: {
-    sentryUrl: "http://sentrypro-sc.ops-klprod.gamora.prod/16",
+    sentryUrl: "http://18c14f2b9e99e35084c50110359e1592@sentrypro-sc.ops-klprod.gamora.prod/16",
     logIdentifier: "Soccer-Marble-Service",
     env: "PROD",
   },
