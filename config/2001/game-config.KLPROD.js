@@ -16,7 +16,7 @@ export const appConfigs = {
   sentry: {
     sentryUrl: "http://18c14f2b9e99e35084c50110359e1592@sentrypro-sc.ops-klprod.gamora.prod/16",
     logIdentifier: "Soccer-Marble-Service",
-    env: "PROD",
+    env: "KLPROD",
   },
 };
 
