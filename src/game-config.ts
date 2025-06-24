@@ -28,17 +28,17 @@ export const gameSettings = {
   modelPrefix: "soccer_marble_2002",
   upcomingEvents: 3,
   gameTiming: {
-    wholeRound: 141,
+    wholeRound: 140,
     timelines: [
       {
-        OddsAvailable: 1,
-        ScheduleStart: 31,
-        ResultAvailable: 71,
+        OddsAvailable: 0,
+        ScheduleStart: 30,
+        ResultAvailable: 70,
       },
       {
-        OddsAvailable: 66,
-        ScheduleStart: 101,
-        ResultAvailable: 141,
+        OddsAvailable: 65,
+        ScheduleStart: 100,
+        ResultAvailable: 140,
       },
     ],
   },
