@@ -18,17 +18,17 @@ export class RoundGeneratorService {
     this.gameData = container.gameData;
   }
 
-  createNewMatchMode1() {
+  createNewMatchFromRandomTeams() {
     const teams = this.gameData.gameConfig?.config?.teams ?? this.gameSettings.teams;
     const [homeTeam, awayTeam] = secureShuffle(teams);
     return { homeTeam, awayTeam };
   }
 
-  createNewMatchMode2(roundId: number) {
+  createNewMatchFromMatches(roundId: number) {
     const matches = this.gameData.gameConfig?.config?.matches;
 
     if (!matches || matches.length === 0) {
-      return this.createNewMatchMode1();
+      return this.createNewMatchFromRandomTeams();
     }
 
     return matches[roundId % matches.length];
@@ -38,10 +38,10 @@ export class RoundGeneratorService {
     const teamSelectionMode = this.gameData.gameConfig?.config?.teamSelectionMode ?? 1;
 
     if (teamSelectionMode === 2) {
-      return this.createNewMatchMode2(roundId);
+      return this.createNewMatchFromMatches(roundId);
     }
 
-    return this.createNewMatchMode1();
+    return this.createNewMatchFromRandomTeams();
   }
 
   createNewMatchConfig(): MatchConfigType {
