@@ -19,7 +19,7 @@ export class RoundGeneratorService {
   }
 
   createNewMatchFromRandomTeams() {
-    const teams = this.gameData.gameConfig?.config?.teams.length
+    const teams = this.gameData.gameConfig?.config?.teams?.length
       ? this.gameData.gameConfig?.config?.teams
       : this.gameSettings.teams;
     const [homeTeam, awayTeam] = secureShuffle(teams);
@@ -27,7 +27,7 @@ export class RoundGeneratorService {
   }
 
   createNewMatchFromMatches(roundId: number) {
-    const teams = this.gameData.gameConfig?.config?.teams.length
+    const teams = this.gameData.gameConfig?.config?.teams?.length
       ? this.gameData.gameConfig?.config?.teams
       : this.gameSettings.teams;
     const matches = this.gameData.gameConfig?.config?.matches;
