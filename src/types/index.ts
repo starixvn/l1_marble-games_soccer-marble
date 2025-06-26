@@ -18,6 +18,8 @@ export type RateConfig = {
 export type HalfConfigType = RateConfig & {
   overUnderValue: number;
   handicapValue: number;
+  homeOverUnderValue: number;
+  awayOverUnderValue: number;
 };
 
 export type MatchConfigType = {
@@ -25,6 +27,8 @@ export type MatchConfigType = {
   secondHalf: HalfConfigType;
   overUnderValue: number;
   handicapValue: number;
+  homeOverUnderValue: number;
+  awayOverUnderValue: number;
 };
 
 export enum SettlementStatus {

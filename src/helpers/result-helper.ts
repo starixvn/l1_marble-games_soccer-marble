@@ -11,8 +11,14 @@ import {
   FirstHalfOddsKey,
   SecondHalfOddsKey,
 } from "../types";
-
 import { gameSettings } from "../game-config";
+
+type SettleConfig = {
+  overUnderValue: number;
+  handicapValue: number;
+  homeOverUnderValue: number;
+  awayOverUnderValue: number;
+};
 
 export const generateResult = (data: DataResultType): RoundResultType => {
   const numberOfVideos = data.numberOfVideos;
@@ -44,20 +50,26 @@ export const getSettlementResult = (
   const firstHalf = roundResult.drawResults[0].result;
   const secondHalf = roundResult.drawResults[1].result;
 
-  const firstHalfSettlementResult = getSettlementResultFromResultString(
-    firstHalf.goalSequence,
-    matchConfig.firstHalf.overUnderValue,
-    matchConfig.firstHalf.handicapValue
-  );
-  const secondHalfSettlementResult = getSettlementResultFromResultString(
-    secondHalf.goalSequence,
-    matchConfig.secondHalf.overUnderValue,
-    matchConfig.secondHalf.handicapValue
-  );
+  const firstHalfSettlementResult = getSettlementResultFromResultString(firstHalf.goalSequence, {
+    overUnderValue: matchConfig.firstHalf.overUnderValue,
+    handicapValue: matchConfig.firstHalf.handicapValue,
+    homeOverUnderValue: matchConfig.firstHalf.homeOverUnderValue,
+    awayOverUnderValue: matchConfig.firstHalf.awayOverUnderValue,
+  });
+  const secondHalfSettlementResult = getSettlementResultFromResultString(secondHalf.goalSequence, {
+    overUnderValue: matchConfig.secondHalf.overUnderValue,
+    handicapValue: matchConfig.secondHalf.handicapValue,
+    homeOverUnderValue: matchConfig.secondHalf.homeOverUnderValue,
+    awayOverUnderValue: matchConfig.secondHalf.awayOverUnderValue,
+  });
   const fullTimeSettlementResult = getSettlementResultFromResultString(
     firstHalf.goalSequence + secondHalf.goalSequence,
-    matchConfig.overUnderValue,
-    matchConfig.handicapValue
+    {
+      overUnderValue: matchConfig.overUnderValue,
+      handicapValue: matchConfig.handicapValue,
+      homeOverUnderValue: matchConfig.homeOverUnderValue,
+      awayOverUnderValue: matchConfig.awayOverUnderValue,
+    }
   );
 
   const finalFirstHalfSettlementResult = {
@@ -74,6 +86,10 @@ export const getSettlementResult = (
     [FirstHalfOddsKey.FT_TG_34]: fullTimeSettlementResult.tg34,
     [FirstHalfOddsKey.FT_TG_56]: fullTimeSettlementResult.tg56,
     [FirstHalfOddsKey.FT_TG_7]: fullTimeSettlementResult.tg7,
+    [FirstHalfOddsKey.FT_HOME_OVER]: fullTimeSettlementResult.homeOver,
+    [FirstHalfOddsKey.FT_HOME_UNDER]: fullTimeSettlementResult.homeUnder,
+    [FirstHalfOddsKey.FT_AWAY_OVER]: fullTimeSettlementResult.awayOver,
+    [FirstHalfOddsKey.FT_AWAY_UNDER]: fullTimeSettlementResult.awayUnder,
 
     [FirstHalfOddsKey.H1_HDP_HOME]: firstHalfSettlementResult.handicapHome,
     [FirstHalfOddsKey.H1_HDP_AWAY]: firstHalfSettlementResult.handicapAway,
@@ -87,6 +103,10 @@ export const getSettlementResult = (
     [FirstHalfOddsKey.H1_TG_01]: firstHalfSettlementResult.tg01,
     [FirstHalfOddsKey.H1_TG_23]: firstHalfSettlementResult.tg23,
     [FirstHalfOddsKey.H1_TG_4]: firstHalfSettlementResult.tg4,
+    [FirstHalfOddsKey.H1_HOME_OVER]: firstHalfSettlementResult.homeOver,
+    [FirstHalfOddsKey.H1_HOME_UNDER]: firstHalfSettlementResult.homeUnder,
+    [FirstHalfOddsKey.H1_AWAY_OVER]: firstHalfSettlementResult.awayOver,
+    [FirstHalfOddsKey.H1_AWAY_UNDER]: firstHalfSettlementResult.awayUnder,
   };
 
   const finalSecondHalfSettlementResult = {
@@ -109,6 +129,10 @@ export const getSettlementResult = (
     [SecondHalfOddsKey.FT_TG_34]: fullTimeSettlementResult.tg34,
     [SecondHalfOddsKey.FT_TG_56]: fullTimeSettlementResult.tg56,
     [SecondHalfOddsKey.FT_TG_7]: fullTimeSettlementResult.tg7,
+    [SecondHalfOddsKey.FT_HOME_OVER]: secondHalfSettlementResult.homeOver,
+    [SecondHalfOddsKey.FT_HOME_UNDER]: secondHalfSettlementResult.homeUnder,
+    [SecondHalfOddsKey.FT_AWAY_OVER]: secondHalfSettlementResult.awayOver,
+    [SecondHalfOddsKey.FT_AWAY_UNDER]: secondHalfSettlementResult.awayUnder,
   };
 
   return [finalFirstHalfSettlementResult, finalSecondHalfSettlementResult];
@@ -126,18 +150,22 @@ const getHandicapResult = (isHome: boolean, homeGoals: number, awayGoals: number
   return isWin ? SettlementStatus.WIN : SettlementStatus.LOSE;
 };
 
-const getSettlementResultFromResultString = (resultString: string, overUnderValue: number, handicapValue: number) => {
+const getSettlementResultFromResultString = (resultString: string, settleConfig: SettleConfig) => {
   const homeGoals = resultString.split("H").length - 1;
   const awayGoals = resultString.split("A").length - 1;
 
   const totalGoals = homeGoals + awayGoals;
-  const isOver = totalGoals > overUnderValue;
-  const isUnder = totalGoals < overUnderValue;
+  const isOver = totalGoals > settleConfig.overUnderValue;
+  const isUnder = totalGoals < settleConfig.overUnderValue;
   const isOdd = totalGoals % 2 === 1;
+  const isHomeOver = homeGoals > settleConfig.homeOverUnderValue;
+  const isAwayOver = awayGoals > settleConfig.awayOverUnderValue;
+  const isHomeUnder = homeGoals < settleConfig.homeOverUnderValue;
+  const isAwayUnder = awayGoals < settleConfig.awayOverUnderValue;
 
   return {
-    handicapHome: getHandicapResult(true, homeGoals, awayGoals, handicapValue),
-    handicapAway: getHandicapResult(false, homeGoals, awayGoals, handicapValue),
+    handicapHome: getHandicapResult(true, homeGoals, awayGoals, settleConfig.handicapValue),
+    handicapAway: getHandicapResult(false, homeGoals, awayGoals, settleConfig.handicapValue),
     home: homeGoals > awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
     away: awayGoals > homeGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
     draw: homeGoals === awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
@@ -152,12 +180,14 @@ const getSettlementResultFromResultString = (resultString: string, overUnderValu
     tg34: 3 <= totalGoals && totalGoals <= 4 ? SettlementStatus.WIN : SettlementStatus.LOSE,
     tg56: 5 <= totalGoals && totalGoals <= 6 ? SettlementStatus.WIN : SettlementStatus.LOSE,
     tg7: totalGoals >= 7 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    homeOver: isHomeOver ? SettlementStatus.WIN : isHomeUnder ? SettlementStatus.LOSE : SettlementStatus.DRAW,
+    awayOver: isAwayOver ? SettlementStatus.WIN : isAwayUnder ? SettlementStatus.LOSE : SettlementStatus.DRAW,
+    homeUnder: isHomeUnder ? SettlementStatus.WIN : isHomeOver ? SettlementStatus.LOSE : SettlementStatus.DRAW,
+    awayUnder: isAwayUnder ? SettlementStatus.WIN : isAwayOver ? SettlementStatus.LOSE : SettlementStatus.DRAW,
   };
 };
 
-export const generateRawResultForHash = () => {};
-
-export const generateResultForHalf = (halfConfig: HalfConfigType) => {
+const generateResultForHalf = (halfConfig: HalfConfigType) => {
   const scoreResult = getScoreFromScoreRate(halfConfig.scoreRate);
 
   const [homeGoals, awayGoals] = scoreResult.split("-").map(Number);

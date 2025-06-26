@@ -39,8 +39,8 @@ const calculateAverageScore = (scoreRates: Record<string, number>) => {
     awayScore += awayGoals * rate;
   }
 
-  homeScore = roundToPrecision(homeScore / totalRates, 100);
-  awayScore = roundToPrecision(awayScore / totalRates, 100);
+  homeScore = roundToPrecision(homeScore / totalRates, 10000);
+  awayScore = roundToPrecision(awayScore / totalRates, 10000);
 
   return { homeScore, awayScore };
 };
@@ -65,11 +65,18 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
     tg7 = 0,
     tg01 = 0,
     tg23 = 0,
-    tg4 = 0;
+    tg4 = 0,
+    homeOver = 0,
+    awayOver = 0,
+    homeUnder = 0,
+    awayUnder = 0;
 
   const { homeScore, awayScore } = calculateAverageScore(scoreRates);
   const handicapValue = calculateHandicapValue(homeScore, awayScore);
   const overUnderValue = calculateOverUnderValue(homeScore, awayScore);
+
+  const homeOverUnderValue = calculateOverUnderValue(homeScore, 0);
+  const awayOverUnderValue = calculateOverUnderValue(0, awayScore);
 
   for (const [score, rate] of Object.entries(scoreRates)) {
     const [homeGoals, awayGoals] = parseScore(score);
@@ -130,6 +137,18 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
         tg7 += rate;
         break;
     }
+
+    if (homeGoals > homeOverUnderValue) {
+      homeOver += rate;
+    } else if (homeGoals < homeOverUnderValue) {
+      homeUnder += rate;
+    }
+
+    if (awayGoals > awayOverUnderValue) {
+      awayOver += rate;
+    } else if (awayGoals < awayOverUnderValue) {
+      awayUnder += rate;
+    }
   }
 
   const hdpDrawRate = hdpDraw / totalRates;
@@ -152,9 +171,15 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
       tg4: tg4 / totalRates,
       tg56: tg56 / totalRates,
       tg7: tg7 / totalRates,
+      homeOver: homeOver / totalRates,
+      awayOver: awayOver / totalRates,
+      homeUnder: homeUnder / totalRates,
+      awayUnder: awayUnder / totalRates,
     },
     overUnderValue,
     handicapValue,
+    homeOverUnderValue,
+    awayOverUnderValue,
   };
 };
 
@@ -185,21 +210,20 @@ export const probabilityToBetRawOdds = (prob: number): number => {
 
 export const calculateFulltimeOdds = (matchConfig: MatchConfigType) => {
   const fullTimeScoreRates = calculateFullTimeScoreRates(matchConfig.firstHalf, matchConfig.secondHalf);
-  const { probabilities, overUnderValue, handicapValue } = calculateProbabilitiesForBetChoices(fullTimeScoreRates);
+  const { probabilities, overUnderValue, handicapValue, homeOverUnderValue, awayOverUnderValue } =
+    calculateProbabilitiesForBetChoices(fullTimeScoreRates);
   const odds = calculateBetOdds(probabilities);
 
-  return { odds, overUnderValue, handicapValue };
+  return { odds, overUnderValue, handicapValue, homeOverUnderValue, awayOverUnderValue };
 };
 
 export const calculateHalfOdds = (halfConfig: RateConfig, addingScore = "0-0") => {
-  const { probabilities, overUnderValue, handicapValue } = calculateProbabilitiesForBetChoices(
-    halfConfig.scoreRate,
-    addingScore
-  );
+  const { probabilities, overUnderValue, handicapValue, homeOverUnderValue, awayOverUnderValue } =
+    calculateProbabilitiesForBetChoices(halfConfig.scoreRate, addingScore);
 
   const odds = calculateBetOdds(probabilities);
 
-  return { odds, overUnderValue, handicapValue };
+  return { odds, overUnderValue, handicapValue, homeOverUnderValue, awayOverUnderValue };
 };
 
 export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfResult: string) => {
@@ -218,6 +242,8 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     ...matchConfig.firstHalf,
     overUnderValue: firstHalf.overUnderValue,
     handicapValue: firstHalf.handicapValue,
+    homeOverUnderValue: firstHalf.homeOverUnderValue,
+    awayOverUnderValue: firstHalf.awayOverUnderValue,
   };
 
   const firstHalfOdds = {
@@ -233,6 +259,10 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     [FirstHalfOddsKey.H1_TG_01]: firstHalf.odds.tg01,
     [FirstHalfOddsKey.H1_TG_23]: firstHalf.odds.tg23,
     [FirstHalfOddsKey.H1_TG_4]: firstHalf.odds.tg4,
+    [FirstHalfOddsKey.H1_HOME_OVER]: firstHalf.odds.homeOver,
+    [FirstHalfOddsKey.H1_HOME_UNDER]: firstHalf.odds.homeUnder,
+    [FirstHalfOddsKey.H1_AWAY_OVER]: firstHalf.odds.awayOver,
+    [FirstHalfOddsKey.H1_AWAY_UNDER]: firstHalf.odds.awayUnder,
 
     [FirstHalfOddsKey.FT_HDP_HOME]: fulltime.odds.hdp_home,
     [FirstHalfOddsKey.FT_HDP_AWAY]: fulltime.odds.hdp_away,
@@ -247,6 +277,10 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     [FirstHalfOddsKey.FT_TG_34]: fulltime.odds.tg34,
     [FirstHalfOddsKey.FT_TG_56]: fulltime.odds.tg56,
     [FirstHalfOddsKey.FT_TG_7]: fulltime.odds.tg7,
+    [FirstHalfOddsKey.FT_HOME_OVER]: fulltime.odds.homeOver,
+    [FirstHalfOddsKey.FT_HOME_UNDER]: fulltime.odds.homeUnder,
+    [FirstHalfOddsKey.FT_AWAY_OVER]: fulltime.odds.awayOver,
+    [FirstHalfOddsKey.FT_AWAY_UNDER]: fulltime.odds.awayUnder,
   };
 
   const addingScore = `${fhHomeGoals}-${fhAwayGoals}`;
@@ -256,6 +290,8 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     ...matchConfig.secondHalf,
     overUnderValue: secondHalf.overUnderValue,
     handicapValue: secondHalf.handicapValue,
+    homeOverUnderValue: secondHalf.homeOverUnderValue,
+    awayOverUnderValue: secondHalf.awayOverUnderValue,
   };
 
   const secondHalfOdds = {
@@ -272,12 +308,18 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     [SecondHalfOddsKey.FT_TG_34]: secondHalf.odds.tg34,
     [SecondHalfOddsKey.FT_TG_56]: secondHalf.odds.tg56,
     [SecondHalfOddsKey.FT_TG_7]: secondHalf.odds.tg7,
+    [SecondHalfOddsKey.FT_HOME_OVER]: secondHalf.odds.homeOver,
+    [SecondHalfOddsKey.FT_HOME_UNDER]: secondHalf.odds.homeUnder,
+    [SecondHalfOddsKey.FT_AWAY_OVER]: secondHalf.odds.awayOver,
+    [SecondHalfOddsKey.FT_AWAY_UNDER]: secondHalf.odds.awayUnder,
   };
 
   const updatedMatchConfig = {
     ...matchConfig,
     overUnderValue: fulltime.overUnderValue,
     handicapValue: fulltime.handicapValue,
+    homeOverUnderValue: fulltime.homeOverUnderValue,
+    awayOverUnderValue: fulltime.awayOverUnderValue,
     firstHalf: updatedFirstHalf,
     secondHalf: updatedSecondHalf,
   };
@@ -298,12 +340,27 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
 
   firstHalfSelections[FirstHalfOddsKey.FT_HDP_HOME].point = fulltime.handicapValue;
   firstHalfSelections[FirstHalfOddsKey.FT_HDP_AWAY].point = -fulltime.handicapValue;
+
   firstHalfSelections[FirstHalfOddsKey.H1_HDP_HOME].point = firstHalf.handicapValue;
   firstHalfSelections[FirstHalfOddsKey.H1_HDP_AWAY].point = -firstHalf.handicapValue;
+
   firstHalfSelections[FirstHalfOddsKey.FT_OU_OVER].point = fulltime.overUnderValue;
   firstHalfSelections[FirstHalfOddsKey.FT_OU_UNDER].point = fulltime.overUnderValue;
+
   firstHalfSelections[FirstHalfOddsKey.H1_OU_OVER].point = firstHalf.overUnderValue;
   firstHalfSelections[FirstHalfOddsKey.H1_OU_UNDER].point = firstHalf.overUnderValue;
+
+  firstHalfSelections[FirstHalfOddsKey.FT_HOME_OVER].point = fulltime.homeOverUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.FT_HOME_UNDER].point = fulltime.homeOverUnderValue;
+
+  firstHalfSelections[FirstHalfOddsKey.FT_AWAY_OVER].point = fulltime.awayOverUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.FT_AWAY_UNDER].point = fulltime.awayOverUnderValue;
+
+  firstHalfSelections[FirstHalfOddsKey.H1_HOME_OVER].point = firstHalf.homeOverUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.H1_HOME_UNDER].point = firstHalf.homeOverUnderValue;
+
+  firstHalfSelections[FirstHalfOddsKey.H1_AWAY_OVER].point = firstHalf.awayOverUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.H1_AWAY_UNDER].point = firstHalf.awayOverUnderValue;
 
   Object.entries(secondHalfOdds).forEach(([key, value]) => {
     const selection: Selection = {
@@ -318,8 +375,15 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
 
   secondHalfSelections[SecondHalfOddsKey.FT_HDP_HOME].point = secondHalf.handicapValue;
   secondHalfSelections[SecondHalfOddsKey.FT_HDP_AWAY].point = -secondHalf.handicapValue;
+
   secondHalfSelections[SecondHalfOddsKey.FT_OU_OVER].point = secondHalf.overUnderValue + fhTotalGoals;
   secondHalfSelections[SecondHalfOddsKey.FT_OU_UNDER].point = secondHalf.overUnderValue + fhTotalGoals;
+
+  secondHalfSelections[SecondHalfOddsKey.FT_HOME_OVER].point = secondHalf.homeOverUnderValue + fhHomeGoals;
+  secondHalfSelections[SecondHalfOddsKey.FT_HOME_UNDER].point = secondHalf.homeOverUnderValue + fhHomeGoals;
+
+  secondHalfSelections[SecondHalfOddsKey.FT_AWAY_OVER].point = secondHalf.awayOverUnderValue + fhAwayGoals;
+  secondHalfSelections[SecondHalfOddsKey.FT_AWAY_UNDER].point = secondHalf.awayOverUnderValue + fhAwayGoals;
 
   return {
     odds: [firstHalfOdds, secondHalfOdds],
