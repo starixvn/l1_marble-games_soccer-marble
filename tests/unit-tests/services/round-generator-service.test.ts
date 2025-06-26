@@ -60,9 +60,10 @@ describe("RoundGeneratorService", () => {
         { homeTeam: "Team A", awayTeam: "Team B" },
         { homeTeam: "Team C", awayTeam: "Team D" },
       ];
+      const teams = ["Team A", "Team B", "Team C", "Team D"];
       mockContainer.gameData.gameConfig = {
         gameId: 2001,
-        config: { matches, enabled: true, teamSelectionMode: 1, teams: [], numberOfVideos: {} },
+        config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
       } as any;
 
       // Act
@@ -107,6 +108,108 @@ describe("RoundGeneratorService", () => {
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
       expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A" });
+    });
+
+    it("should fallback to random teams if homeTeam from match is not in available teams", () => {
+      // Arrange
+      const matches = [
+        { homeTeam: "Team A", awayTeam: "Team B" },
+        { homeTeam: "Team C", awayTeam: "Team D" },
+      ];
+      const teams = ["Team B", "Team C", "Team D"]; // Team A is missing
+      mockContainer.gameData.gameConfig = {
+        gameId: 2001,
+        config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
+      } as any;
+      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team C", awayTeam: "Team B" });
+
+      // Act
+      const result = service.createNewMatchFromMatches(0);
+
+      // Assert
+      expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
+      expect(result).toEqual({ homeTeam: "Team C", awayTeam: "Team B" });
+    });
+
+    it("should fallback to random teams if awayTeam from match is not in available teams", () => {
+      // Arrange
+      const matches = [
+        { homeTeam: "Team A", awayTeam: "Team B" },
+        { homeTeam: "Team C", awayTeam: "Team D" },
+      ];
+      const teams = ["Team A", "Team C", "Team D"]; // Team B is missing
+      mockContainer.gameData.gameConfig = {
+        gameId: 2001,
+        config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
+      } as any;
+      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team A", awayTeam: "Team C" });
+
+      // Act
+      const result = service.createNewMatchFromMatches(0);
+
+      // Assert
+      expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
+      expect(result).toEqual({ homeTeam: "Team A", awayTeam: "Team C" });
+    });
+
+    it("should fallback to random teams if both teams from match are not in available teams", () => {
+      // Arrange
+      const matches = [
+        { homeTeam: "Team A", awayTeam: "Team B" },
+        { homeTeam: "Team C", awayTeam: "Team D" },
+      ];
+      const teams = ["Team E", "Team F", "Team G"]; // Neither Team A nor Team B are available
+      mockContainer.gameData.gameConfig = {
+        gameId: 2001,
+        config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
+      } as any;
+      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team E", awayTeam: "Team F" });
+
+      // Act
+      const result = service.createNewMatchFromMatches(0);
+
+      // Assert
+      expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
+      expect(result).toEqual({ homeTeam: "Team E", awayTeam: "Team F" });
+    });
+
+    it("should fallback to random teams if match is empty", () => {
+      // Arrange
+      const matches = [{}, {}];
+      const teams = ["Team E", "Team F", "Team G"]; // Neither Team A nor Team B are available
+      mockContainer.gameData.gameConfig = {
+        gameId: 2001,
+        config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
+      } as any;
+      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team E", awayTeam: "Team F" });
+
+      // Act
+      const result = service.createNewMatchFromMatches(0);
+
+      // Assert
+      expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
+      expect(result).toEqual({ homeTeam: "Team E", awayTeam: "Team F" });
+    });
+
+    it("should use teams from gameSettings when gameConfig teams are not available", () => {
+      // Arrange
+      const matches = [
+        { homeTeam: "Team A", awayTeam: "Team B" },
+        { homeTeam: "Team C", awayTeam: "Team D" },
+      ];
+      mockContainer.gameData.gameConfig = {
+        gameId: 2001,
+        config: { matches, enabled: true, teamSelectionMode: 1, numberOfVideos: {} }, // teams not specified
+      } as any;
+      // mockContainer.gameSettings.teams contains ["Team A", "Team B"] by default
+      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team A", awayTeam: "Team B" });
+
+      // Act
+      const result = service.createNewMatchFromMatches(0);
+
+      // Assert
+      expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
+      expect(result).toEqual({ homeTeam: "Team A", awayTeam: "Team B" });
     });
   });
 

@@ -10,6 +10,8 @@ import {
   SettlementStatus,
 } from "../types";
 
+import { gameSettings } from "../game-config";
+
 export const generateResult = (data: DataResultType): RoundResultType => {
   const numberOfVideos = data.numberOfVideos;
   const firstHalf = generateResultForHalf(data.matchConfig.firstHalf);
@@ -168,7 +170,7 @@ export const generateVideoName = (
   videoDefault = false,
   ignoredVideo = ""
 ) => {
-  const currentNumberOfVideos = numberOfVideos[result];
+  const currentNumberOfVideos = numberOfVideos[result] || gameSettings.numberOfVideos[result];
   let videoIndex = videoDefault ? 0 : secureRandomRange(0, currentNumberOfVideos - 1);
   let videoName = crypto.createHash("sha256").update(`${result}-${videoIndex}`).digest("hex");
 

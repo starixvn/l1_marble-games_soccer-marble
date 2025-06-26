@@ -91,7 +91,7 @@ export const gameSettings = {
     HHH: 47,
     HH: 85,
     H: 131,
-  },
+  } as Record<string, number>,
 };
 
 const halfConfig1: RateConfig = {

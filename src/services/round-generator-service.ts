@@ -25,13 +25,20 @@ export class RoundGeneratorService {
   }
 
   createNewMatchFromMatches(roundId: number) {
+    const teams = this.gameData.gameConfig?.config?.teams ?? this.gameSettings.teams;
     const matches = this.gameData.gameConfig?.config?.matches;
 
     if (!matches || matches.length === 0) {
       return this.createNewMatchFromRandomTeams();
     }
 
-    return matches[roundId % matches.length];
+    const match = matches[roundId % matches.length];
+
+    if (!teams.includes(match.homeTeam) || !teams.includes(match.awayTeam)) {
+      return this.createNewMatchFromRandomTeams();
+    }
+
+    return match;
   }
 
   createNewMatch(roundId: number): Match {
