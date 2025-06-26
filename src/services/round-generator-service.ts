@@ -19,13 +19,17 @@ export class RoundGeneratorService {
   }
 
   createNewMatchFromRandomTeams() {
-    const teams = this.gameData.gameConfig?.config?.teams ?? this.gameSettings.teams;
+    const teams = this.gameData.gameConfig?.config?.teams.length
+      ? this.gameData.gameConfig?.config?.teams
+      : this.gameSettings.teams;
     const [homeTeam, awayTeam] = secureShuffle(teams);
     return { homeTeam, awayTeam };
   }
 
   createNewMatchFromMatches(roundId: number) {
-    const teams = this.gameData.gameConfig?.config?.teams ?? this.gameSettings.teams;
+    const teams = this.gameData.gameConfig?.config?.teams.length
+      ? this.gameData.gameConfig?.config?.teams
+      : this.gameSettings.teams;
     const matches = this.gameData.gameConfig?.config?.matches;
 
     if (!matches || matches.length === 0) {

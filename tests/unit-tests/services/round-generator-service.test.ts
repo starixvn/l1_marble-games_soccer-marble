@@ -51,6 +51,22 @@ describe("RoundGeneratorService", () => {
       expect(shuffleMock).toHaveBeenCalledWith(mockContainer.gameSettings.teams);
       expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A" });
     });
+
+    it("should return shuffled teams from gameSettings if gameConfig is empty", () => {
+      // Arrange
+      mockContainer.gameData.gameConfig = {
+        gameId: 2001,
+        config: { teams: [], enabled: true, teamSelectionMode: 1, matches: [], numberOfVideos: {} },
+      } as any;
+      const shuffleMock = jest.spyOn(rngModule, "secureShuffle").mockReturnValue(["Team B", "Team A"]);
+
+      // Act
+      const result = service.createNewMatchFromRandomTeams();
+
+      // Assert
+      expect(shuffleMock).toHaveBeenCalledWith(mockContainer.gameSettings.teams);
+      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A" });
+    });
   });
 
   describe("createNewMatchFromMatches", () => {
