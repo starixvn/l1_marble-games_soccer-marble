@@ -102,1604 +102,451 @@ describe("result helper tests", () => {
   });
 
   describe("getSettlementResult", () => {
-    describe("first half", () => {
-      describe("handicap home win", () => {
-        it("h1_hdp_home should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HH", finalScore: "2:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: -0.5,
-              scoreRate: { "1-0": 1 },
+    const matchConfig = {
+      firstHalf: {
+        overUnderValue: 1.5,
+        handicapValue: -0.5,
+        scoreRate: { "1-0": 1 },
+        homeOverUnderValue: 0.5,
+        awayOverUnderValue: 0.5,
+      },
+      secondHalf: {
+        overUnderValue: 1.5,
+        handicapValue: 0,
+        scoreRate: { "0-1": 1 },
+        homeOverUnderValue: 0.5,
+        awayOverUnderValue: 0.5,
+      },
+      overUnderValue: 2.5,
+      handicapValue: -0.5,
+      homeOverUnderValue: 1.5,
+      awayOverUnderValue: 1.5,
+    };
+    describe("with round result [2:0, 0:1]", () => {
+      it("should correctly settle all bets", () => {
+        // Arrange
+        const roundResult = {
+          drawResults: [
+            {
+              playlist: "test-video-1",
+              goalInfo: "test-video-1",
+              result: { goalSequence: "HH", finalScore: "2:0" },
             },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
+            {
+              playlist: "test-video-2",
+              goalInfo: "test-video-2",
+              result: { goalSequence: "A", finalScore: "0:1" },
             },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_hdp_home).toBe(SettlementStatus.WIN);
-        });
-
-        it("h1_hdp_away should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HH", finalScore: "2:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: -0.5,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_hdp_away).toBe(SettlementStatus.LOSE);
-        });
-      });
-
-      describe("handicap away win", () => {
-        it("h1_hdp_home should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: -0.5,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_hdp_home).toBe(SettlementStatus.LOSE);
-        });
-
-        it("h1_hdp_away should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: -0.5,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_hdp_away).toBe(SettlementStatus.WIN);
-        });
-      });
-
-      describe("handicap draw", () => {
-        it("h1_hdp_home should be D", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 1,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_hdp_home).toBe(SettlementStatus.DRAW);
-        });
-
-        it("h1_hdp_away should be D", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0-1" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 1,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_hdp_away).toBe(SettlementStatus.DRAW);
-        });
-      });
-
-      describe("1x2 home win", () => {
-        it("h1_1x2_home should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_1x2_home).toBe(SettlementStatus.WIN);
-        });
-        it("h1_1x2_away should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_1x2_away).toBe(SettlementStatus.LOSE);
-        });
-
-        it("h1_1x2_draw should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_1x2_draw).toBe(SettlementStatus.LOSE);
-        });
-      });
-
-      describe("1x2 away win", () => {
-        it("h1_1x2_home should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_1x2_home).toBe(SettlementStatus.LOSE);
-        });
-        it("h1_1x2_away should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_1x2_away).toBe(SettlementStatus.WIN);
-        });
-
-        it("h1_1x2_draw should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_1x2_draw).toBe(SettlementStatus.LOSE);
-        });
-      });
-
-      describe("1x2 draw", () => {
-        it("h1_1x2_home should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HA", finalScore: "1:1" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_1x2_home).toBe(SettlementStatus.LOSE);
-        });
-        it("h1_1x2_away should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HA", finalScore: "1:1" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_1x2_away).toBe(SettlementStatus.LOSE);
-        });
-
-        it("h1_1x2_draw should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HA", finalScore: "1:1" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_1x2_draw).toBe(SettlementStatus.WIN);
-        });
-      });
-
-      describe("over", () => {
-        it("h1_ou_over should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HHA", finalScore: "2:1" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 2.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 3.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_ou_over).toBe(SettlementStatus.WIN);
-        });
-
-        it("h1_ou_under should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HHA", finalScore: "2:1" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 2.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 3.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_ou_under).toBe(SettlementStatus.LOSE);
-        });
-      });
-
-      describe("under", () => {
-        it("h1_ou_over should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_ou_over).toBe(SettlementStatus.LOSE);
-        });
-
-        it("h1_ou_under should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_ou_under).toBe(SettlementStatus.WIN);
-        });
-      });
-
-      describe("odd", () => {
-        it("h1_oe_odd should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_oe_odd).toBe(SettlementStatus.WIN);
-        });
-
-        it("h1_oe_even should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_oe_even).toBe(SettlementStatus.LOSE);
-        });
-      });
-
-      describe("even", () => {
-        it("h1_oe_odd should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HH", finalScore: "2:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_oe_odd).toBe(SettlementStatus.LOSE);
-        });
-
-        it("h1_oe_even should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HH", finalScore: "2:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].h1_oe_even).toBe(SettlementStatus.WIN);
-        });
+          ],
+        };
+
+        // Act
+        const result = getSettlementResult(roundResult, matchConfig);
+
+        // Assert - Test all first half settlement values for this result
+        expect(result[0].h1_hdp_home).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_hdp_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_1x2_home).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_ou_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_ou_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_oe_even).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_oe_odd).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_01).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_23).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_tg_4).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_home_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_home_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_away_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_away_under).toBe(SettlementStatus.WIN);
+
+        // Assert - Test all full time (at first half) settlement values for this result
+        expect(result[0].ft_hdp_home).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_hdp_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_1x2_home).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_ou_over).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_ou_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_oe_odd).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_oe_even).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_02).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_34).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_tg_56).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_home_over).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_home_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_away_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_away_under).toBe(SettlementStatus.WIN);
+
+        // Assert - Test all full time (at second half) settlement values for this result
+        expect(result[1].ft_hdp_home).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_hdp_away).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_1x2_home).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_ou_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_ou_under).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_oe_odd).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_oe_even).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_02).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_34).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_tg_56).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_home_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_home_under).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_away_over).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_away_under).toBe(SettlementStatus.LOSE);
       });
     });
 
-    describe("full time", () => {
-      describe("handicap home win", () => {
-        it("ft_hdp_home should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HH", finalScore: "2:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
+    describe("with round result [0:1, 1:0]", () => {
+      it("should correctly settle all bets", () => {
+        // Arrange
+        const roundResult = {
+          drawResults: [
+            {
+              playlist: "test-video-2",
+              goalInfo: "test-video-2",
+              result: { goalSequence: "A", finalScore: "0:1" },
             },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
+            {
+              playlist: "test-video-1",
+              goalInfo: "test-video-1",
+              result: { goalSequence: "H", finalScore: "1:0" },
             },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-          };
+          ],
+        };
 
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
+        const newMatchConfig = {
+          ...matchConfig,
+          handicapValue: 0,
+        };
 
-          // Assert
-          expect(result[0].ft_hdp_home).toBe(SettlementStatus.WIN);
-        });
+        // Act
+        const result = getSettlementResult(roundResult, newMatchConfig);
 
-        it("ft_hdp_away should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HH", finalScore: "2:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-          };
+        // Assert - Test all first half settlement values for this result
+        expect(result[0].h1_hdp_home).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_hdp_away).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_1x2_home).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_1x2_away).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_ou_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_ou_under).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_oe_odd).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_oe_even).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_01).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_tg_23).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_4).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_home_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_home_under).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_away_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_away_under).toBe(SettlementStatus.LOSE);
 
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
+        // Assert - Test all full time settlement values in first half result
+        expect(result[0].ft_hdp_home).toBe(SettlementStatus.DRAW);
+        expect(result[0].ft_hdp_away).toBe(SettlementStatus.DRAW);
+        expect(result[0].ft_1x2_home).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_1x2_draw).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_ou_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_ou_under).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_oe_odd).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_oe_even).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_tg_02).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_tg_34).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_56).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_home_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_home_under).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_away_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_away_under).toBe(SettlementStatus.WIN);
 
-          // Assert
-          expect(result[0].ft_hdp_away).toBe(SettlementStatus.LOSE);
-        });
+        // Assert - Test all full time settlement values in second half result
+        expect(result[1].ft_1x2_home).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_1x2_draw).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_hdp_home).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_hdp_away).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_ou_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_ou_under).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_oe_odd).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_oe_even).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_tg_02).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_tg_34).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_56).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_home_over).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_home_under).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_away_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_away_under).toBe(SettlementStatus.WIN);
       });
+    });
 
-      describe("handicap away win", () => {
-        it("ft_hdp_home should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "AA", finalScore: "0:2" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
+    describe("with round result [0:1, 0:1]", () => {
+      it("should correctly settle all bets", () => {
+        // Arrange
+        const roundResult = {
+          drawResults: [
+            {
+              playlist: "test-video-1",
+              goalInfo: "test-video-1",
+              result: { goalSequence: "A", finalScore: "0:1" },
             },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
+            {
+              playlist: "test-video-2",
+              goalInfo: "test-video-2",
+              result: { goalSequence: "A", finalScore: "0:1" },
             },
-            overUnderValue: 2.5,
-            handicapValue: -1.5,
-          };
+          ],
+        };
 
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
+        const newMatchConfig = {
+          ...matchConfig,
+          firstHalf: {
+            ...matchConfig.firstHalf,
+            handicapValue: 1,
+          },
+        };
 
-          // Assert
-          expect(result[0].ft_hdp_home).toBe(SettlementStatus.LOSE);
-        });
+        // Act
+        const result = getSettlementResult(roundResult, newMatchConfig);
 
-        it("ft_hdp_away should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "AA", finalScore: "0:2" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: -1.5,
-          };
+        // Assert - Test all first half settlement values for this result
+        expect(result[0].h1_hdp_home).toBe(SettlementStatus.DRAW);
+        expect(result[0].h1_hdp_away).toBe(SettlementStatus.DRAW);
+        expect(result[0].h1_1x2_home).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_1x2_away).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_ou_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_ou_under).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_oe_odd).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_oe_even).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_01).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_tg_23).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_4).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_home_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_home_under).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_away_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_away_under).toBe(SettlementStatus.LOSE);
 
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
+        // Assert - Test all full time settlement values in first half result
+        expect(result[0].ft_hdp_home).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_hdp_away).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_1x2_home).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_1x2_away).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_ou_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_ou_under).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_oe_even).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_oe_odd).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_02).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_tg_34).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_56).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_home_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_home_under).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_away_over).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_away_under).toBe(SettlementStatus.LOSE);
 
-          // Assert
-          expect(result[0].ft_hdp_away).toBe(SettlementStatus.WIN);
-        });
+        // Assert - Test all full time settlement values in second half result
+        expect(result[1].ft_1x2_home).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_1x2_away).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_hdp_home).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_hdp_away).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_ou_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_ou_under).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_oe_odd).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_oe_even).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_tg_02).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_tg_34).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_56).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_home_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_home_under).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_away_over).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_away_under).toBe(SettlementStatus.LOSE);
       });
+    });
 
-      describe("handicap draw", () => {
-        it("ft_hdp_home should be D", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
+    describe("with round result [1:1, 1:0]", () => {
+      it("should correctly settle all bets for draw", () => {
+        // Arrange
+        const roundResult = {
+          drawResults: [
+            {
+              playlist: "test-video-1",
+              goalInfo: "test-video-1",
+              result: { goalSequence: "HA", finalScore: "1:1" },
             },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
+            {
+              playlist: "test-video-2",
+              goalInfo: "test-video-2",
+              result: { goalSequence: "H", finalScore: "1:0" },
             },
+          ],
+        };
+
+        const newMatchConfig = {
+          ...matchConfig,
+          firstHalf: {
+            ...matchConfig.firstHalf,
+            handicapValue: 0,
+          },
+          handicapValue: 0,
+        };
+
+        // Act
+        const result = getSettlementResult(roundResult, newMatchConfig);
+
+        // Assert - Test all first half settlement values for this result
+        expect(result[0].h1_hdp_home).toBe(SettlementStatus.DRAW);
+        expect(result[0].h1_hdp_away).toBe(SettlementStatus.DRAW);
+        expect(result[0].h1_1x2_home).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_1x2_draw).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_ou_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_ou_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_oe_even).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_oe_odd).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_01).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_23).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_tg_4).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_home_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_home_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_away_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_away_under).toBe(SettlementStatus.LOSE);
+
+        // Assert - Test all full time settlement values in first half result
+        expect(result[0].ft_hdp_home).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_hdp_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_1x2_home).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_ou_over).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_ou_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_oe_odd).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_oe_even).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_02).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_34).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_tg_56).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_home_over).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_home_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_away_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_away_under).toBe(SettlementStatus.WIN);
+
+        // Assert - Test all full time settlement values in second half result
+        expect(result[1].ft_1x2_home).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_hdp_home).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_hdp_away).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_ou_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_ou_under).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_oe_odd).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_oe_even).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_02).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_34).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_tg_56).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_home_over).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_home_under).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_away_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_away_under).toBe(SettlementStatus.WIN);
+      });
+    });
+
+    describe("with round result [3:1, 1:0]", () => {
+      it("should correctly settle all bets", () => {
+        // Arrange
+        const roundResult = {
+          drawResults: [
+            {
+              playlist: "test-video-1",
+              goalInfo: "test-video-1",
+              result: { goalSequence: "HHAH", finalScore: "3:1" },
+            },
+            {
+              playlist: "test-video-2",
+              goalInfo: "test-video-2",
+              result: { goalSequence: "H", finalScore: "1:0" },
+            },
+          ],
+        };
+
+        const newMatchConfig = {
+          ...matchConfig,
+          firstHalf: {
+            ...matchConfig.firstHalf,
             overUnderValue: 2.5,
             handicapValue: 0,
-          };
+          },
+          overUnderValue: 3.5,
+          handicapValue: 0,
+        };
 
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
+        // Act
+        const result = getSettlementResult(roundResult, newMatchConfig);
 
-          // Assert
-          expect(result[0].ft_hdp_home).toBe(SettlementStatus.DRAW);
-        });
+        // Assert - Test all first half settlement values for this result
+        expect(result[0].h1_hdp_home).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_hdp_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_1x2_home).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_ou_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_ou_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_oe_odd).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_oe_even).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_tg_01).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_23).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_tg_4).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_home_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_home_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].h1_away_over).toBe(SettlementStatus.WIN);
+        expect(result[0].h1_away_under).toBe(SettlementStatus.LOSE);
 
-        it("ft_hdp_away should be D", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
+        // Assert - Test all full time settlement values in first half result
+        expect(result[0].ft_hdp_home).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_hdp_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_1x2_home).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_ou_over).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_ou_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_oe_odd).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_oe_even).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_02).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_34).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_tg_56).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_home_over).toBe(SettlementStatus.WIN);
+        expect(result[0].ft_home_under).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_away_over).toBe(SettlementStatus.LOSE);
+        expect(result[0].ft_away_under).toBe(SettlementStatus.WIN);
 
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].ft_hdp_away).toBe(SettlementStatus.DRAW);
-        });
-      });
-
-      describe("over ", () => {
-        it("ft_ou_over should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HH", finalScore: "2:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "AA", finalScore: "0:2" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 3.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].ft_ou_over).toBe(SettlementStatus.WIN);
-        });
-
-        it("ft_ou_under should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "HH", finalScore: "2:0" },
-              },
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "AA", finalScore: "0:2" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            overUnderValue: 3.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].ft_ou_under).toBe(SettlementStatus.LOSE);
-        });
-      });
-
-      describe("under", () => {
-        it("ft_ou_over should be L", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].ft_ou_over).toBe(SettlementStatus.LOSE);
-        });
-
-        it("ft_ou_under should be W", () => {
-          // Arrange
-          const roundResult = {
-            drawResults: [
-              {
-                playlist: "test-video-2",
-                goalInfo: "test-video-2",
-                result: { goalSequence: "H", finalScore: "1:0" },
-              },
-              {
-                playlist: "test-video-1",
-                goalInfo: "test-video-1",
-                result: { goalSequence: "A", finalScore: "0:1" },
-              },
-            ],
-          };
-          const matchConfig = {
-            firstHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "0-1": 1 },
-            },
-            secondHalf: {
-              overUnderValue: 1.5,
-              handicapValue: 0,
-              scoreRate: { "1-0": 1 },
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0,
-          };
-
-          // Act
-          const result = getSettlementResult(roundResult, matchConfig);
-
-          // Assert
-          expect(result[0].ft_ou_under).toBe(SettlementStatus.WIN);
-        });
-      });
-
-      describe("odd", () => {
-        describe("first half odd", () => {
-          it("ft_oe_odd should be L", () => {
-            // Arrange
-            const roundResult = {
-              drawResults: [
-                {
-                  playlist: "test-video-2",
-                  goalInfo: "test-video-2",
-                  result: { goalSequence: "HA", finalScore: "1:0" },
-                },
-                {
-                  playlist: "test-video-1",
-                  goalInfo: "test-video-1",
-                  result: { goalSequence: "AH", finalScore: "0:1" },
-                },
-              ],
-            };
-            const matchConfig = {
-              firstHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "0-1": 1 },
-              },
-              secondHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "1-0": 1 },
-              },
-              overUnderValue: 2.5,
-              handicapValue: 0,
-            };
-
-            // Act
-            const result = getSettlementResult(roundResult, matchConfig);
-
-            // Assert
-            expect(result[1].ft_oe_odd).toBe(SettlementStatus.LOSE);
-          });
-
-          it("ft_oe_even should be W", () => {
-            // Arrange
-            const roundResult = {
-              drawResults: [
-                {
-                  playlist: "test-video-2",
-                  goalInfo: "test-video-2",
-                  result: { goalSequence: "HA", finalScore: "1:0" },
-                },
-                {
-                  playlist: "test-video-1",
-                  goalInfo: "test-video-1",
-                  result: { goalSequence: "AH", finalScore: "0:1" },
-                },
-              ],
-            };
-            const matchConfig = {
-              firstHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "0-1": 1 },
-              },
-              secondHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "1-0": 1 },
-              },
-              overUnderValue: 2.5,
-              handicapValue: 0,
-            };
-
-            // Act
-            const result = getSettlementResult(roundResult, matchConfig);
-
-            // Assert
-            expect(result[1].ft_oe_even).toBe(SettlementStatus.WIN);
-          });
-        });
-
-        describe("first half even", () => {
-          it("ft_oe_odd should be W", () => {
-            // Arrange
-            const roundResult = {
-              drawResults: [
-                {
-                  playlist: "test-video-1",
-                  goalInfo: "test-video-1",
-                  result: { goalSequence: "HH", finalScore: "2:0" },
-                },
-                {
-                  playlist: "test-video-2",
-                  goalInfo: "test-video-2",
-                  result: { goalSequence: "H", finalScore: "1:0" },
-                },
-              ],
-            };
-            const matchConfig = {
-              firstHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "0-1": 1 },
-              },
-              secondHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "1-0": 1 },
-              },
-              overUnderValue: 2.5,
-              handicapValue: 0,
-            };
-
-            // Act
-            const result = getSettlementResult(roundResult, matchConfig);
-
-            // Assert
-            expect(result[0].ft_oe_odd).toBe(SettlementStatus.WIN);
-          });
-
-          it("ft_oe_even should be L", () => {
-            // Arrange
-            const roundResult = {
-              drawResults: [
-                {
-                  playlist: "test-video-1",
-                  goalInfo: "test-video-1",
-                  result: { goalSequence: "HH", finalScore: "2:0" },
-                },
-                {
-                  playlist: "test-video-2",
-                  goalInfo: "test-video-2",
-                  result: { goalSequence: "H", finalScore: "1:0" },
-                },
-              ],
-            };
-            const matchConfig = {
-              firstHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "0-1": 1 },
-              },
-              secondHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "1-0": 1 },
-              },
-              overUnderValue: 2.5,
-              handicapValue: 0,
-            };
-
-            // Act
-            const result = getSettlementResult(roundResult, matchConfig);
-
-            // Assert
-            expect(result[1].ft_oe_even).toBe(SettlementStatus.LOSE);
-          });
-        });
-      });
-
-      describe("even", () => {
-        describe("first half odd", () => {
-          it("ft_oe_odd should be L", () => {
-            // Arrange
-            const roundResult = {
-              drawResults: [
-                {
-                  playlist: "test-video-2",
-                  goalInfo: "test-video-2",
-                  result: { goalSequence: "H", finalScore: "1:0" },
-                },
-                {
-                  playlist: "test-video-2",
-                  goalInfo: "test-video-2",
-                  result: { goalSequence: "H", finalScore: "1:0" },
-                },
-              ],
-            };
-            const matchConfig = {
-              firstHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "0-1": 1 },
-              },
-              secondHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "1-0": 1 },
-              },
-              overUnderValue: 2.5,
-              handicapValue: 0,
-            };
-
-            // Act
-            const result = getSettlementResult(roundResult, matchConfig);
-
-            // Assert
-            expect(result[1].ft_oe_odd).toBe(SettlementStatus.LOSE);
-          });
-
-          it("ft_oe_even should be W", () => {
-            // Arrange
-            const roundResult = {
-              drawResults: [
-                {
-                  playlist: "test-video-2",
-                  goalInfo: "test-video-2",
-                  result: { goalSequence: "H", finalScore: "1:0" },
-                },
-                {
-                  playlist: "test-video-2",
-                  goalInfo: "test-video-2",
-                  result: { goalSequence: "H", finalScore: "1:0" },
-                },
-              ],
-            };
-            const matchConfig = {
-              firstHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "0-1": 1 },
-              },
-              secondHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "1-0": 1 },
-              },
-              overUnderValue: 2.5,
-              handicapValue: 0,
-            };
-
-            // Act
-            const result = getSettlementResult(roundResult, matchConfig);
-
-            // Assert
-            expect(result[1].ft_oe_even).toBe(SettlementStatus.WIN);
-          });
-        });
-
-        describe("first half even", () => {
-          it("ft_oe_odd should be L", () => {
-            // Arrange
-            const roundResult = {
-              drawResults: [
-                {
-                  playlist: "test-video-1",
-                  goalInfo: "test-video-1",
-                  result: { goalSequence: "HH", finalScore: "2:0" },
-                },
-                {
-                  playlist: "test-video-1",
-                  goalInfo: "test-video-1",
-                  result: { goalSequence: "HH", finalScore: "2:0" },
-                },
-              ],
-            };
-            const matchConfig = {
-              firstHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "0-1": 1 },
-              },
-              secondHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "1-0": 1 },
-              },
-              overUnderValue: 3.5,
-              handicapValue: 0,
-            };
-
-            // Act
-            const result = getSettlementResult(roundResult, matchConfig);
-
-            // Assert
-            expect(result[1].ft_oe_odd).toBe(SettlementStatus.LOSE);
-          });
-
-          it("ft_oe_even should be W", () => {
-            // Arrange
-            const roundResult = {
-              drawResults: [
-                {
-                  playlist: "test-video-1",
-                  goalInfo: "test-video-1",
-                  result: { goalSequence: "HH", finalScore: "2:0" },
-                },
-                {
-                  playlist: "test-video-1",
-                  goalInfo: "test-video-1",
-                  result: { goalSequence: "HH", finalScore: "2:0" },
-                },
-              ],
-            };
-            const matchConfig = {
-              firstHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "0-1": 1 },
-              },
-              secondHalf: {
-                overUnderValue: 1.5,
-                handicapValue: 0,
-                scoreRate: { "1-0": 1 },
-              },
-              overUnderValue: 3.5,
-              handicapValue: 0,
-            };
-
-            // Act
-            const result = getSettlementResult(roundResult, matchConfig);
-
-            // Assert
-            expect(result[1].ft_oe_even).toBe(SettlementStatus.WIN);
-          });
-        });
+        // Assert - Test all full time settlement values in second half result
+        expect(result[1].ft_1x2_home).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_1x2_away).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_1x2_draw).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_hdp_home).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_hdp_away).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_ou_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_ou_under).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_oe_odd).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_oe_even).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_02).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_34).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_tg_56).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_tg_7).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_home_over).toBe(SettlementStatus.WIN);
+        expect(result[1].ft_home_under).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_away_over).toBe(SettlementStatus.LOSE);
+        expect(result[1].ft_away_under).toBe(SettlementStatus.WIN);
       });
     });
   });

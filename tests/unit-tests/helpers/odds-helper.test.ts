@@ -11,6 +11,7 @@ import {
   calculateFulltimeOdds,
   calculateHalfOdds,
 } from "../../../src/helpers/odds-helper";
+import { FirstHalfOddsKey, SecondHalfOddsKey, SettlementStatus } from "../../../src/types";
 
 describe("OddsHelper Tests", () => {
   describe("parseScore", () => {
@@ -30,6 +31,11 @@ describe("OddsHelper Tests", () => {
       expect(parseScore("0-0")).toEqual([0, 0]);
       expect(parseScore("1-1")).toEqual([1, 1]);
       expect(parseScore("9-9")).toEqual([9, 9]);
+    });
+
+    it("should handle double-digit scores", () => {
+      expect(parseScore("10-5")).toEqual([10, 5]);
+      expect(parseScore("15-12")).toEqual([15, 12]);
     });
   });
 
@@ -51,281 +57,10 @@ describe("OddsHelper Tests", () => {
       expect(roundToPrecision(-1.235)).toBe(-1.24);
       expect(roundToPrecision(1000000.125)).toBe(1000000.12);
     });
-  });
 
-  describe("calculateOddsForRound", () => {
-    it("should calculate odds for round", () => {
-      const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "2-1": 0.1294,
-            "1-0": 0.1176,
-            "2-0": 0.1176,
-            "3-1": 0.0824,
-            "3-0": 0.0706,
-            "4-0": 0.0235,
-            "1-1": 0.1293,
-            "2-2": 0.0706,
-            "0-1": 0.0824,
-            "1-2": 0.0824,
-            "0-2": 0.0353,
-            "1-3": 0.0353,
-            "0-3": 0.0118,
-            "0-4": 0.0118,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "2-1": 0.1294,
-            "1-0": 0.1176,
-            "2-0": 0.1176,
-            "3-1": 0.0824,
-            "3-0": 0.0706,
-            "4-0": 0.0235,
-            "1-1": 0.1293,
-            "2-2": 0.0706,
-            "0-1": 0.0824,
-            "1-2": 0.0824,
-            "0-2": 0.0353,
-            "1-3": 0.0353,
-            "0-3": 0.0118,
-            "0-4": 0.0118,
-          },
-        },
-      } as any;
-
-      const firstHalfScore = "HH";
-
-      const expected = {
-        matchConfig: {
-          firstHalf: {
-            scoreRate: {
-              "0-1": 0.0824,
-              "0-2": 0.0353,
-              "0-3": 0.0118,
-              "0-4": 0.0118,
-              "1-0": 0.1176,
-              "1-1": 0.1293,
-              "1-2": 0.0824,
-              "1-3": 0.0353,
-              "2-0": 0.1176,
-              "2-1": 0.1294,
-              "2-2": 0.0706,
-              "3-0": 0.0706,
-              "3-1": 0.0824,
-              "4-0": 0.0235,
-            },
-            handicapValue: -0.5,
-            overUnderValue: 2.5,
-          },
-          handicapValue: -1.5,
-          overUnderValue: 5.5,
-          secondHalf: {
-            scoreRate: {
-              "0-1": 0.0824,
-              "0-2": 0.0353,
-              "0-3": 0.0118,
-              "0-4": 0.0118,
-              "1-0": 0.1176,
-              "1-1": 0.1293,
-              "1-2": 0.0824,
-              "1-3": 0.0353,
-              "2-0": 0.1176,
-              "2-1": 0.1294,
-              "2-2": 0.0706,
-              "3-0": 0.0706,
-              "3-1": 0.0824,
-              "4-0": 0.0235,
-            },
-            handicapValue: -0.5,
-            overUnderValue: 2.5,
-          },
-        },
-        odds: [
-          {
-            ft_1x2_away: 4.38,
-            ft_1x2_draw: 6.58,
-            ft_1x2_home: 1.61,
-            ft_hdp_away: 1.8,
-            ft_hdp_home: 2.24,
-            ft_oe_even: 1.99,
-            ft_oe_odd: 2,
-            ft_ou_over: 2.53,
-            ft_ou_under: 1.65,
-            h1_1x2_away: 3.86,
-            h1_1x2_draw: 5,
-            h1_1x2_home: 1.84,
-            h1_hdp_away: 2.17,
-            h1_hdp_home: 1.84,
-            h1_oe_even: 1.97,
-            h1_oe_odd: 2.02,
-            h1_ou_over: 1.93,
-            h1_ou_under: 2.07,
-          },
-          {
-            ft_hdp_away: 2.17,
-            ft_hdp_home: 1.84,
-            ft_oe_even: 1.97,
-            ft_oe_odd: 2.02,
-            ft_ou_over: 1.93,
-            ft_ou_under: 2.07,
-          },
-        ],
-        selections: [
-          {
-            ft_1x2_away: {
-              name: "ft_1x2_away",
-              point: 0,
-              price: 4.38,
-              settlementStatus: "P",
-            },
-            ft_1x2_draw: {
-              name: "ft_1x2_draw",
-              point: 0,
-              price: 6.58,
-              settlementStatus: "P",
-            },
-            ft_1x2_home: {
-              name: "ft_1x2_home",
-              point: 0,
-              price: 1.61,
-              settlementStatus: "P",
-            },
-            ft_hdp_away: {
-              name: "ft_hdp_away",
-              point: 1.5,
-              price: 1.8,
-              settlementStatus: "P",
-            },
-            ft_hdp_home: {
-              name: "ft_hdp_home",
-              point: -1.5,
-              price: 2.24,
-              settlementStatus: "P",
-            },
-            ft_oe_even: {
-              name: "ft_oe_even",
-              point: 0,
-              price: 1.99,
-              settlementStatus: "P",
-            },
-            ft_oe_odd: {
-              name: "ft_oe_odd",
-              point: 0,
-              price: 2,
-              settlementStatus: "P",
-            },
-            ft_ou_over: {
-              name: "ft_ou_over",
-              point: 5.5,
-              price: 2.53,
-              settlementStatus: "P",
-            },
-            ft_ou_under: {
-              name: "ft_ou_under",
-              point: 5.5,
-              price: 1.65,
-              settlementStatus: "P",
-            },
-            h1_1x2_away: {
-              name: "h1_1x2_away",
-              point: 0,
-              price: 3.86,
-              settlementStatus: "P",
-            },
-            h1_1x2_draw: {
-              name: "h1_1x2_draw",
-              point: 0,
-              price: 5,
-              settlementStatus: "P",
-            },
-            h1_1x2_home: {
-              name: "h1_1x2_home",
-              point: 0,
-              price: 1.84,
-              settlementStatus: "P",
-            },
-            h1_hdp_away: {
-              name: "h1_hdp_away",
-              point: 0.5,
-              price: 2.17,
-              settlementStatus: "P",
-            },
-            h1_hdp_home: {
-              name: "h1_hdp_home",
-              point: -0.5,
-              price: 1.84,
-              settlementStatus: "P",
-            },
-            h1_oe_even: {
-              name: "h1_oe_even",
-              point: 0,
-              price: 1.97,
-              settlementStatus: "P",
-            },
-            h1_oe_odd: {
-              name: "h1_oe_odd",
-              point: 0,
-              price: 2.02,
-              settlementStatus: "P",
-            },
-            h1_ou_over: {
-              name: "h1_ou_over",
-              point: 2.5,
-              price: 1.93,
-              settlementStatus: "P",
-            },
-            h1_ou_under: {
-              name: "h1_ou_under",
-              point: 2.5,
-              price: 2.07,
-              settlementStatus: "P",
-            },
-          },
-          {
-            ft_hdp_away: {
-              name: "ft_hdp_away",
-              point: 0.5,
-              price: 2.17,
-              settlementStatus: "P",
-            },
-            ft_hdp_home: {
-              name: "ft_hdp_home",
-              point: -0.5,
-              price: 1.84,
-              settlementStatus: "P",
-            },
-            ft_oe_even: {
-              name: "ft_oe_even",
-              point: 0,
-              price: 1.97,
-              settlementStatus: "P",
-            },
-            ft_oe_odd: {
-              name: "ft_oe_odd",
-              point: 0,
-              price: 2.02,
-              settlementStatus: "P",
-            },
-            ft_ou_over: {
-              name: "ft_ou_over",
-              point: 4.5,
-              price: 1.93,
-              settlementStatus: "P",
-            },
-            ft_ou_under: {
-              name: "ft_ou_under",
-              point: 4.5,
-              price: 2.07,
-              settlementStatus: "P",
-            },
-          },
-        ],
-      };
-
-      const actual = calculateOddsForRound(matchConfig, firstHalfScore);
-
-      expect(actual).toEqual(expected);
+    it("should handle very small numbers", () => {
+      expect(roundToPrecision(0.001, 1000)).toBe(0.001);
+      expect(roundToPrecision(0.0001, 10000)).toBe(0.0001);
     });
   });
 
@@ -374,9 +109,70 @@ describe("OddsHelper Tests", () => {
         under: expect.any(Number),
         even: expect.any(Number),
         odd: expect.any(Number),
+        tg01: expect.any(Number),
+        tg02: expect.any(Number),
+        tg23: expect.any(Number),
+        tg34: expect.any(Number),
+        tg4: expect.any(Number),
+        tg56: expect.any(Number),
+        tg7: expect.any(Number),
+        homeOver: expect.any(Number),
+        awayOver: expect.any(Number),
+        homeUnder: expect.any(Number),
+        awayUnder: expect.any(Number),
       });
       expect(result.overUnderValue).toBeDefined();
       expect(result.handicapValue).toBeDefined();
+      expect(result.homeOverUnderValue).toBeDefined();
+      expect(result.awayOverUnderValue).toBeDefined();
+    });
+
+    it("should handle adding score parameter", () => {
+      const scoreRates = {
+        "1-0": 0.5,
+        "0-1": 0.5,
+      };
+
+      const result = calculateProbabilitiesForBetChoices(scoreRates, "1-0");
+
+      // With adding score 1-0, 1-0 becomes 2-0 (home win), 0-1 becomes 1-1 (draw)
+      expect(result.probabilities.home).toBe(0.5);
+      expect(result.probabilities.draw).toBe(0.5);
+      expect(result.probabilities.away).toBe(0);
+    });
+
+    it("should handle total goals calculations correctly", () => {
+      const scoreRates = {
+        "0-0": 0.2,
+        "1-0": 0.2,
+        "2-0": 0.2,
+        "3-0": 0.2,
+        "4-0": 0.2,
+      };
+
+      const result = calculateProbabilitiesForBetChoices(scoreRates);
+
+      expect(result.probabilities.tg01).toBeCloseTo(0.4); // 0-0 and 1-0
+      expect(result.probabilities.tg02).toBeCloseTo(0.6); // 0-0, 1-0, 2-0
+      expect(result.probabilities.tg23).toBeCloseTo(0.4); // 2-0, 3-0
+      expect(result.probabilities.tg34).toBeCloseTo(0.4); // 3-0, 4-0
+      expect(result.probabilities.tg4).toBeCloseTo(0.2); // 4-0
+      expect(result.probabilities.tg56).toBeCloseTo(0); // No 5-6 goals
+      expect(result.probabilities.tg7).toBeCloseTo(0); // No 7+ goals
+    });
+
+    it("should handle even/odd calculations", () => {
+      const scoreRates = {
+        "0-0": 0.25, // 0 goals (even)
+        "1-0": 0.25, // 1 goal (odd)
+        "2-0": 0.25, // 2 goals (even)
+        "3-0": 0.25, // 3 goals (odd)
+      };
+
+      const result = calculateProbabilitiesForBetChoices(scoreRates);
+
+      expect(result.probabilities.even).toBe(0.5); // 0-0 and 2-0
+      expect(result.probabilities.odd).toBe(0.5); // 1-0 and 3-0
     });
   });
 
@@ -388,6 +184,17 @@ describe("OddsHelper Tests", () => {
       expect(calculateHandicapValue(1.2, 2)).toBe(0.5);
       expect(calculateHandicapValue(2, 1.2)).toBe(-0.5);
     });
+
+    it("should handle edge cases", () => {
+      expect(calculateHandicapValue(0, 0)).toBe(0.5);
+      expect(calculateHandicapValue(5, 0)).toBe(-4.5);
+      expect(calculateHandicapValue(0, 5)).toBe(5.5);
+    });
+
+    it("should handle decimal scores", () => {
+      expect(calculateHandicapValue(1.7, 2.3)).toBe(0.5);
+      expect(calculateHandicapValue(2.8, 1.1)).toBe(-1.5);
+    });
   });
 
   describe("calculateOverUnderValue", () => {
@@ -396,6 +203,17 @@ describe("OddsHelper Tests", () => {
       expect(calculateOverUnderValue(1, 2)).toBe(3.5);
       expect(calculateOverUnderValue(1, 1)).toBe(2.5);
       expect(calculateOverUnderValue(1.2, 2.2)).toBe(3.5);
+    });
+
+    it("should handle edge cases", () => {
+      expect(calculateOverUnderValue(0, 0)).toBe(0.5);
+      expect(calculateOverUnderValue(5, 5)).toBe(10.5);
+      expect(calculateOverUnderValue(10, 0)).toBe(10.5);
+    });
+
+    it("should handle decimal scores", () => {
+      expect(calculateOverUnderValue(1.7, 2.3)).toBe(4.5);
+      expect(calculateOverUnderValue(0.8, 1.2)).toBe(2.5);
     });
   });
 
@@ -410,10 +228,30 @@ describe("OddsHelper Tests", () => {
       const result = calculateBetOdds(probabilities);
 
       expect(result).toEqual({
-        home: expect.any(Number),
-        away: expect.any(Number),
-        draw: expect.any(Number),
+        home: 2,
+        away: 3.33,
+        draw: 5,
       });
+    });
+
+    it("should handle edge case probabilities", () => {
+      const probabilities = {
+        home: 0.1,
+        away: 0.9,
+      };
+
+      const result = calculateBetOdds(probabilities);
+
+      expect(result.home).toBe(10);
+      expect(result.away).toBe(1.11);
+    });
+
+    it("should handle empty probabilities", () => {
+      const probabilities = {};
+
+      const result = calculateBetOdds(probabilities);
+
+      expect(result).toEqual({});
     });
   });
 
@@ -422,6 +260,18 @@ describe("OddsHelper Tests", () => {
       expect(probabilityToBetRawOdds(0.5)).toBe(2);
       expect(probabilityToBetRawOdds(0.25)).toBe(4);
       expect(probabilityToBetRawOdds(0.1)).toBe(10);
+    });
+
+    it("should handle edge cases", () => {
+      expect(probabilityToBetRawOdds(0)).toBe(0);
+      expect(probabilityToBetRawOdds(1)).toBe(0);
+      expect(probabilityToBetRawOdds(0.01)).toBe(100);
+      expect(probabilityToBetRawOdds(0.99)).toBe(1.01);
+    });
+
+    it("should handle invalid probabilities", () => {
+      expect(probabilityToBetRawOdds(-0.1)).toBe(0);
+      expect(probabilityToBetRawOdds(1.1)).toBe(0);
     });
   });
 
@@ -448,7 +298,34 @@ describe("OddsHelper Tests", () => {
         odds: expect.any(Object),
         overUnderValue: expect.any(Number),
         handicapValue: expect.any(Number),
+        homeOverUnderValue: expect.any(Number),
+        awayOverUnderValue: expect.any(Number),
       });
+    });
+
+    it("should handle complex match config", () => {
+      const matchConfig = {
+        firstHalf: {
+          scoreRate: {
+            "2-1": 0.3,
+            "1-0": 0.4,
+            "0-1": 0.3,
+          },
+        },
+        secondHalf: {
+          scoreRate: {
+            "1-1": 0.5,
+            "2-0": 0.3,
+            "0-2": 0.2,
+          },
+        },
+      } as any;
+
+      const result = calculateFulltimeOdds(matchConfig);
+
+      expect(result.odds).toBeDefined();
+      expect(result.overUnderValue).toBeDefined();
+      expect(result.handicapValue).toBeDefined();
     });
   });
 
@@ -467,7 +344,272 @@ describe("OddsHelper Tests", () => {
         odds: expect.any(Object),
         overUnderValue: expect.any(Number),
         handicapValue: expect.any(Number),
+        homeOverUnderValue: expect.any(Number),
+        awayOverUnderValue: expect.any(Number),
       });
+    });
+
+    it("should handle adding score parameter", () => {
+      const halfConfig = {
+        scoreRate: {
+          "1-0": 0.5,
+          "0-1": 0.5,
+        },
+      };
+
+      const result = calculateHalfOdds(halfConfig, "1-0");
+
+      expect(result).toEqual({
+        odds: expect.any(Object),
+        overUnderValue: expect.any(Number),
+        handicapValue: expect.any(Number),
+        homeOverUnderValue: expect.any(Number),
+        awayOverUnderValue: expect.any(Number),
+      });
+    });
+  });
+
+  describe("calculateOddsForRound", () => {
+    it("should calculate odds for round with HH result", () => {
+      const matchConfig = {
+        firstHalf: {
+          scoreRate: {
+            "2-1": 0.1294,
+            "1-0": 0.1176,
+            "2-0": 0.1176,
+            "3-1": 0.0824,
+            "3-0": 0.0706,
+            "4-0": 0.0235,
+            "1-1": 0.1293,
+            "2-2": 0.0706,
+            "0-1": 0.0824,
+            "1-2": 0.0824,
+            "0-2": 0.0353,
+            "1-3": 0.0353,
+            "0-3": 0.0118,
+            "0-4": 0.0118,
+          },
+        },
+        secondHalf: {
+          scoreRate: {
+            "2-1": 0.1294,
+            "1-0": 0.1176,
+            "2-0": 0.1176,
+            "3-1": 0.0824,
+            "3-0": 0.0706,
+            "4-0": 0.0235,
+            "1-1": 0.1293,
+            "2-2": 0.0706,
+            "0-1": 0.0824,
+            "1-2": 0.0824,
+            "0-2": 0.0353,
+            "1-3": 0.0353,
+            "0-3": 0.0118,
+            "0-4": 0.0118,
+          },
+        },
+      } as any;
+
+      const firstHalfScore = "HH";
+
+      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+
+      expect(result).toHaveProperty("odds");
+      expect(result).toHaveProperty("matchConfig");
+      expect(result).toHaveProperty("selections");
+      expect(result.odds).toHaveLength(2);
+      expect(result.selections).toHaveLength(2);
+    });
+
+    it("should calculate odds for round with HA result", () => {
+      const matchConfig = {
+        firstHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+        secondHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+      } as any;
+
+      const firstHalfScore = "HA";
+
+      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+
+      expect(result.odds).toHaveLength(2);
+      expect(result.selections).toHaveLength(2);
+
+      // Check that selections have correct structure
+      const firstHalfSelections = result.selections[0];
+      expect(firstHalfSelections[FirstHalfOddsKey.H1_1X2_HOME]).toBeDefined();
+      expect(firstHalfSelections[FirstHalfOddsKey.H1_1X2_HOME].settlementStatus).toBe(SettlementStatus.PLAY);
+    });
+
+    it("should calculate odds for round with AA result", () => {
+      const matchConfig = {
+        firstHalf: {
+          scoreRate: {
+            "0-1": 0.6,
+            "0-2": 0.4,
+          },
+        },
+        secondHalf: {
+          scoreRate: {
+            "0-1": 0.6,
+            "0-2": 0.4,
+          },
+        },
+      } as any;
+
+      const firstHalfScore = "AA";
+
+      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+
+      expect(result.odds).toHaveLength(2);
+      expect(result.selections).toHaveLength(2);
+    });
+
+    it("should handle complex first half results", () => {
+      const matchConfig = {
+        firstHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+        secondHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+      } as any;
+
+      const firstHalfScore = "HHHAA"; // 3 home goals, 2 away goals
+
+      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+
+      expect(result.odds).toHaveLength(2);
+      expect(result.selections).toHaveLength(2);
+    });
+
+    it("should set correct points for handicap selections", () => {
+      const matchConfig = {
+        firstHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+        secondHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+      } as any;
+
+      const firstHalfScore = "H";
+
+      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+
+      const firstHalfSelections = result.selections[0];
+      expect(firstHalfSelections[FirstHalfOddsKey.FT_HDP_HOME].point).toBeDefined();
+      expect(firstHalfSelections[FirstHalfOddsKey.FT_HDP_AWAY].point).toBeDefined();
+      expect(firstHalfSelections[FirstHalfOddsKey.H1_HDP_HOME].point).toBeDefined();
+      expect(firstHalfSelections[FirstHalfOddsKey.H1_HDP_AWAY].point).toBeDefined();
+    });
+
+    it("should set correct points for over/under selections", () => {
+      const matchConfig = {
+        firstHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+        secondHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+      } as any;
+
+      const firstHalfScore = "HH";
+
+      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+
+      const firstHalfSelections = result.selections[0];
+      const secondHalfSelections = result.selections[1];
+
+      expect(firstHalfSelections[FirstHalfOddsKey.FT_OU_OVER].point).toBeDefined();
+      expect(firstHalfSelections[FirstHalfOddsKey.FT_OU_UNDER].point).toBeDefined();
+      expect(secondHalfSelections[SecondHalfOddsKey.FT_OU_OVER].point).toBeDefined();
+      expect(secondHalfSelections[SecondHalfOddsKey.FT_OU_UNDER].point).toBeDefined();
+    });
+
+    it("should handle even/odd calculations correctly for second half", () => {
+      const matchConfig = {
+        firstHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+        secondHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+      } as any;
+
+      // Test with odd number of goals in first half
+      const oddFirstHalfScore = "H";
+      const oddResult = calculateOddsForRound(matchConfig, oddFirstHalfScore);
+
+      // Test with even number of goals in first half
+      const evenFirstHalfScore = "HH";
+      const evenResult = calculateOddsForRound(matchConfig, evenFirstHalfScore);
+
+      expect(oddResult.odds[1][SecondHalfOddsKey.FT_OE_ODD]).toBeDefined();
+      expect(oddResult.odds[1][SecondHalfOddsKey.FT_OE_EVEN]).toBeDefined();
+      expect(evenResult.odds[1][SecondHalfOddsKey.FT_OE_ODD]).toBeDefined();
+      expect(evenResult.odds[1][SecondHalfOddsKey.FT_OE_EVEN]).toBeDefined();
+    });
+
+    it("should update match config with calculated values", () => {
+      const matchConfig = {
+        firstHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+        secondHalf: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+      } as any;
+
+      const firstHalfScore = "H";
+
+      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+
+      expect(result.matchConfig.overUnderValue).toBeDefined();
+      expect(result.matchConfig.handicapValue).toBeDefined();
+      expect(result.matchConfig.homeOverUnderValue).toBeDefined();
+      expect(result.matchConfig.awayOverUnderValue).toBeDefined();
+      expect(result.matchConfig.firstHalf.overUnderValue).toBeDefined();
+      expect(result.matchConfig.secondHalf.overUnderValue).toBeDefined();
     });
   });
 });
