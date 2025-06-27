@@ -138,16 +138,78 @@ export const getSettlementResult = (
   return [finalFirstHalfSettlementResult, finalSecondHalfSettlementResult];
 };
 
-const getHandicapResult = (isHome: boolean, homeGoals: number, awayGoals: number, handicapValue: number) => {
+const getHandicapResult = (homeGoals: number, awayGoals: number, handicapValue: number) => {
   const adjustedHomeGoals = homeGoals + handicapValue;
 
   if (adjustedHomeGoals === awayGoals) {
-    return SettlementStatus.DRAW;
+    return {
+      hdpHome: SettlementStatus.DRAW,
+      hdpAway: SettlementStatus.DRAW,
+    };
   }
 
-  const isWin = isHome ? adjustedHomeGoals > awayGoals : adjustedHomeGoals < awayGoals;
+  return {
+    hdpHome: adjustedHomeGoals > awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    hdpAway: adjustedHomeGoals < awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
+  };
+};
 
-  return isWin ? SettlementStatus.WIN : SettlementStatus.LOSE;
+const get1X2Result = (homeGoals: number, awayGoals: number) => {
+  return {
+    home: homeGoals > awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    away: awayGoals > homeGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    draw: homeGoals === awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
+  };
+};
+
+const getOverUnderResult = (totalGoals: number, overUnderValue: number) => {
+  if (totalGoals === overUnderValue) {
+    return {
+      over: SettlementStatus.DRAW,
+      under: SettlementStatus.DRAW,
+    };
+  }
+
+  return {
+    over: totalGoals > overUnderValue ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    under: totalGoals < overUnderValue ? SettlementStatus.WIN : SettlementStatus.LOSE,
+  };
+};
+
+const getOddEvenResult = (totalGoals: number) => {
+  return {
+    odd: totalGoals % 2 === 1 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    even: totalGoals % 2 === 0 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+  };
+};
+
+const evaluateGoalRange = (totalGoals: number) => ({
+  tg01: totalGoals <= 1,
+  tg02: totalGoals <= 2,
+  tg23: totalGoals >= 2 && totalGoals <= 3,
+  tg34: totalGoals >= 3 && totalGoals <= 4,
+  tg4: totalGoals >= 4,
+  tg56: totalGoals >= 5 && totalGoals <= 6,
+  tg7: totalGoals >= 7,
+});
+
+const getTeamOverUnderResult = (
+  homeGoals: number,
+  awayGoals: number,
+  homeOverUnderValue: number,
+  awayOverUnderValue: number
+) => {
+  const isHomeOver = homeGoals > homeOverUnderValue;
+  const isAwayOver = awayGoals > awayOverUnderValue;
+  const isHomeUnder = homeGoals < homeOverUnderValue;
+  const isAwayUnder = awayGoals < awayOverUnderValue;
+
+  return {
+    homeOver: isHomeOver ? SettlementStatus.WIN : isHomeUnder ? SettlementStatus.LOSE : SettlementStatus.DRAW,
+    awayOver: isAwayOver ? SettlementStatus.WIN : isAwayUnder ? SettlementStatus.LOSE : SettlementStatus.DRAW,
+    homeUnder: isHomeUnder ? SettlementStatus.WIN : isHomeOver ? SettlementStatus.LOSE : SettlementStatus.DRAW,
+    awayUnder: isAwayUnder ? SettlementStatus.WIN : isAwayOver ? SettlementStatus.LOSE : SettlementStatus.DRAW,
+  };
 };
 
 const getSettlementResultFromResultString = (resultString: string, settleConfig: SettleConfig) => {
@@ -155,35 +217,40 @@ const getSettlementResultFromResultString = (resultString: string, settleConfig:
   const awayGoals = resultString.split("A").length - 1;
 
   const totalGoals = homeGoals + awayGoals;
-  const isOver = totalGoals > settleConfig.overUnderValue;
-  const isUnder = totalGoals < settleConfig.overUnderValue;
-  const isOdd = totalGoals % 2 === 1;
-  const isHomeOver = homeGoals > settleConfig.homeOverUnderValue;
-  const isAwayOver = awayGoals > settleConfig.awayOverUnderValue;
-  const isHomeUnder = homeGoals < settleConfig.homeOverUnderValue;
-  const isAwayUnder = awayGoals < settleConfig.awayOverUnderValue;
+  const goalRange = evaluateGoalRange(totalGoals);
+
+  const hdpResult = getHandicapResult(homeGoals, awayGoals, settleConfig.handicapValue);
+  const o1x2Result = get1X2Result(homeGoals, awayGoals);
+  const ouResult = getOverUnderResult(totalGoals, settleConfig.overUnderValue);
+  const oeResult = getOddEvenResult(totalGoals);
+  const teamOverUnderResult = getTeamOverUnderResult(
+    homeGoals,
+    awayGoals,
+    settleConfig.homeOverUnderValue,
+    settleConfig.awayOverUnderValue
+  );
 
   return {
-    handicapHome: getHandicapResult(true, homeGoals, awayGoals, settleConfig.handicapValue),
-    handicapAway: getHandicapResult(false, homeGoals, awayGoals, settleConfig.handicapValue),
-    home: homeGoals > awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    away: awayGoals > homeGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    draw: homeGoals === awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    over: isOver ? SettlementStatus.WIN : isUnder ? SettlementStatus.LOSE : SettlementStatus.DRAW,
-    under: isUnder ? SettlementStatus.WIN : isOver ? SettlementStatus.LOSE : SettlementStatus.DRAW,
-    odd: isOdd ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    even: !isOdd ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg01: totalGoals <= 1 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg23: 2 <= totalGoals && totalGoals <= 3 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg4: totalGoals >= 4 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg02: totalGoals <= 2 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg34: 3 <= totalGoals && totalGoals <= 4 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg56: 5 <= totalGoals && totalGoals <= 6 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg7: totalGoals >= 7 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    homeOver: isHomeOver ? SettlementStatus.WIN : isHomeUnder ? SettlementStatus.LOSE : SettlementStatus.DRAW,
-    awayOver: isAwayOver ? SettlementStatus.WIN : isAwayUnder ? SettlementStatus.LOSE : SettlementStatus.DRAW,
-    homeUnder: isHomeUnder ? SettlementStatus.WIN : isHomeOver ? SettlementStatus.LOSE : SettlementStatus.DRAW,
-    awayUnder: isAwayUnder ? SettlementStatus.WIN : isAwayOver ? SettlementStatus.LOSE : SettlementStatus.DRAW,
+    handicapHome: hdpResult.hdpHome,
+    handicapAway: hdpResult.hdpAway,
+    home: o1x2Result.home,
+    away: o1x2Result.away,
+    draw: o1x2Result.draw,
+    over: ouResult.over,
+    under: ouResult.under,
+    odd: oeResult.odd,
+    even: oeResult.even,
+    tg01: goalRange.tg01 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    tg02: goalRange.tg02 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    tg23: goalRange.tg23 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    tg34: goalRange.tg34 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    tg4: goalRange.tg4 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    tg56: goalRange.tg56 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    tg7: goalRange.tg7 ? SettlementStatus.WIN : SettlementStatus.LOSE,
+    homeOver: teamOverUnderResult.homeOver,
+    awayOver: teamOverUnderResult.awayOver,
+    homeUnder: teamOverUnderResult.homeUnder,
+    awayUnder: teamOverUnderResult.awayUnder,
   };
 };
 

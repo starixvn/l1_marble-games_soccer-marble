@@ -1,5 +1,27 @@
 import { RateConfig, MatchConfigType, SettlementStatus, Selection, FirstHalfOddsKey, SecondHalfOddsKey } from "../types";
 
+type BetChoices =
+  | "hdpHome"
+  | "hdpAway"
+  | "home"
+  | "away"
+  | "draw"
+  | "over"
+  | "under"
+  | "even"
+  | "odd"
+  | "tg01"
+  | "tg02"
+  | "tg23"
+  | "tg34"
+  | "tg4"
+  | "tg56"
+  | "tg7"
+  | "homeOver"
+  | "awayOver"
+  | "homeUnder"
+  | "awayUnder";
+
 export const parseScore = (score: string): [number, number] => {
   const [home, away] = score.split("-").map(Number);
   return [home, away];
@@ -45,31 +67,91 @@ const calculateAverageScore = (scoreRates: Record<string, number>) => {
   return { homeScore, awayScore };
 };
 
+const update1X2 = (counters: Record<BetChoices, number>, home: number, away: number, rate: number) => {
+  if (home > away) {
+    counters.home += rate;
+  } else if (home < away) {
+    counters.away += rate;
+  } else {
+    counters.draw += rate;
+  }
+};
+
+const updateHandicap = (
+  counters: Record<BetChoices, number>,
+  homeGoals: number,
+  awayGoals: number,
+  handicapValue: number,
+  rate: number
+) => {
+  const homeHDP = homeGoals + handicapValue;
+  if (homeHDP > awayGoals) {
+    counters.hdpHome += rate;
+  } else if (homeHDP < awayGoals) {
+    counters.hdpAway += rate;
+  }
+};
+
+const updateOverUnder = (counters: Record<BetChoices, number>, totalGoals: number, overUnderValue: number, rate: number) => {
+  if (totalGoals > overUnderValue) {
+    counters.over += rate;
+  } else if (totalGoals < overUnderValue) {
+    counters.under += rate;
+  }
+};
+
+const updateEvenOdd = (counters: Record<BetChoices, number>, totalGoals: number, rate: number) => {
+  if (totalGoals % 2 === 0) {
+    counters.even += rate;
+  } else {
+    counters.odd += rate;
+  }
+};
+
+const updateTotalGoals = (counters: Record<BetChoices, number>, totalGoalsWithAdding: number, rate: number) => {
+  if (totalGoalsWithAdding <= 1) {
+    counters.tg01 += rate;
+    counters.tg02 += rate;
+  } else if (totalGoalsWithAdding === 2) {
+    counters.tg02 += rate;
+    counters.tg23 += rate;
+  } else if (totalGoalsWithAdding === 3) {
+    counters.tg34 += rate;
+    counters.tg23 += rate;
+  } else if (totalGoalsWithAdding === 4) {
+    counters.tg4 += rate;
+    counters.tg34 += rate;
+  } else if (totalGoalsWithAdding <= 6) {
+    counters.tg56 += rate;
+  } else {
+    counters.tg7 += rate;
+  }
+};
+
+const updateTeamOverUnder = (
+  counters: Record<BetChoices, number>,
+  homeGoals: number,
+  awayGoals: number,
+  homeOverUnderValue: number,
+  awayOverUnderValue: number,
+  rate: number
+) => {
+  if (homeGoals > homeOverUnderValue) {
+    counters.homeOver += rate;
+  } else if (homeGoals < homeOverUnderValue) {
+    counters.homeUnder += rate;
+  }
+
+  if (awayGoals > awayOverUnderValue) {
+    counters.awayOver += rate;
+  } else if (awayGoals < awayOverUnderValue) {
+    counters.awayUnder += rate;
+  }
+};
+
 export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, number>, addingScore = "0-0") => {
   const totalRates = Object.values(scoreRates).reduce((sum, rate) => sum + rate, 0);
   const [addingHome, addingAway] = parseScore(addingScore);
-
-  let hdpHome = 0,
-    hdpAway = 0,
-    hdpDraw = 0,
-    home = 0,
-    away = 0,
-    draw = 0,
-    over = 0,
-    under = 0,
-    odd = 0,
-    even = 0,
-    tg02 = 0,
-    tg34 = 0,
-    tg56 = 0,
-    tg7 = 0,
-    tg01 = 0,
-    tg23 = 0,
-    tg4 = 0,
-    homeOver = 0,
-    awayOver = 0,
-    homeUnder = 0,
-    awayUnder = 0;
 
   const { homeScore, awayScore } = calculateAverageScore(scoreRates);
   const handicapValue = calculateHandicapValue(homeScore, awayScore);
@@ -78,104 +160,56 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
   const homeOverUnderValue = calculateOverUnderValue(homeScore, 0);
   const awayOverUnderValue = calculateOverUnderValue(0, awayScore);
 
+  const counters: Record<BetChoices, number> = {
+    hdpHome: 0,
+    hdpAway: 0,
+    home: 0,
+    away: 0,
+    draw: 0,
+    over: 0,
+    under: 0,
+    even: 0,
+    odd: 0,
+    tg01: 0,
+    tg02: 0,
+    tg23: 0,
+    tg34: 0,
+    tg4: 0,
+    tg56: 0,
+    tg7: 0,
+    homeOver: 0,
+    awayOver: 0,
+    homeUnder: 0,
+    awayUnder: 0,
+  };
+
   for (const [score, rate] of Object.entries(scoreRates)) {
     const [homeGoals, awayGoals] = parseScore(score);
     const totalGoals = homeGoals + awayGoals;
     const totalGoalsWithAdding = totalGoals + addingHome + addingAway;
+    const addedHome = homeGoals + addingHome;
+    const addedAway = awayGoals + addingAway;
 
-    if (homeGoals + addingHome > awayGoals + addingAway) {
-      home += rate;
-    } else if (homeGoals + addingHome < awayGoals + addingAway) {
-      away += rate;
-    } else {
-      draw += rate;
-    }
+    update1X2(counters, addedHome, addedAway, rate);
 
-    if (homeGoals + handicapValue > awayGoals) {
-      hdpHome += rate;
-    } else if (homeGoals + handicapValue < awayGoals) {
-      hdpAway += rate;
-    } else {
-      hdpDraw += rate;
-    }
+    updateHandicap(counters, homeGoals, awayGoals, handicapValue, rate);
 
-    if (totalGoals > overUnderValue) {
-      over += rate;
-    } else if (totalGoals < overUnderValue) {
-      under += rate;
-    }
+    updateOverUnder(counters, totalGoals, overUnderValue, rate);
 
-    if (totalGoals % 2 === 0) {
-      even += rate;
-    } else {
-      odd += rate;
-    }
+    updateEvenOdd(counters, totalGoals, rate);
 
-    switch (totalGoalsWithAdding) {
-      case 0:
-      case 1:
-        tg01 += rate;
-        tg02 += rate;
-        break;
-      case 2:
-        tg02 += rate;
-        tg23 += rate;
-        break;
-      case 3:
-        tg34 += rate;
-        tg23 += rate;
-        break;
-      case 4:
-        tg4 += rate;
-        tg34 += rate;
-        break;
-      case 5:
-      case 6:
-        tg56 += rate;
-        break;
-      default: // 7 or more
-        tg7 += rate;
-        break;
-    }
+    updateTotalGoals(counters, totalGoalsWithAdding, rate);
 
-    if (homeGoals > homeOverUnderValue) {
-      homeOver += rate;
-    } else if (homeGoals < homeOverUnderValue) {
-      homeUnder += rate;
-    }
-
-    if (awayGoals > awayOverUnderValue) {
-      awayOver += rate;
-    } else if (awayGoals < awayOverUnderValue) {
-      awayUnder += rate;
-    }
+    updateTeamOverUnder(counters, homeGoals, awayGoals, homeOverUnderValue, awayOverUnderValue, rate);
   }
 
-  const hdpDrawRate = hdpDraw / totalRates;
+  const probabilities = Object.keys(counters).reduce((result, key) => {
+    result[key as BetChoices] = counters[key as BetChoices] / totalRates;
+    return result;
+  }, {} as Record<BetChoices, number>);
 
   return {
-    probabilities: {
-      hdp_home: hdpHome / totalRates / (1 - hdpDrawRate),
-      hdp_away: hdpAway / totalRates / (1 - hdpDrawRate),
-      home: home / totalRates,
-      away: away / totalRates,
-      draw: draw / totalRates,
-      over: over / totalRates,
-      under: under / totalRates,
-      even: even / totalRates,
-      odd: odd / totalRates,
-      tg01: tg01 / totalRates,
-      tg02: tg02 / totalRates,
-      tg23: tg23 / totalRates,
-      tg34: tg34 / totalRates,
-      tg4: tg4 / totalRates,
-      tg56: tg56 / totalRates,
-      tg7: tg7 / totalRates,
-      homeOver: homeOver / totalRates,
-      awayOver: awayOver / totalRates,
-      homeUnder: homeUnder / totalRates,
-      awayUnder: awayUnder / totalRates,
-    },
+    probabilities,
     overUnderValue,
     handicapValue,
     homeOverUnderValue,
@@ -247,8 +281,8 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
   };
 
   const firstHalfOdds = {
-    [FirstHalfOddsKey.H1_HDP_HOME]: firstHalf.odds.hdp_home,
-    [FirstHalfOddsKey.H1_HDP_AWAY]: firstHalf.odds.hdp_away,
+    [FirstHalfOddsKey.H1_HDP_HOME]: firstHalf.odds.hdpHome,
+    [FirstHalfOddsKey.H1_HDP_AWAY]: firstHalf.odds.hdpAway,
     [FirstHalfOddsKey.H1_1X2_HOME]: firstHalf.odds.home,
     [FirstHalfOddsKey.H1_1X2_AWAY]: firstHalf.odds.away,
     [FirstHalfOddsKey.H1_1X2_DRAW]: firstHalf.odds.draw,
@@ -264,8 +298,8 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     [FirstHalfOddsKey.H1_AWAY_OVER]: firstHalf.odds.awayOver,
     [FirstHalfOddsKey.H1_AWAY_UNDER]: firstHalf.odds.awayUnder,
 
-    [FirstHalfOddsKey.FT_HDP_HOME]: fulltime.odds.hdp_home,
-    [FirstHalfOddsKey.FT_HDP_AWAY]: fulltime.odds.hdp_away,
+    [FirstHalfOddsKey.FT_HDP_HOME]: fulltime.odds.hdpHome,
+    [FirstHalfOddsKey.FT_HDP_AWAY]: fulltime.odds.hdpAway,
     [FirstHalfOddsKey.FT_1X2_HOME]: fulltime.odds.home,
     [FirstHalfOddsKey.FT_1X2_AWAY]: fulltime.odds.away,
     [FirstHalfOddsKey.FT_1X2_DRAW]: fulltime.odds.draw,
@@ -298,8 +332,8 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     [SecondHalfOddsKey.FT_1X2_HOME]: secondHalf.odds.home,
     [SecondHalfOddsKey.FT_1X2_AWAY]: secondHalf.odds.away,
     [SecondHalfOddsKey.FT_1X2_DRAW]: secondHalf.odds.draw,
-    [SecondHalfOddsKey.FT_HDP_HOME]: secondHalf.odds.hdp_home,
-    [SecondHalfOddsKey.FT_HDP_AWAY]: secondHalf.odds.hdp_away,
+    [SecondHalfOddsKey.FT_HDP_HOME]: secondHalf.odds.hdpHome,
+    [SecondHalfOddsKey.FT_HDP_AWAY]: secondHalf.odds.hdpAway,
     [SecondHalfOddsKey.FT_OU_OVER]: secondHalf.odds.over,
     [SecondHalfOddsKey.FT_OU_UNDER]: secondHalf.odds.under,
     [SecondHalfOddsKey.FT_OE_ODD]: fhTotalGoals % 2 === 0 ? secondHalf.odds.odd : secondHalf.odds.even,
