@@ -149,7 +149,20 @@ export type GameRunningRound = {
 
 export type GameConfig = {
   gameId: number;
-  config: any;
+  config: ConfigData;
+};
+
+export type Match = {
+  homeTeam: string;
+  awayTeam: string;
+};
+
+export type ConfigData = {
+  enabled: boolean;
+  teamSelectionMode: number;
+  teams: string[];
+  matches: Match[];
+  numberOfVideos: Record<string, number>;
 };
 
 export enum JobName {

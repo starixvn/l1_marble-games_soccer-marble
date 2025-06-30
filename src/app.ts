@@ -21,8 +21,7 @@ const gracefulShutdown = async (agenda: Agenda, logService: typeof logger) => {
 
   try {
     await agenda.stop();
-    await mongoose.disconnect();
-    logService.log("Agenda and Mongoose disconnected. Gracefully shutting down...", "info");
+    logService.log("Agenda disconnected. Gracefully shutting down...", "info");
   } catch (err) {
     logService.logError(`Error during shutdown: ${err}`);
     process.exit(1);

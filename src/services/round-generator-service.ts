@@ -1,4 +1,4 @@
-import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, AppContainer } from "../types";
+import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, AppContainer, Match } from "../types";
 import { secureShuffle, secureRandomBool } from "sc-core-rng";
 import { calculateOddsForRound } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
@@ -18,10 +18,41 @@ export class RoundGeneratorService {
     this.gameData = container.gameData;
   }
 
-  createNewMatch(): { homeTeam: string; awayTeam: string } {
-    const teams = (this.gameData.gameConfig?.config?.teams as string[]) ?? this.gameSettings.teams;
+  createNewMatchFromRandomTeams() {
+    const teams = this.gameData.gameConfig?.config?.teams?.length
+      ? this.gameData.gameConfig?.config?.teams
+      : this.gameSettings.teams;
     const [homeTeam, awayTeam] = secureShuffle(teams);
     return { homeTeam, awayTeam };
+  }
+
+  createNewMatchFromMatches(roundId: number) {
+    const teams = this.gameData.gameConfig?.config?.teams?.length
+      ? this.gameData.gameConfig?.config?.teams
+      : this.gameSettings.teams;
+    const matches = this.gameData.gameConfig?.config?.matches;
+
+    if (!matches || matches.length === 0) {
+      return this.createNewMatchFromRandomTeams();
+    }
+
+    const match = matches[roundId % matches.length];
+
+    if (!teams.includes(match.homeTeam) || !teams.includes(match.awayTeam)) {
+      return this.createNewMatchFromRandomTeams();
+    }
+
+    return match;
+  }
+
+  createNewMatch(roundId: number): Match {
+    const teamSelectionMode = this.gameData.gameConfig?.config?.teamSelectionMode ?? 1;
+
+    if (teamSelectionMode === 2) {
+      return this.createNewMatchFromMatches(roundId);
+    }
+
+    return this.createNewMatchFromRandomTeams();
   }
 
   createNewMatchConfig(): MatchConfigType {
@@ -57,7 +88,7 @@ export class RoundGeneratorService {
       ended: false,
     } as GameRunningRound;
 
-    const { homeTeam, awayTeam } = this.createNewMatch();
+    const { homeTeam, awayTeam } = this.createNewMatch(roundId);
     newRound.homeTeam = homeTeam;
     newRound.awayTeam = awayTeam;
 
