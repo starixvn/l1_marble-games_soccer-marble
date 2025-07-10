@@ -193,10 +193,6 @@ export enum FirstHalfOddsKey {
   H1_OE_ODD = "h1_oe_odd",
   H1_OE_EVEN = "h1_oe_even",
 
-  H1_TG_01 = "h1_tg_01",
-  H1_TG_23 = "h1_tg_23",
-  H1_TG_4 = "h1_tg_4",
-
   H1_HOME_OVER = "h1_home_over",
   H1_HOME_UNDER = "h1_home_under",
   H1_AWAY_OVER = "h1_away_over",
@@ -214,11 +210,6 @@ export enum FirstHalfOddsKey {
 
   FT_OE_ODD = "ft_oe_odd",
   FT_OE_EVEN = "ft_oe_even",
-
-  FT_TG_02 = "ft_tg_02",
-  FT_TG_34 = "ft_tg_34",
-  FT_TG_56 = "ft_tg_56",
-  FT_TG_7 = "ft_tg_7",
 
   FT_HOME_OVER = "ft_home_over",
   FT_HOME_UNDER = "ft_home_under",
@@ -239,11 +230,6 @@ export enum SecondHalfOddsKey {
 
   FT_OE_ODD = "ft_oe_odd",
   FT_OE_EVEN = "ft_oe_even",
-
-  FT_TG_02 = "ft_tg_02",
-  FT_TG_34 = "ft_tg_34",
-  FT_TG_56 = "ft_tg_56",
-  FT_TG_7 = "ft_tg_7",
 
   FT_HOME_OVER = "ft_home_over",
   FT_HOME_UNDER = "ft_home_under",

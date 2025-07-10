@@ -10,13 +10,6 @@ type BetChoices =
   | "under"
   | "even"
   | "odd"
-  | "tg01"
-  | "tg02"
-  | "tg23"
-  | "tg34"
-  | "tg4"
-  | "tg56"
-  | "tg7"
   | "homeOver"
   | "awayOver"
   | "homeUnder"
@@ -108,26 +101,6 @@ const updateEvenOdd = (counters: Record<BetChoices, number>, totalGoals: number,
   }
 };
 
-const updateTotalGoals = (counters: Record<BetChoices, number>, totalGoalsWithAdding: number, rate: number) => {
-  if (totalGoalsWithAdding <= 1) {
-    counters.tg01 += rate;
-    counters.tg02 += rate;
-  } else if (totalGoalsWithAdding === 2) {
-    counters.tg02 += rate;
-    counters.tg23 += rate;
-  } else if (totalGoalsWithAdding === 3) {
-    counters.tg34 += rate;
-    counters.tg23 += rate;
-  } else if (totalGoalsWithAdding === 4) {
-    counters.tg4 += rate;
-    counters.tg34 += rate;
-  } else if (totalGoalsWithAdding <= 6) {
-    counters.tg56 += rate;
-  } else {
-    counters.tg7 += rate;
-  }
-};
-
 const updateTeamOverUnder = (
   counters: Record<BetChoices, number>,
   homeGoals: number,
@@ -170,13 +143,6 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
     under: 0,
     even: 0,
     odd: 0,
-    tg01: 0,
-    tg02: 0,
-    tg23: 0,
-    tg34: 0,
-    tg4: 0,
-    tg56: 0,
-    tg7: 0,
     homeOver: 0,
     awayOver: 0,
     homeUnder: 0,
@@ -186,7 +152,6 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
   for (const [score, rate] of Object.entries(scoreRates)) {
     const [homeGoals, awayGoals] = parseScore(score);
     const totalGoals = homeGoals + awayGoals;
-    const totalGoalsWithAdding = totalGoals + addingHome + addingAway;
     const addedHome = homeGoals + addingHome;
     const addedAway = awayGoals + addingAway;
 
@@ -197,8 +162,6 @@ export const calculateProbabilitiesForBetChoices = (scoreRates: Record<string, n
     updateOverUnder(counters, totalGoals, overUnderValue, rate);
 
     updateEvenOdd(counters, totalGoals, rate);
-
-    updateTotalGoals(counters, totalGoalsWithAdding, rate);
 
     updateTeamOverUnder(counters, homeGoals, awayGoals, homeOverUnderValue, awayOverUnderValue, rate);
   }
@@ -290,9 +253,6 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     [FirstHalfOddsKey.H1_OU_UNDER]: firstHalf.odds.under,
     [FirstHalfOddsKey.H1_OE_ODD]: firstHalf.odds.odd,
     [FirstHalfOddsKey.H1_OE_EVEN]: firstHalf.odds.even,
-    [FirstHalfOddsKey.H1_TG_01]: firstHalf.odds.tg01,
-    [FirstHalfOddsKey.H1_TG_23]: firstHalf.odds.tg23,
-    [FirstHalfOddsKey.H1_TG_4]: firstHalf.odds.tg4,
     [FirstHalfOddsKey.H1_HOME_OVER]: firstHalf.odds.homeOver,
     [FirstHalfOddsKey.H1_HOME_UNDER]: firstHalf.odds.homeUnder,
     [FirstHalfOddsKey.H1_AWAY_OVER]: firstHalf.odds.awayOver,
@@ -307,10 +267,6 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     [FirstHalfOddsKey.FT_OU_UNDER]: fulltime.odds.under,
     [FirstHalfOddsKey.FT_OE_ODD]: fulltime.odds.odd,
     [FirstHalfOddsKey.FT_OE_EVEN]: fulltime.odds.even,
-    [FirstHalfOddsKey.FT_TG_02]: fulltime.odds.tg02,
-    [FirstHalfOddsKey.FT_TG_34]: fulltime.odds.tg34,
-    [FirstHalfOddsKey.FT_TG_56]: fulltime.odds.tg56,
-    [FirstHalfOddsKey.FT_TG_7]: fulltime.odds.tg7,
     [FirstHalfOddsKey.FT_HOME_OVER]: fulltime.odds.homeOver,
     [FirstHalfOddsKey.FT_HOME_UNDER]: fulltime.odds.homeUnder,
     [FirstHalfOddsKey.FT_AWAY_OVER]: fulltime.odds.awayOver,
@@ -338,10 +294,6 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfRes
     [SecondHalfOddsKey.FT_OU_UNDER]: secondHalf.odds.under,
     [SecondHalfOddsKey.FT_OE_ODD]: fhTotalGoals % 2 === 0 ? secondHalf.odds.odd : secondHalf.odds.even,
     [SecondHalfOddsKey.FT_OE_EVEN]: fhTotalGoals % 2 === 0 ? secondHalf.odds.even : secondHalf.odds.odd,
-    [SecondHalfOddsKey.FT_TG_02]: secondHalf.odds.tg02,
-    [SecondHalfOddsKey.FT_TG_34]: secondHalf.odds.tg34,
-    [SecondHalfOddsKey.FT_TG_56]: secondHalf.odds.tg56,
-    [SecondHalfOddsKey.FT_TG_7]: secondHalf.odds.tg7,
     [SecondHalfOddsKey.FT_HOME_OVER]: secondHalf.odds.homeOver,
     [SecondHalfOddsKey.FT_HOME_UNDER]: secondHalf.odds.homeUnder,
     [SecondHalfOddsKey.FT_AWAY_OVER]: secondHalf.odds.awayOver,

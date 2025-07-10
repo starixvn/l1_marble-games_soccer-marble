@@ -82,10 +82,7 @@ export const getSettlementResult = (
     [FirstHalfOddsKey.FT_OU_UNDER]: fullTimeSettlementResult.under,
     [FirstHalfOddsKey.FT_OE_ODD]: fullTimeSettlementResult.odd,
     [FirstHalfOddsKey.FT_OE_EVEN]: fullTimeSettlementResult.even,
-    [FirstHalfOddsKey.FT_TG_02]: fullTimeSettlementResult.tg02,
-    [FirstHalfOddsKey.FT_TG_34]: fullTimeSettlementResult.tg34,
-    [FirstHalfOddsKey.FT_TG_56]: fullTimeSettlementResult.tg56,
-    [FirstHalfOddsKey.FT_TG_7]: fullTimeSettlementResult.tg7,
+
     [FirstHalfOddsKey.FT_HOME_OVER]: fullTimeSettlementResult.homeOver,
     [FirstHalfOddsKey.FT_HOME_UNDER]: fullTimeSettlementResult.homeUnder,
     [FirstHalfOddsKey.FT_AWAY_OVER]: fullTimeSettlementResult.awayOver,
@@ -100,9 +97,7 @@ export const getSettlementResult = (
     [FirstHalfOddsKey.H1_OU_UNDER]: firstHalfSettlementResult.under,
     [FirstHalfOddsKey.H1_OE_ODD]: firstHalfSettlementResult.odd,
     [FirstHalfOddsKey.H1_OE_EVEN]: firstHalfSettlementResult.even,
-    [FirstHalfOddsKey.H1_TG_01]: firstHalfSettlementResult.tg01,
-    [FirstHalfOddsKey.H1_TG_23]: firstHalfSettlementResult.tg23,
-    [FirstHalfOddsKey.H1_TG_4]: firstHalfSettlementResult.tg4,
+
     [FirstHalfOddsKey.H1_HOME_OVER]: firstHalfSettlementResult.homeOver,
     [FirstHalfOddsKey.H1_HOME_UNDER]: firstHalfSettlementResult.homeUnder,
     [FirstHalfOddsKey.H1_AWAY_OVER]: firstHalfSettlementResult.awayOver,
@@ -125,10 +120,7 @@ export const getSettlementResult = (
       firstHalfSettlementResult.even === SettlementStatus.WIN
         ? secondHalfSettlementResult.even
         : secondHalfSettlementResult.odd,
-    [SecondHalfOddsKey.FT_TG_02]: fullTimeSettlementResult.tg02,
-    [SecondHalfOddsKey.FT_TG_34]: fullTimeSettlementResult.tg34,
-    [SecondHalfOddsKey.FT_TG_56]: fullTimeSettlementResult.tg56,
-    [SecondHalfOddsKey.FT_TG_7]: fullTimeSettlementResult.tg7,
+
     [SecondHalfOddsKey.FT_HOME_OVER]: secondHalfSettlementResult.homeOver,
     [SecondHalfOddsKey.FT_HOME_UNDER]: secondHalfSettlementResult.homeUnder,
     [SecondHalfOddsKey.FT_AWAY_OVER]: secondHalfSettlementResult.awayOver,
@@ -183,16 +175,6 @@ const getOddEvenResult = (totalGoals: number) => {
   };
 };
 
-const evaluateGoalRange = (totalGoals: number) => ({
-  tg01: totalGoals <= 1,
-  tg02: totalGoals <= 2,
-  tg23: totalGoals >= 2 && totalGoals <= 3,
-  tg34: totalGoals >= 3 && totalGoals <= 4,
-  tg4: totalGoals >= 4,
-  tg56: totalGoals >= 5 && totalGoals <= 6,
-  tg7: totalGoals >= 7,
-});
-
 const getTeamOverUnderResult = (
   homeGoals: number,
   awayGoals: number,
@@ -215,10 +197,7 @@ const getTeamOverUnderResult = (
 const getSettlementResultFromResultString = (resultString: string, settleConfig: SettleConfig) => {
   const homeGoals = resultString.split("H").length - 1;
   const awayGoals = resultString.split("A").length - 1;
-
   const totalGoals = homeGoals + awayGoals;
-  const goalRange = evaluateGoalRange(totalGoals);
-
   const hdpResult = getHandicapResult(homeGoals, awayGoals, settleConfig.handicapValue);
   const o1x2Result = get1X2Result(homeGoals, awayGoals);
   const ouResult = getOverUnderResult(totalGoals, settleConfig.overUnderValue);
@@ -240,13 +219,6 @@ const getSettlementResultFromResultString = (resultString: string, settleConfig:
     under: ouResult.under,
     odd: oeResult.odd,
     even: oeResult.even,
-    tg01: goalRange.tg01 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg02: goalRange.tg02 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg23: goalRange.tg23 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg34: goalRange.tg34 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg4: goalRange.tg4 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg56: goalRange.tg56 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    tg7: goalRange.tg7 ? SettlementStatus.WIN : SettlementStatus.LOSE,
     homeOver: teamOverUnderResult.homeOver,
     awayOver: teamOverUnderResult.awayOver,
     homeUnder: teamOverUnderResult.homeUnder,

@@ -109,13 +109,6 @@ describe("OddsHelper Tests", () => {
         under: expect.any(Number),
         even: expect.any(Number),
         odd: expect.any(Number),
-        tg01: expect.any(Number),
-        tg02: expect.any(Number),
-        tg23: expect.any(Number),
-        tg34: expect.any(Number),
-        tg4: expect.any(Number),
-        tg56: expect.any(Number),
-        tg7: expect.any(Number),
         homeOver: expect.any(Number),
         awayOver: expect.any(Number),
         homeUnder: expect.any(Number),
@@ -139,26 +132,6 @@ describe("OddsHelper Tests", () => {
       expect(result.probabilities.home).toBe(0.5);
       expect(result.probabilities.draw).toBe(0.5);
       expect(result.probabilities.away).toBe(0);
-    });
-
-    it("should handle total goals calculations correctly", () => {
-      const scoreRates = {
-        "0-0": 0.2,
-        "1-0": 0.2,
-        "2-0": 0.2,
-        "3-0": 0.2,
-        "4-0": 0.2,
-      };
-
-      const result = calculateProbabilitiesForBetChoices(scoreRates);
-
-      expect(result.probabilities.tg01).toBeCloseTo(0.4); // 0-0 and 1-0
-      expect(result.probabilities.tg02).toBeCloseTo(0.6); // 0-0, 1-0, 2-0
-      expect(result.probabilities.tg23).toBeCloseTo(0.4); // 2-0, 3-0
-      expect(result.probabilities.tg34).toBeCloseTo(0.4); // 3-0, 4-0
-      expect(result.probabilities.tg4).toBeCloseTo(0.2); // 4-0
-      expect(result.probabilities.tg56).toBeCloseTo(0); // No 5-6 goals
-      expect(result.probabilities.tg7).toBeCloseTo(0); // No 7+ goals
     });
 
     it("should handle even/odd calculations", () => {
@@ -664,9 +637,6 @@ describe("OddsHelper Tests", () => {
             h1_ou_under: 1.7,
             h1_oe_odd: 2.11,
             h1_oe_even: 1.9,
-            h1_tg_01: 4.56,
-            h1_tg_23: 1.6,
-            h1_tg_4: 6.34,
             h1_home_over: 2.3,
             h1_home_under: 1.76,
             h1_away_over: 1.52,
@@ -680,10 +650,6 @@ describe("OddsHelper Tests", () => {
             ft_ou_under: 2.18,
             ft_oe_odd: 2,
             ft_oe_even: 1.99,
-            ft_tg_02: 20.81,
-            ft_tg_34: 2.44,
-            ft_tg_56: 2.28,
-            ft_tg_7: 9.51,
             ft_home_over: 1.74,
             ft_home_under: 2.33,
             ft_away_over: 1.72,
@@ -699,10 +665,6 @@ describe("OddsHelper Tests", () => {
             ft_ou_under: 1.7,
             ft_oe_odd: 2.11,
             ft_oe_even: 1.9,
-            ft_tg_02: 1.7,
-            ft_tg_34: 2.42,
-            ft_tg_56: 0,
-            ft_tg_7: 0,
             ft_home_over: 2.3,
             ft_home_under: 1.76,
             ft_away_over: 1.52,
@@ -815,24 +777,6 @@ describe("OddsHelper Tests", () => {
               point: 0,
               settlementStatus: "P",
             },
-            h1_tg_01: {
-              name: "h1_tg_01",
-              price: 4.56,
-              point: 0,
-              settlementStatus: "P",
-            },
-            h1_tg_23: {
-              name: "h1_tg_23",
-              price: 1.6,
-              point: 0,
-              settlementStatus: "P",
-            },
-            h1_tg_4: {
-              name: "h1_tg_4",
-              price: 6.34,
-              point: 0,
-              settlementStatus: "P",
-            },
             h1_home_over: {
               name: "h1_home_over",
               price: 2.3,
@@ -908,30 +852,6 @@ describe("OddsHelper Tests", () => {
             ft_oe_even: {
               name: "ft_oe_even",
               price: 1.99,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_tg_02: {
-              name: "ft_tg_02",
-              price: 20.81,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_tg_34: {
-              name: "ft_tg_34",
-              price: 2.44,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_tg_56: {
-              name: "ft_tg_56",
-              price: 2.28,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_tg_7: {
-              name: "ft_tg_7",
-              price: 9.51,
               point: 0,
               settlementStatus: "P",
             },
@@ -1012,30 +932,6 @@ describe("OddsHelper Tests", () => {
             ft_oe_even: {
               name: "ft_oe_even",
               price: 1.9,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_tg_02: {
-              name: "ft_tg_02",
-              price: 1.7,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_tg_34: {
-              name: "ft_tg_34",
-              price: 2.42,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_tg_56: {
-              name: "ft_tg_56",
-              price: 0,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_tg_7: {
-              name: "ft_tg_7",
-              price: 0,
               point: 0,
               settlementStatus: "P",
             },
