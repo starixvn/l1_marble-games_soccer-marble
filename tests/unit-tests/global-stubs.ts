@@ -24,6 +24,7 @@ const mockLogService: typeof logger = {
 const gameSettings: GameSettings = {
   gameId: 2001,
   upcomingEvents: 3,
+  theme: "2001",
   gameTiming: {
     timelines: [
       { OddsAvailable: 10, ScheduleStart: 20, ResultAvailable: 30 },

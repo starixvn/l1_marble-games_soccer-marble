@@ -12,21 +12,22 @@ export const appConfigs = {
     url: "mongodb://localhost:27017",
     authSource: "",
     dbName: "marble-football",
-    collectionName: "soccer_marble_2002_jobs",
+    collectionName: "soccer_marble_2003_jobs",
     replicaSet: "",
   },
   sentry: {
     sentryUrl: "https://6b0f71afab190ba976d8bdc7a43969fe@sentry-k8s.lumigame.com/15",
-    logIdentifier: "Soccer-Marble-2002-Service",
+    logIdentifier: "Soccer-Marble-2003-Service",
     env: "DEV",
   },
   adminToken: "LzOumSOmeWqFckOSZV0dtPBwGF6LZJBudCT4EJRO0krYSOxhFAveG777lMfZw89F",
 };
 
 export const gameSettings = {
-  gameId: 2002,
-  modelPrefix: "soccer_marble_2002",
+  gameId: 2003,
+  modelPrefix: "soccer_marble_2003",
   upcomingEvents: 3,
+  theme: "mun",
   gameTiming: {
     wholeRound: 140,
     timelines: [

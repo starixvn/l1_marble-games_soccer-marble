@@ -12,6 +12,7 @@ const RoundSchema = new Schema<IRound>({
   gameId: { type: Number, required: true },
   homeTeam: { type: String, required: true },
   awayTeam: { type: String, required: true },
+  theme: { type: String, required: true },
   selections: [{ type: Schema.Types.Mixed }],
   odds: [{ type: Schema.Types.Mixed }],
   result: { type: Schema.Types.Mixed },

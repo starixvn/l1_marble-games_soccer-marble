@@ -103,6 +103,7 @@ export interface AppContainer {
 
 export type GameSettings = {
   gameId: number;
+  theme: string;
   upcomingEvents: number;
   gameTiming: GameTiming;
   teams: string[];
@@ -134,6 +135,7 @@ export type GameRunningRound = {
   roundTime: number;
   homeTeam: string;
   awayTeam: string;
+  theme: string;
   matchConfig: MatchConfigType;
   selections: Record<string, Selection>[];
   odds: Record<string, number>[];
@@ -155,6 +157,7 @@ export type GameConfig = {
 export type Match = {
   homeTeam: string;
   awayTeam: string;
+  theme: string;
 };
 
 export type ConfigData = {
