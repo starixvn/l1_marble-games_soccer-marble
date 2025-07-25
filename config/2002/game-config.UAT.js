@@ -1,13 +1,13 @@
 export const appConfigs = {
   hostingPort: 3000,
   database: {
-    url: "mongodb://marble_backend:MarbleBackend%4022027@10.99.99.53:39520,10.99.99.54:39520,10.99.99.188:39520,10.99.99.187:39520/?authSource=admin&replicaSet=SP-UAT",
+    url: "mongodb://marble_backend:MarbleBackend%4022027@10.146.34.28:39520/?authSource=admin&replicaSet=SP-UAT",
     options: {
       dbName: "marble_odds_feed",
     },
   },
   agenda: {
-    url: "mongodb://marble_backend:MarbleBackend%4022027@10.99.99.53:39520,10.99.99.54:39520,10.99.99.188:39520,10.99.99.187:39520",
+    url: "mongodb://marble_backend:MarbleBackend%4022027@10.146.34.28:39520",
     authSource: "admin",
     dbName: "marble_odds_feed",
     collectionName: "soccer_marble_2002_jobs",
