@@ -6,6 +6,7 @@ export interface IEvent {
   eventID: number;
   eventNameAKey: string;
   eventNameBKey: string;
+  theme: string;
   eventDetails: mongoose.Schema.Types.ObjectId[];
   gameId: number;
   scheduleStartTs: Date;
@@ -31,6 +32,7 @@ const EventSchema = new Schema<IEvent>({
   eventID: { type: Number, required: true, unique: true },
   eventNameAKey: { type: String, required: true },
   eventNameBKey: { type: String, required: true },
+  theme: { type: String, required: true },
   gameId: { type: Number, required: true },
   eventDetails: [mongoose.Schema.Types.ObjectId],
   scheduleStartTs: { type: Date, required: true },

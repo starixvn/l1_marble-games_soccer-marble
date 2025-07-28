@@ -28,6 +28,7 @@ export class EventService {
       eventID: eventId,
       eventNameAKey: roundData.homeTeam,
       eventNameBKey: roundData.awayTeam,
+      theme: roundData.theme,
       gameId: this.gameSettings.gameId,
       eventDetails: eventDetails.map((eventDetail) => eventDetail._id),
       scheduleStartTs: new Date(eventStartTimeTs),

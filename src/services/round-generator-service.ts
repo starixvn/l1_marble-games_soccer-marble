@@ -23,7 +23,7 @@ export class RoundGeneratorService {
       ? this.gameData.gameConfig?.config?.teams
       : this.gameSettings.teams;
     const [homeTeam, awayTeam] = secureShuffle(teams);
-    return { homeTeam, awayTeam };
+    return { homeTeam, awayTeam, theme: this.gameSettings.theme };
   }
 
   createNewMatchFromMatches(roundId: number) {
@@ -41,6 +41,8 @@ export class RoundGeneratorService {
     if (!teams.includes(match.homeTeam) || !teams.includes(match.awayTeam)) {
       return this.createNewMatchFromRandomTeams();
     }
+
+    match.theme = match.theme ?? this.gameSettings.theme;
 
     return match;
   }
@@ -88,9 +90,10 @@ export class RoundGeneratorService {
       ended: false,
     } as GameRunningRound;
 
-    const { homeTeam, awayTeam } = this.createNewMatch(roundId);
+    const { homeTeam, awayTeam, theme } = this.createNewMatch(roundId);
     newRound.homeTeam = homeTeam;
     newRound.awayTeam = awayTeam;
+    newRound.theme = theme;
 
     newRound.matchConfig = this.createNewMatchConfig();
 

@@ -36,7 +36,7 @@ describe("RoundGeneratorService", () => {
 
       // Assert
       expect(shuffleMock).toHaveBeenCalledWith(gameConfigTeams);
-      expect(result).toEqual({ homeTeam: "Team D", awayTeam: "Team C" });
+      expect(result).toEqual({ homeTeam: "Team D", awayTeam: "Team C", theme: "2001" });
     });
 
     it("should return shuffled teams from gameSettings if gameConfig not available", () => {
@@ -49,7 +49,7 @@ describe("RoundGeneratorService", () => {
 
       // Assert
       expect(shuffleMock).toHaveBeenCalledWith(mockContainer.gameSettings.teams);
-      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A" });
+      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
     });
 
     it("should return shuffled teams from gameSettings if gameConfig is empty", () => {
@@ -65,7 +65,7 @@ describe("RoundGeneratorService", () => {
 
       // Assert
       expect(shuffleMock).toHaveBeenCalledWith(mockContainer.gameSettings.teams);
-      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A" });
+      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
     });
   });
 
@@ -88,9 +88,9 @@ describe("RoundGeneratorService", () => {
       const result3 = service.createNewMatchFromMatches(2); // Should wrap around
 
       // Assert
-      expect(result1).toEqual({ homeTeam: "Team A", awayTeam: "Team B" });
-      expect(result2).toEqual({ homeTeam: "Team C", awayTeam: "Team D" });
-      expect(result3).toEqual({ homeTeam: "Team A", awayTeam: "Team B" });
+      expect(result1).toEqual({ homeTeam: "Team A", awayTeam: "Team B", theme: "2001" });
+      expect(result2).toEqual({ homeTeam: "Team C", awayTeam: "Team D", theme: "2001" });
+      expect(result3).toEqual({ homeTeam: "Team A", awayTeam: "Team B", theme: "2001" });
     });
 
     it("should fallback to random teams if no matches available", () => {
@@ -100,14 +100,16 @@ describe("RoundGeneratorService", () => {
         config: { matches: [], enabled: true, teamSelectionMode: 1, teams: [], numberOfVideos: {} },
       } as any;
       const shuffleMock = jest.spyOn(rngModule, "secureShuffle").mockReturnValue(["Team B", "Team A"]);
-      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team B", awayTeam: "Team A" });
+      jest
+        .spyOn(service, "createNewMatchFromRandomTeams")
+        .mockReturnValue({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
 
       // Act
       const result = service.createNewMatchFromMatches(0);
 
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
-      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A" });
+      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
     });
 
     it("should fallback to random teams if matches is undefined", () => {
@@ -116,77 +118,85 @@ describe("RoundGeneratorService", () => {
         gameId: 2001,
         config: { matches: undefined, enabled: true, teamSelectionMode: 1, teams: [], numberOfVideos: {} },
       } as any;
-      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team B", awayTeam: "Team A" });
+      jest
+        .spyOn(service, "createNewMatchFromRandomTeams")
+        .mockReturnValue({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
 
       // Act
       const result = service.createNewMatchFromMatches(0);
 
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
-      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A" });
+      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
     });
 
     it("should fallback to random teams if homeTeam from match is not in available teams", () => {
       // Arrange
       const matches = [
-        { homeTeam: "Team A", awayTeam: "Team B" },
-        { homeTeam: "Team C", awayTeam: "Team D" },
+        { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" },
+        { homeTeam: "Team C", awayTeam: "Team D", theme: "2001" },
       ];
       const teams = ["Team B", "Team C", "Team D"]; // Team A is missing
       mockContainer.gameData.gameConfig = {
         gameId: 2001,
         config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
       } as any;
-      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team C", awayTeam: "Team B" });
+      jest
+        .spyOn(service, "createNewMatchFromRandomTeams")
+        .mockReturnValue({ homeTeam: "Team C", awayTeam: "Team B", theme: "2001" });
 
       // Act
       const result = service.createNewMatchFromMatches(0);
 
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
-      expect(result).toEqual({ homeTeam: "Team C", awayTeam: "Team B" });
+      expect(result).toEqual({ homeTeam: "Team C", awayTeam: "Team B", theme: "2001" });
     });
 
     it("should fallback to random teams if awayTeam from match is not in available teams", () => {
       // Arrange
       const matches = [
-        { homeTeam: "Team A", awayTeam: "Team B" },
-        { homeTeam: "Team C", awayTeam: "Team D" },
+        { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" },
+        { homeTeam: "Team C", awayTeam: "Team D", theme: "2001" },
       ];
       const teams = ["Team A", "Team C", "Team D"]; // Team B is missing
       mockContainer.gameData.gameConfig = {
         gameId: 2001,
         config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
       } as any;
-      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team A", awayTeam: "Team C" });
+      jest
+        .spyOn(service, "createNewMatchFromRandomTeams")
+        .mockReturnValue({ homeTeam: "Team A", awayTeam: "Team C", theme: "2001" });
 
       // Act
       const result = service.createNewMatchFromMatches(0);
 
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
-      expect(result).toEqual({ homeTeam: "Team A", awayTeam: "Team C" });
+      expect(result).toEqual({ homeTeam: "Team A", awayTeam: "Team C", theme: "2001" });
     });
 
     it("should fallback to random teams if both teams from match are not in available teams", () => {
       // Arrange
       const matches = [
-        { homeTeam: "Team A", awayTeam: "Team B" },
-        { homeTeam: "Team C", awayTeam: "Team D" },
+        { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" },
+        { homeTeam: "Team C", awayTeam: "Team D", theme: "2001" },
       ];
       const teams = ["Team E", "Team F", "Team G"]; // Neither Team A nor Team B are available
       mockContainer.gameData.gameConfig = {
         gameId: 2001,
         config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
       } as any;
-      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team E", awayTeam: "Team F" });
+      jest
+        .spyOn(service, "createNewMatchFromRandomTeams")
+        .mockReturnValue({ homeTeam: "Team E", awayTeam: "Team F", theme: "2001" });
 
       // Act
       const result = service.createNewMatchFromMatches(0);
 
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
-      expect(result).toEqual({ homeTeam: "Team E", awayTeam: "Team F" });
+      expect(result).toEqual({ homeTeam: "Team E", awayTeam: "Team F", theme: "2001" });
     });
 
     it("should fallback to random teams if match is empty", () => {
@@ -197,14 +207,16 @@ describe("RoundGeneratorService", () => {
         gameId: 2001,
         config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
       } as any;
-      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team E", awayTeam: "Team F" });
+      jest
+        .spyOn(service, "createNewMatchFromRandomTeams")
+        .mockReturnValue({ homeTeam: "Team E", awayTeam: "Team F", theme: "2001" });
 
       // Act
       const result = service.createNewMatchFromMatches(0);
 
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
-      expect(result).toEqual({ homeTeam: "Team E", awayTeam: "Team F" });
+      expect(result).toEqual({ homeTeam: "Team E", awayTeam: "Team F", theme: "2001" });
     });
 
     it("should use teams from gameSettings when gameConfig teams are not available", () => {
@@ -218,14 +230,54 @@ describe("RoundGeneratorService", () => {
         config: { matches, enabled: true, teamSelectionMode: 1, numberOfVideos: {} }, // teams not specified
       } as any;
       // mockContainer.gameSettings.teams contains ["Team A", "Team B"] by default
-      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team A", awayTeam: "Team B" });
+      jest
+        .spyOn(service, "createNewMatchFromRandomTeams")
+        .mockReturnValue({ homeTeam: "Team A", awayTeam: "Team B", theme: "2001" });
 
       // Act
       const result = service.createNewMatchFromMatches(0);
 
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
-      expect(result).toEqual({ homeTeam: "Team A", awayTeam: "Team B" });
+      expect(result).toEqual({ homeTeam: "Team A", awayTeam: "Team B", theme: "2001" });
+    });
+
+    it("should preserve theme from match if available", () => {
+      // Arrange
+      const matches = [
+        { homeTeam: "Team A", awayTeam: "Team B", theme: "custom-theme" },
+        { homeTeam: "Team C", awayTeam: "Team D" },
+      ];
+      const teams = ["Team A", "Team B", "Team C", "Team D"];
+      mockContainer.gameData.gameConfig = {
+        gameId: 2001,
+        config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
+      } as any;
+
+      // Act
+      const result = service.createNewMatchFromMatches(0);
+
+      // Assert
+      expect(result).toEqual({ homeTeam: "Team A", awayTeam: "Team B", theme: "custom-theme" });
+    });
+
+    it("should use default theme when match theme is not available", () => {
+      // Arrange
+      const matches = [
+        { homeTeam: "Team A", awayTeam: "Team B" },
+        { homeTeam: "Team C", awayTeam: "Team D", theme: "custom-theme" },
+      ];
+      const teams = ["Team A", "Team B", "Team C", "Team D"];
+      mockContainer.gameData.gameConfig = {
+        gameId: 2001,
+        config: { matches, teams, enabled: true, teamSelectionMode: 1, numberOfVideos: {} },
+      } as any;
+
+      // Act
+      const result = service.createNewMatchFromMatches(0);
+
+      // Assert
+      expect(result).toEqual({ homeTeam: "Team A", awayTeam: "Team B", theme: "2001" });
     });
   });
 
@@ -236,14 +288,16 @@ describe("RoundGeneratorService", () => {
         gameId: 2001,
         config: { teamSelectionMode: 1, enabled: true, teams: [], matches: [], numberOfVideos: {} },
       } as any;
-      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team B", awayTeam: "Team A" });
+      jest
+        .spyOn(service, "createNewMatchFromRandomTeams")
+        .mockReturnValue({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
 
       // Act
       const result = service.createNewMatch(1);
 
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
-      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A" });
+      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
     });
 
     it("should use matches when teamSelectionMode is 2", () => {
@@ -252,14 +306,16 @@ describe("RoundGeneratorService", () => {
         gameId: 2001,
         config: { teamSelectionMode: 2, enabled: true, teams: [], matches: [], numberOfVideos: {} },
       } as any;
-      jest.spyOn(service, "createNewMatchFromMatches").mockReturnValue({ homeTeam: "Team C", awayTeam: "Team D" });
+      jest
+        .spyOn(service, "createNewMatchFromMatches")
+        .mockReturnValue({ homeTeam: "Team C", awayTeam: "Team D", theme: "2001" });
 
       // Act
       const result = service.createNewMatch(1);
 
       // Assert
       expect(service.createNewMatchFromMatches).toHaveBeenCalledWith(1);
-      expect(result).toEqual({ homeTeam: "Team C", awayTeam: "Team D" });
+      expect(result).toEqual({ homeTeam: "Team C", awayTeam: "Team D", theme: "2001" });
     });
 
     it("should default to random teams when teamSelectionMode is not specified", () => {
@@ -268,14 +324,16 @@ describe("RoundGeneratorService", () => {
         gameId: 2001,
         config: { enabled: true, teams: [], matches: [], numberOfVideos: {} },
       } as any;
-      jest.spyOn(service, "createNewMatchFromRandomTeams").mockReturnValue({ homeTeam: "Team B", awayTeam: "Team A" });
+      jest
+        .spyOn(service, "createNewMatchFromRandomTeams")
+        .mockReturnValue({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
 
       // Act
       const result = service.createNewMatch(1);
 
       // Assert
       expect(service.createNewMatchFromRandomTeams).toHaveBeenCalled();
-      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A" });
+      expect(result).toEqual({ homeTeam: "Team B", awayTeam: "Team A", theme: "2001" });
     });
   });
 
@@ -324,7 +382,7 @@ describe("RoundGeneratorService", () => {
       // Arrange
       mockContainer.gameData.gameConfig = {} as any;
       const roundId = 1;
-      const mockMatch = { homeTeam: "Team A", awayTeam: "Team B" };
+      const mockMatch = { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" };
       const mockConfig = {
         firstHalf: mockContainer.rateConfigs.homeFavorite[0],
         secondHalf: mockContainer.rateConfigs.homeFavorite[1],
@@ -433,6 +491,7 @@ describe("RoundGeneratorService", () => {
         gameId: mockContainer.gameSettings.gameId,
         homeTeam: mockMatch.homeTeam,
         awayTeam: mockMatch.awayTeam,
+        theme: mockMatch.theme,
         matchConfig: mockOddsResult.matchConfig,
         odds: mockOddsResult.odds,
         encryptedResult: "encrypted_data",
@@ -456,7 +515,7 @@ describe("RoundGeneratorService", () => {
         config: { numberOfVideos: gameConfigNumberOfVideos, enabled: true, teamSelectionMode: 1, teams: [], matches: [] },
       } as any;
 
-      const mockMatch = { homeTeam: "Team A", awayTeam: "Team B" };
+      const mockMatch = { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" };
       const mockConfig = {
         firstHalf: mockContainer.rateConfigs.homeFavorite[0],
         secondHalf: mockContainer.rateConfigs.homeFavorite[1],

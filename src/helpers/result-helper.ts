@@ -133,7 +133,7 @@ const getSettlementResultFromResultString = (resultString: string, overUnderValu
 
 export const generateRawResultForHash = () => {};
 
-const generateResultForHalf = (halfConfig: HalfConfigType) => {
+export const generateResultForHalf = (halfConfig: HalfConfigType) => {
   const scoreResult = getScoreFromScoreRate(halfConfig.scoreRate);
 
   const [homeGoals, awayGoals] = scoreResult.split("-").map(Number);

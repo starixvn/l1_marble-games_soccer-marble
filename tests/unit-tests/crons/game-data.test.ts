@@ -113,7 +113,7 @@ describe("GameData", () => {
           enabled: true,
           teamSelectionMode: 2,
           teams: ["Team C", "Team D"],
-          matches: [{ homeTeam: "Team C", awayTeam: "Team D" }],
+          matches: [{ homeTeam: "Team C", awayTeam: "Team D", theme: "2001" }],
           numberOfVideos: { H: 10, A: 8 },
         },
       };
@@ -165,9 +165,9 @@ describe("GameData", () => {
             "clb_fla",
           ],
           matches: [
-            { homeTeam: "clb_rma", awayTeam: "clb_mci" },
-            { homeTeam: "clb_fcb", awayTeam: "clb_psg" },
-            { homeTeam: "clb_che", awayTeam: "clb_int" },
+            { homeTeam: "clb_rma", awayTeam: "clb_mci", theme: "2001" },
+            { homeTeam: "clb_fcb", awayTeam: "clb_psg", theme: "2001" },
+            { homeTeam: "clb_che", awayTeam: "clb_int", theme: "2001" },
           ],
           numberOfVideos: {
             AAAA: 2,
