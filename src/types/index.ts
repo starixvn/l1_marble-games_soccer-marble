@@ -18,6 +18,8 @@ export type RateConfig = {
 export type HalfConfigType = RateConfig & {
   overUnderValue: number;
   handicapValue: number;
+  homeOverUnderValue: number;
+  awayOverUnderValue: number;
 };
 
 export type MatchConfigType = {
@@ -25,6 +27,8 @@ export type MatchConfigType = {
   secondHalf: HalfConfigType;
   overUnderValue: number;
   handicapValue: number;
+  homeOverUnderValue: number;
+  awayOverUnderValue: number;
 };
 
 export enum SettlementStatus {
@@ -173,4 +177,62 @@ export enum JobName {
   UpdateEventDetailOdds = "UpdateEventDetailOdds",
   UpdateEventDetailVideoInfo = "UpdateEventDetailVideoInfo",
   UpdateEventDetailResult = "UpdateEventDetailResult",
+}
+
+export enum FirstHalfOddsKey {
+  H1_HDP_HOME = "h1_hdp_home",
+  H1_HDP_AWAY = "h1_hdp_away",
+
+  H1_1X2_HOME = "h1_1x2_home",
+  H1_1X2_AWAY = "h1_1x2_away",
+  H1_1X2_DRAW = "h1_1x2_draw",
+
+  H1_OU_OVER = "h1_ou_over",
+  H1_OU_UNDER = "h1_ou_under",
+
+  H1_OE_ODD = "h1_oe_odd",
+  H1_OE_EVEN = "h1_oe_even",
+
+  H1_HOME_OVER = "h1_home_over",
+  H1_HOME_UNDER = "h1_home_under",
+  H1_AWAY_OVER = "h1_away_over",
+  H1_AWAY_UNDER = "h1_away_under",
+
+  FT_HDP_HOME = "ft_hdp_home",
+  FT_HDP_AWAY = "ft_hdp_away",
+
+  FT_1X2_HOME = "ft_1x2_home",
+  FT_1X2_AWAY = "ft_1x2_away",
+  FT_1X2_DRAW = "ft_1x2_draw",
+
+  FT_OU_OVER = "ft_ou_over",
+  FT_OU_UNDER = "ft_ou_under",
+
+  FT_OE_ODD = "ft_oe_odd",
+  FT_OE_EVEN = "ft_oe_even",
+
+  FT_HOME_OVER = "ft_home_over",
+  FT_HOME_UNDER = "ft_home_under",
+  FT_AWAY_OVER = "ft_away_over",
+  FT_AWAY_UNDER = "ft_away_under",
+}
+
+export enum SecondHalfOddsKey {
+  FT_1X2_HOME = "ft_1x2_home",
+  FT_1X2_AWAY = "ft_1x2_away",
+  FT_1X2_DRAW = "ft_1x2_draw",
+
+  FT_HDP_HOME = "ft_hdp_home",
+  FT_HDP_AWAY = "ft_hdp_away",
+
+  FT_OU_OVER = "ft_ou_over",
+  FT_OU_UNDER = "ft_ou_under",
+
+  FT_OE_ODD = "ft_oe_odd",
+  FT_OE_EVEN = "ft_oe_even",
+
+  FT_HOME_OVER = "ft_home_over",
+  FT_HOME_UNDER = "ft_home_under",
+  FT_AWAY_OVER = "ft_away_over",
+  FT_AWAY_UNDER = "ft_away_under",
 }

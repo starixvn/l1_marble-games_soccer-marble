@@ -476,7 +476,7 @@ describe("RoundGeneratorService", () => {
       jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
       jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
       jest.spyOn(service, "generateResult").mockReturnValue(mockResult);
-      jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult);
+      jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult as any);
       jest.spyOn(service, "getSettlementResult").mockReturnValue(mockSettlementResult);
       jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
       jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
@@ -555,7 +555,7 @@ describe("RoundGeneratorService", () => {
       jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
       jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
       jest.spyOn(service, "generateResult").mockReturnValue(mockResult);
-      jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult);
+      jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult as any);
       jest.spyOn(service, "getSettlementResult").mockReturnValue(mockSettlementResult);
       jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
       jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
@@ -597,7 +597,7 @@ describe("RoundGeneratorService", () => {
         selections: [{}],
       };
 
-      jest.spyOn(oddsHelper, "calculateOddsForRound").mockReturnValue(expectedResult);
+      jest.spyOn(oddsHelper, "calculateOddsForRound").mockReturnValue(expectedResult as any);
 
       // Act
       const result = service.generateRoundOddsAndUpdateMatchConfig(matchConfig, firstHalfResult);
