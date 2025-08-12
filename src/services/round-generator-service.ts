@@ -1,5 +1,5 @@
 import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, AppContainer, Match } from "../types";
-import { secureShuffle, secureRandomBool } from "sc-core-rng";
+import { secureShuffle, secureRandomBool, securePickOne } from "sc-core-rng";
 import { calculateOddsForRound } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
 import { encrypt } from "../helpers/crypto-helper";
@@ -36,7 +36,7 @@ export class RoundGeneratorService {
       return this.createNewMatchFromRandomTeams();
     }
 
-    const match = matches[roundId % matches.length];
+    const match = securePickOne(matches);
 
     if (!teams.includes(match.homeTeam) || !teams.includes(match.awayTeam)) {
       return this.createNewMatchFromRandomTeams();
