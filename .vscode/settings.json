@@ -25,5 +25,6 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "https-sonarqube-lumigame-com-",
     "projectKey": "soccer-marble"
-  }
+  },
+  "prettier.printWidth": 120
 }
