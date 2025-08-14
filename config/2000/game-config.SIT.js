@@ -26,17 +26,17 @@ export const gameSettings = {
   upcomingEvents: 3,
   theme: "2001",
   gameTiming: {
-    wholeRound: 96,
+    wholeRound: 100,
     timelines: [
       {
         OddsAvailable: 0,
         ScheduleStart: 10,
-        ResultAvailable: 43,
+        ResultAvailable: 45,
       },
       {
         OddsAvailable: 40,
-        ScheduleStart: 53,
-        ResultAvailable: 86,
+        ScheduleStart: 55,
+        ResultAvailable: 90,
       },
     ],
   },
