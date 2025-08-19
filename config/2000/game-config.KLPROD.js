@@ -24,7 +24,7 @@ export const gameSettings = {
   gameId: 2000,
   modelPrefix: "soccer_marble_2000",
   upcomingEvents: 3,
-  theme: "2001",
+  theme: "youtube",
   gameTiming: {
     wholeRound: 100,
     timelines: [
