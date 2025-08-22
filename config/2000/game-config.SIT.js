@@ -81,8 +81,14 @@ export const gameSettings = {
     HHA: 6,
     HHHH: 2,
     HHH: 9,
-    HH: 18,
+    HH: 19,
     H: 29,
+    AHAA: 2,
+    HAHH: 2,
+    HHHA: 2,
+    AAHA: 2,
+    HHAH: 2,
+    HAAA: 1,
   },
 };
 
