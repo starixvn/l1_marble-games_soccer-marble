@@ -20,6 +20,8 @@ export type HalfConfigType = RateConfig & {
   handicapValue: number;
   homeOverUnderValue: number;
   awayOverUnderValue: number;
+  numberOfEventDetails: number;
+  eventDetailScoreRates: RateConfig[];
 };
 
 export type MatchConfigType = {
@@ -70,7 +72,8 @@ export type DrawResultType = {
 };
 
 export type RoundResultType = {
-  drawResults: DrawResultType[];
+  firstHalfResults: DrawResultType[];
+  secondHalfResults: DrawResultType[];
 };
 
 export type DrawSettlementResultType = Record<string, SettlementStatus>;
@@ -141,8 +144,15 @@ export type GameRunningRound = {
   awayTeam: string;
   theme: string;
   matchConfig: MatchConfigType;
+  oddsConfigs: {
+    firstHalfMatchConfigs: MatchConfigType[];
+    secondHalfMatchConfigs: MatchConfigType[];
+  };
   selections: Record<string, Selection>[];
-  odds: Record<string, number>[];
+  odds: {
+    firstHalfOdds: Record<string, number>[];
+    secondHalfOdds: Record<string, number>[];
+  };
   result: RoundResultType;
   settlementResult: RoundSettlementResultType;
   eventID: number;

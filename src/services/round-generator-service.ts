@@ -1,6 +1,15 @@
-import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, AppContainer, Match } from "../types";
-import { secureShuffle, secureRandomBool } from "sc-core-rng";
-import { calculateOddsForRound } from "../helpers/odds-helper";
+import {
+  RoundResultType,
+  MatchConfigType,
+  GameRunningRound,
+  GameSettings,
+  AppContainer,
+  Match,
+  HalfConfigType,
+  RateConfig,
+} from "../types";
+import { secureShuffle, secureRandomBool, secureRandomRange, securePickOne } from "sc-core-rng";
+import { calculateOddsForRound, mergeArrayOfRates } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
 import { encrypt } from "../helpers/crypto-helper";
 import { idHelper } from "../helpers";
@@ -58,17 +67,43 @@ export class RoundGeneratorService {
   }
 
   createNewMatchConfig(): MatchConfigType {
+    const firstHalfBlock = secureRandomRange(2, 4);
+    const secondHalfBlock = secureRandomRange(2, 4);
     const isHomeFavorite = secureRandomBool();
-    const configs = secureShuffle(isHomeFavorite ? this.rateConfigs.homeFavorite : this.rateConfigs.awayFavorite);
+    const firstHalfRates: RateConfig[] = [];
+    for (let i = 1; i < firstHalfBlock; i++) {
+      firstHalfRates.push(
+        isHomeFavorite ? securePickOne(this.rateConfigs.homeFavorite) : securePickOne(this.rateConfigs.awayFavorite)
+      );
+    }
+
+    firstHalfRates.push(isHomeFavorite ? this.rateConfigs.homeFavoriteDraw[0] : this.rateConfigs.awayFavoriteDraw[0]);
+
+    const secondHalfRates: RateConfig[] = [];
+    for (let i = 1; i < secondHalfBlock; i++) {
+      secondHalfRates.push(
+        isHomeFavorite ? securePickOne(this.rateConfigs.homeFavorite) : securePickOne(this.rateConfigs.awayFavorite)
+      );
+    }
+
+    secondHalfRates.push(isHomeFavorite ? this.rateConfigs.homeFavoriteDraw[0] : this.rateConfigs.awayFavoriteDraw[0]);
 
     return {
-      firstHalf: configs[0],
-      secondHalf: configs[1],
+      firstHalf: {
+        numberOfEventDetails: firstHalfBlock,
+        eventDetailScoreRates: firstHalfRates,
+        scoreRate: mergeArrayOfRates(firstHalfRates).scoreRate,
+      } as HalfConfigType,
+      secondHalf: {
+        numberOfEventDetails: secondHalfBlock,
+        eventDetailScoreRates: secondHalfRates,
+        scoreRate: mergeArrayOfRates(secondHalfRates).scoreRate,
+      } as HalfConfigType,
     } as MatchConfigType;
   }
 
-  generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, firstHalfResult: string) {
-    return calculateOddsForRound(matchConfig, firstHalfResult);
+  generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, result: RoundResultType) {
+    return calculateOddsForRound(matchConfig, result);
   }
 
   generateResult(matchConfig: MatchConfigType, numberOfVideos: Record<string, number>) {
@@ -101,18 +136,15 @@ export class RoundGeneratorService {
 
     const result = this.generateResult(newRound.matchConfig, numberOfVideos);
 
-    const { odds, matchConfig, selections } = this.generateRoundOddsAndUpdateMatchConfig(
-      newRound.matchConfig,
-      result.drawResults[0].result.goalSequence
-    );
+    const { odds, matchConfigs, selections } = this.generateRoundOddsAndUpdateMatchConfig(newRound.matchConfig, result);
 
     newRound.odds = odds;
-    newRound.matchConfig = matchConfig;
+    newRound.oddsConfigs = matchConfigs;
 
-    const settlementResult = this.getSettlementResult(result, newRound.matchConfig);
+    // const settlementResult = this.getSettlementResult(result, newRound.matchConfig);
 
     newRound.encryptedResult = encrypt(result);
-    newRound.encryptedSettlementResult = encrypt(settlementResult);
+    // newRound.encryptedSettlementResult = encrypt(settlementResult);
     newRound.encryptedSelections = encrypt(selections);
 
     return newRound;

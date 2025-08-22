@@ -4,12 +4,12 @@ import {
   RoundResultType,
   DataResultType,
   RoundSettlementResultType,
-  HalfConfigType,
   DrawResultType,
   MatchConfigType,
   SettlementStatus,
   FirstHalfOddsKey,
   SecondHalfOddsKey,
+  RateConfig,
 } from "../types";
 import { gameSettings } from "../game-config";
 
@@ -20,26 +20,55 @@ type SettleConfig = {
   awayOverUnderValue: number;
 };
 
+type ResultType = {
+  goalSequence: string;
+  finalScore: string;
+};
+
 export const generateResult = (data: DataResultType): RoundResultType => {
   const numberOfVideos = data.numberOfVideos;
-  const firstHalf = generateResultForHalf(data.matchConfig.firstHalf);
-  const secondHalf = generateResultForHalf(data.matchConfig.secondHalf);
-  const videoInfo = getVideoInfoFromResult(firstHalf.goalSequence, secondHalf.goalSequence, numberOfVideos);
+  const firstHalfConfig = data.matchConfig.firstHalf;
+  const secondHalfConfig = data.matchConfig.secondHalf;
+  const firstHalfResults: DrawResultType[] = [];
+  const secondHalfResults: DrawResultType[] = [];
 
-  const firstHalfResult: DrawResultType = {
-    playlist: videoInfo.firstHalfVideo,
-    goalInfo: videoInfo.firstHalfVideo,
-    result: firstHalf,
-  };
+  for (let i = 0; i < firstHalfConfig.numberOfEventDetails; i++) {
+    const eventDetailResult = generateResultFromRate(firstHalfConfig.eventDetailScoreRates[i]);
+    const videoName = generateVideoName(eventDetailResult.goalSequence, numberOfVideos);
+    firstHalfResults.push({
+      playlist: videoName,
+      goalInfo: videoName,
+      result: eventDetailResult,
+    });
+  }
 
-  const secondHalfResult: DrawResultType = {
-    playlist: videoInfo.secondHalfVideo,
-    goalInfo: videoInfo.secondHalfVideo,
-    result: secondHalf,
-  };
+  for (let i = 0; i < secondHalfConfig.numberOfEventDetails; i++) {
+    const eventDetailResult = generateResultFromRate(secondHalfConfig.eventDetailScoreRates[i]);
+    const videoName = generateVideoName(eventDetailResult.goalSequence, numberOfVideos);
+    secondHalfResults.push({
+      playlist: videoName,
+      goalInfo: videoName,
+      result: eventDetailResult,
+    });
+  }
 
   return {
-    drawResults: [firstHalfResult, secondHalfResult],
+    firstHalfResults,
+    secondHalfResults,
+  };
+};
+
+export const combineResults = (eventDetailResults: DrawResultType[]): ResultType => {
+  const goalSequence = eventDetailResults
+    .map((result) => result.result.goalSequence)
+    .join("")
+    .replace("0", "");
+  const fhHomeGoals = goalSequence.split("H").length - 1;
+  const fhAwayGoals = goalSequence.split("A").length - 1;
+
+  return {
+    goalSequence: goalSequence || "0",
+    finalScore: `${fhHomeGoals}-${fhAwayGoals}`,
   };
 };
 
@@ -47,23 +76,23 @@ export const getSettlementResult = (
   roundResult: RoundResultType,
   matchConfig: MatchConfigType
 ): RoundSettlementResultType => {
-  const firstHalf = roundResult.drawResults[0].result;
-  const secondHalf = roundResult.drawResults[1].result;
+  const firstHalfResult = combineResults(roundResult.firstHalfResults);
+  const secondHalfResult = combineResults(roundResult.secondHalfResults);
 
-  const firstHalfSettlementResult = getSettlementResultFromResultString(firstHalf.goalSequence, {
+  const firstHalfSettlementResult = getSettlementResultFromResultString(firstHalfResult.goalSequence, {
     overUnderValue: matchConfig.firstHalf.overUnderValue,
     handicapValue: matchConfig.firstHalf.handicapValue,
     homeOverUnderValue: matchConfig.firstHalf.homeOverUnderValue,
     awayOverUnderValue: matchConfig.firstHalf.awayOverUnderValue,
   });
-  const secondHalfSettlementResult = getSettlementResultFromResultString(secondHalf.goalSequence, {
+  const secondHalfSettlementResult = getSettlementResultFromResultString(secondHalfResult.goalSequence, {
     overUnderValue: matchConfig.secondHalf.overUnderValue,
     handicapValue: matchConfig.secondHalf.handicapValue,
     homeOverUnderValue: matchConfig.secondHalf.homeOverUnderValue,
     awayOverUnderValue: matchConfig.secondHalf.awayOverUnderValue,
   });
   const fullTimeSettlementResult = getSettlementResultFromResultString(
-    firstHalf.goalSequence + secondHalf.goalSequence,
+    firstHalfResult.goalSequence + secondHalfResult.goalSequence,
     {
       overUnderValue: matchConfig.overUnderValue,
       handicapValue: matchConfig.handicapValue,
@@ -226,8 +255,8 @@ const getSettlementResultFromResultString = (resultString: string, settleConfig:
   };
 };
 
-const generateResultForHalf = (halfConfig: HalfConfigType) => {
-  const scoreResult = getScoreFromScoreRate(halfConfig.scoreRate);
+const generateResultFromRate = (rateConfig: RateConfig): ResultType => {
+  const scoreResult = getScoreFromScoreRate(rateConfig.scoreRate);
 
   const [homeGoals, awayGoals] = scoreResult.split("-").map(Number);
   const sequence = Array(homeGoals).fill("H").concat(Array(awayGoals).fill("A"));
