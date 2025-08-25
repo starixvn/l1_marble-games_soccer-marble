@@ -132,7 +132,6 @@ export class GameHandler {
     }
 
     if (drawIndex === this.gameSettings.gameTiming.timelines.length - 1) {
-      //await this.handleUpdateSettlementResult(round);
       await this.handleRoundEnded(roundId);
     }
   }

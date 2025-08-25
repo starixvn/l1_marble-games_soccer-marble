@@ -204,7 +204,7 @@ export class RoundGeneratorService {
     newRound.odds = odds;
     newRound.oddsConfigs = matchConfigs;
 
-    const settlementResult = ""; //this.getSettlementResult(result, newRound.matchConfig);
+    const settlementResult = "";
 
     newRound.encryptedResult = encrypt(result);
     newRound.encryptedSettlementResult = encrypt(settlementResult);
