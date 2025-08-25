@@ -34,6 +34,7 @@ export const gameSettings = {
     videoLength: 32,
     oddsLength: 10,
     halfTime: 20,
+    breakTime: 3,
   },
   teams: [
     "nt_arg",

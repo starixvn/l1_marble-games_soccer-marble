@@ -34,6 +34,7 @@ const gameSettings: GameSettings = {
     videoLength: 10,
     oddsLength: 10,
     halfTime: 10,
+    breakTime: 10,
   },
   teams: [
     "clb_rma",

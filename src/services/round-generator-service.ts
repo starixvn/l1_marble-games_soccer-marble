@@ -19,6 +19,7 @@ import { GameData } from "../crons/game-data";
 
 const minBlocks = 2;
 const maxBlocks = 4;
+const minVideoLength = 6;
 
 export class RoundGeneratorService {
   private readonly gameSettings: GameSettings;
@@ -75,10 +76,11 @@ export class RoundGeneratorService {
     const secondHalfBlock = secureRandomRange(minBlocks, maxBlocks);
     const isHomeFavorite = secureRandomBool();
     const firstHalfRates: RateConfig[] = [];
-    const firstHalfMaxVideoLength = Math.round(this.gameSettings.gameTiming.videoLength / firstHalfBlock);
-    const secondHalfMaxVideoLength = Math.round(this.gameSettings.gameTiming.videoLength / secondHalfBlock);
-    let lastFirstHalfVideoLength = this.gameSettings.gameTiming.videoLength;
-    let lastSecondHalfVideoLength = this.gameSettings.gameTiming.videoLength;
+    const gameTiming = this.gameSettings.gameTiming;
+    const firstHalfMaxVideoLength = Math.round(gameTiming.videoLength / firstHalfBlock);
+    const secondHalfMaxVideoLength = Math.round(gameTiming.videoLength / secondHalfBlock);
+    let lastFirstHalfVideoLength = gameTiming.videoLength;
+    let lastSecondHalfVideoLength = gameTiming.videoLength;
     const firstHalfVideosLength = [];
     const secondHalfVideosLength = [];
     const firstHalfTimelines: Timeline[] = [];
@@ -89,7 +91,7 @@ export class RoundGeneratorService {
         isHomeFavorite ? securePickOne(this.rateConfigs.homeFavorite) : securePickOne(this.rateConfigs.awayFavorite)
       );
 
-      const videoLength = secureRandomRange(4, firstHalfMaxVideoLength);
+      const videoLength = secureRandomRange(minVideoLength, firstHalfMaxVideoLength);
       firstHalfVideosLength.push(videoLength);
       lastFirstHalfVideoLength -= videoLength;
     }
@@ -103,7 +105,7 @@ export class RoundGeneratorService {
         isHomeFavorite ? securePickOne(this.rateConfigs.homeFavorite) : securePickOne(this.rateConfigs.awayFavorite)
       );
 
-      const videoLength = secureRandomRange(4, secondHalfMaxVideoLength);
+      const videoLength = secureRandomRange(minVideoLength, secondHalfMaxVideoLength);
       secondHalfVideosLength.push(videoLength);
       lastSecondHalfVideoLength -= videoLength;
     }
@@ -114,7 +116,7 @@ export class RoundGeneratorService {
     firstHalfVideosLength.forEach((videoLength, index) => {
       const oddsAvailable = index === 0 ? 0 : firstHalfTimelines[index - 1].ScheduleStart;
       const scheduleStart =
-        index === 0 ? this.gameSettings.gameTiming.oddsLength : firstHalfTimelines[index - 1].ResultAvailable;
+        index === 0 ? gameTiming.oddsLength : firstHalfTimelines[index - 1].ResultAvailable + gameTiming.breakTime;
       const resultAvailable = scheduleStart + videoLength;
 
       const timeline = {
@@ -134,8 +136,8 @@ export class RoundGeneratorService {
 
       const scheduleStart =
         index === 0
-          ? oddsAvailable + this.gameSettings.gameTiming.halfTime
-          : secondHalfTimelines[index - 1].ResultAvailable;
+          ? oddsAvailable + gameTiming.halfTime
+          : secondHalfTimelines[index - 1].ResultAvailable + gameTiming.breakTime;
 
       const resultAvailable = scheduleStart + videoLength;
 

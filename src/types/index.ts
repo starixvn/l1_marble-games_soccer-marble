@@ -125,6 +125,7 @@ export type GameTiming = {
   oddsLength: number;
   timelines: Array<Timeline>;
   halfTime: number;
+  breakTime: number;
 };
 
 export type Timeline = {
