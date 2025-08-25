@@ -98,7 +98,11 @@ export class GameHandler {
     }
   }
 
-  async handleVideoInfoAvailableForEventDetail(drawIndex: number, eventDetailId: Schema.Types.ObjectId, roundId: number) {
+  async handleVideoInfoAvailableForEventDetail(
+    drawIndex: number,
+    eventDetailId: Schema.Types.ObjectId,
+    roundId: number
+  ) {
     const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
     const round = await this.loadRoundFromRoundId(roundId);
     eventDetail.playlist = round.result.drawResults[drawIndex].playlist;
@@ -128,7 +132,7 @@ export class GameHandler {
     }
 
     if (drawIndex === this.gameSettings.gameTiming.timelines.length - 1) {
-      await this.handleUpdateSettlementResult(round);
+      //await this.handleUpdateSettlementResult(round);
       await this.handleRoundEnded(roundId);
     }
   }

@@ -29,8 +29,11 @@ export const gameSettings = {
   upcomingEvents: 3,
   theme: "epl_mun",
   gameTiming: {
-    wholeRound: 0,
+    wholeRound: 100,
     timelines: [],
+    videoLength: 32,
+    oddsLength: 10,
+    halfTime: 20,
   },
   teams: [
     "nt_arg",
@@ -81,6 +84,7 @@ export const gameSettings = {
     HHH: 47,
     HH: 85,
     H: 131,
+    "0": 1,
   } as Record<string, number>,
 };
 
@@ -100,17 +104,17 @@ const config2: RateConfig = {
 
 const config3: RateConfig = {
   scoreRate: {
-    "1-0": 0.45,
-    "0-1": 0.35,
-    "0-0": 0.2,
+    "1-0": 0.25,
+    "0-1": 0.25,
+    "0-0": 0.5,
   },
 };
 
 const config4: RateConfig = {
   scoreRate: {
-    "1-0": 0.35,
-    "0-1": 0.45,
-    "0-0": 0.2,
+    "1-0": 0.25,
+    "0-1": 0.25,
+    "0-0": 0.5,
   },
 };
 

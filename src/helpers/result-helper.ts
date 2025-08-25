@@ -53,6 +53,7 @@ export const generateResult = (data: DataResultType): RoundResultType => {
   }
 
   return {
+    drawResults: [...firstHalfResults, ...secondHalfResults],
     firstHalfResults,
     secondHalfResults,
   };
@@ -274,16 +275,6 @@ export const getScoreFromScoreRate = (scoreRate: Record<string, number>) => {
   const rate = Object.values(scoreRate);
 
   return secureWeightedPick(score, rate);
-};
-
-const getVideoInfoFromResult = (firstHalf: string, secondHalf: string, numberOfVideos: Record<string, number>) => {
-  const firstHalfVideo = generateVideoName(firstHalf, numberOfVideos);
-  const secondHalfVideo = generateVideoName(secondHalf, numberOfVideos, false, firstHalfVideo);
-
-  return {
-    firstHalfVideo,
-    secondHalfVideo,
-  };
 };
 
 export const generateVideoName = (

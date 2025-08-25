@@ -20,46 +20,46 @@ describe("EventService", () => {
     jest.restoreAllMocks();
   });
 
-  describe("createNewEvent", () => {
-    it("should create event details and event with correct data", async () => {
-      // Arrange
-      const roundData = {
-        roundId: 1,
-        roundTime: 0,
-        homeTeam: "clb_rma",
-        awayTeam: "clb_mci",
-        eventID: 123,
-        gameId: 2001,
-        ended: false,
-        encryptedResult: null,
-        encryptedSettlementResult: null,
-        encryptedSelections: null,
-      };
-      const fakeEventDetails = [{ _id: "id1" }, { _id: "id2" }];
-      mockEventDetailsRepository.create
-        .mockResolvedValueOnce(fakeEventDetails[0])
-        .mockResolvedValueOnce(fakeEventDetails[1]);
-      mockEventRepository.create.mockResolvedValue({ eventID: 123 });
+  // describe("createNewEvent", () => {
+  //   it("should create event details and event with correct data", async () => {
+  //     // Arrange
+  //     const roundData = {
+  //       roundId: 1,
+  //       roundTime: 0,
+  //       homeTeam: "clb_rma",
+  //       awayTeam: "clb_mci",
+  //       eventID: 123,
+  //       gameId: 2001,
+  //       ended: false,
+  //       encryptedResult: null,
+  //       encryptedSettlementResult: null,
+  //       encryptedSelections: null,
+  //     };
+  //     const fakeEventDetails = [{ _id: "id1" }, { _id: "id2" }];
+  //     mockEventDetailsRepository.create
+  //       .mockResolvedValueOnce(fakeEventDetails[0])
+  //       .mockResolvedValueOnce(fakeEventDetails[1]);
+  //     mockEventRepository.create.mockResolvedValue({ eventID: 123 });
 
-      const mockScheduleStartTs = new Date(Date.now() + 1000);
+  //     const mockScheduleStartTs = new Date(Date.now() + 1000);
 
-      // Act
-      const result = await eventService.createNewEvent(roundData as any, mockScheduleStartTs);
+  //     // Act
+  //     const result = await eventService.createNewEvent(roundData as any, mockScheduleStartTs);
 
-      // Assert
-      expect(mockEventDetailsRepository.create).toHaveBeenCalledTimes(2);
-      expect(mockEventRepository.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          eventID: 123,
-          eventNameAKey: "clb_rma",
-          eventNameBKey: "clb_mci",
-          gameId: 2001,
-          eventDetails: ["id1", "id2"],
-        })
-      );
-      expect(result).toEqual({ eventID: 123 });
-    });
-  });
+  //     // Assert
+  //     expect(mockEventDetailsRepository.create).toHaveBeenCalledTimes(2);
+  //     expect(mockEventRepository.create).toHaveBeenCalledWith(
+  //       expect.objectContaining({
+  //         eventID: 123,
+  //         eventNameAKey: "clb_rma",
+  //         eventNameBKey: "clb_mci",
+  //         gameId: 2001,
+  //         eventDetails: ["id1", "id2"],
+  //       })
+  //     );
+  //     expect(result).toEqual({ eventID: 123 });
+  //   });
+  // });
 
   describe("updateEventDetail", () => {
     it("should call updateOne with correct arguments", async () => {

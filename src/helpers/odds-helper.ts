@@ -275,15 +275,14 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, result: Roun
     );
 
     const updatedMatchConfig = {
-      ...currentMatchConfig,
       overUnderValue: fulltime.overUnderValue,
       handicapValue: fulltime.handicapValue,
       homeOverUnderValue: fulltime.homeOverUnderValue,
       awayOverUnderValue: fulltime.awayOverUnderValue,
-      firstHalf: updatedFirstHalf,
+      firstHalf: { ...updatedFirstHalf, scoreRate: currentFirstHalfScoreRates.scoreRate, eventDetailScoreRates: null },
     };
 
-    matchConfigs.firstHalfMatchConfigs.push(updatedMatchConfig);
+    matchConfigs.firstHalfMatchConfigs.push(updatedMatchConfig as any);
     odds.firstHalfOdds.push(firstHalfOdds);
     selections.firstHalfSelections.push(firstHalfSelections);
   }
@@ -299,26 +298,33 @@ export const calculateOddsForRound = (matchConfig: MatchConfigType, result: Roun
     );
 
     const updatedMatchConfig = {
-      ...currentMatchConfig,
       overUnderValue: updatedSecondHalf.overUnderValue,
       handicapValue: updatedSecondHalf.handicapValue,
       homeOverUnderValue: updatedSecondHalf.homeOverUnderValue,
       awayOverUnderValue: updatedSecondHalf.awayOverUnderValue,
+      secondHalf: {
+        ...updatedSecondHalf,
+        scoreRate: currentSecondHalfScoreRates.scoreRate,
+        eventDetailScoreRates: null,
+      },
     };
 
-    matchConfigs.secondHalfMatchConfigs.push(updatedMatchConfig);
+    matchConfigs.secondHalfMatchConfigs.push(updatedMatchConfig as any);
     odds.secondHalfOdds.push(secondHalfOdds);
     selections.secondHalfSelections.push(secondHalfSelections);
   }
 
   return {
-    odds,
+    odds: [...odds.firstHalfOdds, ...odds.secondHalfOdds],
     matchConfigs,
-    selections,
+    selections: [...selections.firstHalfSelections, ...selections.secondHalfSelections],
   };
 };
 
 export const calculateOddsForFirstHalf = (matchConfig: MatchConfigType, addingScore: string) => {
+  const [addingHomeGoals, addingAwayGoals] = parseScore(addingScore);
+  const addingTotalGoals = addingHomeGoals + addingAwayGoals;
+
   const fullTimeScoreRates = mergeTwoScoreRates(matchConfig.firstHalf, matchConfig.secondHalf);
   const fulltime = calculateOddsFromRate(fullTimeScoreRates, addingScore);
   const firstHalf = calculateOddsFromRate(matchConfig.firstHalf, addingScore);
@@ -339,8 +345,8 @@ export const calculateOddsForFirstHalf = (matchConfig: MatchConfigType, addingSc
     [FirstHalfOddsKey.H1_1X2_DRAW]: firstHalf.odds.draw,
     [FirstHalfOddsKey.H1_OU_OVER]: firstHalf.odds.over,
     [FirstHalfOddsKey.H1_OU_UNDER]: firstHalf.odds.under,
-    [FirstHalfOddsKey.H1_OE_ODD]: firstHalf.odds.odd,
-    [FirstHalfOddsKey.H1_OE_EVEN]: firstHalf.odds.even,
+    [FirstHalfOddsKey.H1_OE_ODD]: addingTotalGoals % 2 === 0 ? firstHalf.odds.odd : firstHalf.odds.even,
+    [FirstHalfOddsKey.H1_OE_EVEN]: addingTotalGoals % 2 === 0 ? firstHalf.odds.even : firstHalf.odds.odd,
     [FirstHalfOddsKey.H1_HOME_OVER]: firstHalf.odds.homeOver,
     [FirstHalfOddsKey.H1_HOME_UNDER]: firstHalf.odds.homeUnder,
     [FirstHalfOddsKey.H1_AWAY_OVER]: firstHalf.odds.awayOver,
@@ -353,8 +359,8 @@ export const calculateOddsForFirstHalf = (matchConfig: MatchConfigType, addingSc
     [FirstHalfOddsKey.FT_1X2_DRAW]: fulltime.odds.draw,
     [FirstHalfOddsKey.FT_OU_OVER]: fulltime.odds.over,
     [FirstHalfOddsKey.FT_OU_UNDER]: fulltime.odds.under,
-    [FirstHalfOddsKey.FT_OE_ODD]: fulltime.odds.odd,
-    [FirstHalfOddsKey.FT_OE_EVEN]: fulltime.odds.even,
+    [FirstHalfOddsKey.FT_OE_ODD]: addingTotalGoals % 2 === 0 ? fulltime.odds.odd : fulltime.odds.even,
+    [FirstHalfOddsKey.FT_OE_EVEN]: addingTotalGoals % 2 === 0 ? fulltime.odds.even : fulltime.odds.odd,
     [FirstHalfOddsKey.FT_HOME_OVER]: fulltime.odds.homeOver,
     [FirstHalfOddsKey.FT_HOME_UNDER]: fulltime.odds.homeUnder,
     [FirstHalfOddsKey.FT_AWAY_OVER]: fulltime.odds.awayOver,
@@ -380,23 +386,23 @@ export const calculateOddsForFirstHalf = (matchConfig: MatchConfigType, addingSc
   firstHalfSelections[FirstHalfOddsKey.H1_HDP_HOME].point = firstHalf.handicapValue;
   firstHalfSelections[FirstHalfOddsKey.H1_HDP_AWAY].point = -firstHalf.handicapValue;
 
-  firstHalfSelections[FirstHalfOddsKey.FT_OU_OVER].point = fulltime.overUnderValue;
-  firstHalfSelections[FirstHalfOddsKey.FT_OU_UNDER].point = fulltime.overUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.FT_OU_OVER].point = fulltime.overUnderValue + addingTotalGoals;
+  firstHalfSelections[FirstHalfOddsKey.FT_OU_UNDER].point = fulltime.overUnderValue + addingTotalGoals;
 
-  firstHalfSelections[FirstHalfOddsKey.H1_OU_OVER].point = firstHalf.overUnderValue;
-  firstHalfSelections[FirstHalfOddsKey.H1_OU_UNDER].point = firstHalf.overUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.H1_OU_OVER].point = firstHalf.overUnderValue + addingTotalGoals;
+  firstHalfSelections[FirstHalfOddsKey.H1_OU_UNDER].point = firstHalf.overUnderValue + addingTotalGoals;
 
-  firstHalfSelections[FirstHalfOddsKey.FT_HOME_OVER].point = fulltime.homeOverUnderValue;
-  firstHalfSelections[FirstHalfOddsKey.FT_HOME_UNDER].point = fulltime.homeOverUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.FT_HOME_OVER].point = fulltime.homeOverUnderValue + addingHomeGoals;
+  firstHalfSelections[FirstHalfOddsKey.FT_HOME_UNDER].point = fulltime.homeOverUnderValue + addingHomeGoals;
 
-  firstHalfSelections[FirstHalfOddsKey.FT_AWAY_OVER].point = fulltime.awayOverUnderValue;
-  firstHalfSelections[FirstHalfOddsKey.FT_AWAY_UNDER].point = fulltime.awayOverUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.FT_AWAY_OVER].point = fulltime.awayOverUnderValue + addingAwayGoals;
+  firstHalfSelections[FirstHalfOddsKey.FT_AWAY_UNDER].point = fulltime.awayOverUnderValue + addingAwayGoals;
 
-  firstHalfSelections[FirstHalfOddsKey.H1_HOME_OVER].point = firstHalf.homeOverUnderValue;
-  firstHalfSelections[FirstHalfOddsKey.H1_HOME_UNDER].point = firstHalf.homeOverUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.H1_HOME_OVER].point = firstHalf.homeOverUnderValue + addingHomeGoals;
+  firstHalfSelections[FirstHalfOddsKey.H1_HOME_UNDER].point = firstHalf.homeOverUnderValue + addingHomeGoals;
 
-  firstHalfSelections[FirstHalfOddsKey.H1_AWAY_OVER].point = firstHalf.awayOverUnderValue;
-  firstHalfSelections[FirstHalfOddsKey.H1_AWAY_UNDER].point = firstHalf.awayOverUnderValue;
+  firstHalfSelections[FirstHalfOddsKey.H1_AWAY_OVER].point = firstHalf.awayOverUnderValue + addingAwayGoals;
+  firstHalfSelections[FirstHalfOddsKey.H1_AWAY_UNDER].point = firstHalf.awayOverUnderValue + addingAwayGoals;
 
   return {
     fulltime,

@@ -2,7 +2,7 @@ import { Schema } from "mongoose";
 import { EventModel, EventDetailModel } from "../models";
 import { IEventDetail } from "../models/event-details";
 import { IEvent } from "../models/events";
-import { GameSettings, AppContainer, EventDetail, GameRunningRound } from "../types";
+import { GameSettings, AppContainer, EventDetail, GameRunningRound, Timeline } from "../types";
 import { logger } from "sc-common";
 
 export class EventService {
@@ -22,7 +22,8 @@ export class EventService {
     const eventId = roundData.eventID;
     const eventStartTimeTs = Math.max(scheduleStartTs.getTime(), new Date().getTime() + 2000); // 2 seconds delay
 
-    const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs));
+    const timelines = roundData.matchConfig.timelines;
+    const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs), timelines);
 
     const event = {
       eventID: eventId,
@@ -37,8 +38,11 @@ export class EventService {
     return this.eventRepository.create(event);
   }
 
-  private async createNewEventDetails(eventId: number, startTime: Date): Promise<IEventDetail[]> {
-    const { timelines } = this.gameSettings.gameTiming;
+  private async createNewEventDetails(
+    eventId: number,
+    startTime: Date,
+    timelines: Timeline[]
+  ): Promise<IEventDetail[]> {
     return Promise.all(
       timelines.map((timeline) => {
         const eventDetail: EventDetail = {

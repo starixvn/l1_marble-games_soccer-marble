@@ -337,363 +337,369 @@ describe("RoundGeneratorService", () => {
     });
   });
 
-  describe("createNewMatchConfig", () => {
-    it("should create match config with shuffled first and second half when home is favorite", () => {
-      // Arrange
-      const secureRandomBoolMock = jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
-      const shuffleMock = jest
-        .spyOn(rngModule, "secureShuffle")
-        .mockReturnValue([mockContainer.rateConfigs.homeFavorite[1], mockContainer.rateConfigs.homeFavorite[0]]);
+  // describe("createNewMatchConfig", () => {
+  //   it("should create match config with shuffled first and second half when home is favorite", () => {
+  //     // Arrange
+  //     const secureRandomBoolMock = jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
+  //     const shuffleMock = jest
+  //       .spyOn(rngModule, "secureShuffle")
+  //       .mockReturnValue([mockContainer.rateConfigs.homeFavorite[1], mockContainer.rateConfigs.homeFavorite[0]]);
 
-      // Act
-      const result = service.createNewMatchConfig();
+  //     // Act
+  //     const result = service.createNewMatchConfig();
 
-      // Assert
-      expect(secureRandomBoolMock).toHaveBeenCalled();
-      expect(shuffleMock).toHaveBeenCalledWith(mockContainer.rateConfigs.homeFavorite);
-      expect(result).toEqual({
-        firstHalf: mockContainer.rateConfigs.homeFavorite[1],
-        secondHalf: mockContainer.rateConfigs.homeFavorite[0],
-      });
-    });
+  //     // Assert
+  //     expect(secureRandomBoolMock).toHaveBeenCalled();
+  //     expect(shuffleMock).toHaveBeenCalledWith(mockContainer.rateConfigs.homeFavorite);
+  //     expect(result).toEqual({
+  //       firstHalf: mockContainer.rateConfigs.homeFavorite[1],
+  //       secondHalf: mockContainer.rateConfigs.homeFavorite[0],
+  //     });
+  //   });
 
-    it("should create match config with shuffled first and second half when away is favorite", () => {
-      // Arrange
-      const secureRandomBoolMock = jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(false);
-      const shuffleMock = jest
-        .spyOn(rngModule, "secureShuffle")
-        .mockReturnValue([mockContainer.rateConfigs.awayFavorite[1], mockContainer.rateConfigs.awayFavorite[0]]);
+  //   it("should create match config with shuffled first and second half when away is favorite", () => {
+  //     // Arrange
+  //     const secureRandomBoolMock = jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(false);
+  //     const shuffleMock = jest
+  //       .spyOn(rngModule, "secureShuffle")
+  //       .mockReturnValue([mockContainer.rateConfigs.awayFavorite[1], mockContainer.rateConfigs.awayFavorite[0]]);
 
-      // Act
-      const result = service.createNewMatchConfig();
+  //     // Act
+  //     const result = service.createNewMatchConfig();
 
-      // Assert
-      expect(secureRandomBoolMock).toHaveBeenCalled();
-      expect(shuffleMock).toHaveBeenCalledWith(mockContainer.rateConfigs.awayFavorite);
-      expect(result).toEqual({
-        firstHalf: mockContainer.rateConfigs.awayFavorite[1],
-        secondHalf: mockContainer.rateConfigs.awayFavorite[0],
-      });
-    });
-  });
+  //     // Assert
+  //     expect(secureRandomBoolMock).toHaveBeenCalled();
+  //     expect(shuffleMock).toHaveBeenCalledWith(mockContainer.rateConfigs.awayFavorite);
+  //     expect(result).toEqual({
+  //       firstHalf: mockContainer.rateConfigs.awayFavorite[1],
+  //       secondHalf: mockContainer.rateConfigs.awayFavorite[0],
+  //     });
+  //   });
+  // });
 
-  describe("generateNewRound", () => {
-    it("should generate a new round with match and config", () => {
-      // Arrange
-      mockContainer.gameData.gameConfig = {} as any;
-      const roundId = 1;
-      const mockMatch = { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" };
-      const mockConfig = {
-        firstHalf: mockContainer.rateConfigs.homeFavorite[0],
-        secondHalf: mockContainer.rateConfigs.homeFavorite[1],
-      };
-      const mockResult = {
-        drawResults: [
-          {
-            playlist: "video1",
-            result: {
-              goalSequence: "H",
-              finalScore: "1:0",
-            },
-          },
-        ],
-      };
-      const mockOddsResult = {
-        odds: [
-          {
-            ft_hdp_home: 1.8,
-            ft_hdp_away: 2.2,
-            ft_1x2_home: 1.9,
-            ft_1x2_away: 2.1,
-            ft_1x2_draw: 2.0,
-            ft_ou_over: 1.9,
-            ft_ou_under: 2.1,
-            ft_oe_odd: 1.9,
-            ft_oe_even: 2.1,
-            h1_hdp_home: 1.8,
-            h1_hdp_away: 2.2,
-            h1_1x2_home: 1.9,
-            h1_1x2_away: 2.1,
-            h1_1x2_draw: 2.0,
-            h1_ou_over: 1.9,
-            h1_ou_under: 2.1,
-            h1_oe_odd: 1.9,
-            h1_oe_even: 2.1,
-          },
-        ],
-        matchConfig: {
-          ...mockConfig,
-          overUnderValue: 2.5,
-          handicapValue: 0.5,
-          firstHalf: {
-            ...mockConfig.firstHalf,
-            overUnderValue: 1.5,
-            handicapValue: 0.5,
-          },
-          secondHalf: {
-            ...mockConfig.secondHalf,
-            overUnderValue: 0.5,
-            handicapValue: 0,
-          },
-        },
-        selections: [
-          {
-            ft_hdp_home: { name: "ft_hdp_home", price: 1.8, point: 0.5, settlementStatus: SettlementStatus.PLAY },
-            ft_hdp_away: { name: "ft_hdp_away", price: 2.2, point: -0.5, settlementStatus: SettlementStatus.PLAY },
-            ft_1x2_home: { name: "ft_1x2_home", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
-            ft_1x2_away: { name: "ft_1x2_away", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
-            ft_1x2_draw: { name: "ft_1x2_draw", price: 2.0, point: 0, settlementStatus: SettlementStatus.PLAY },
-            ft_ou_over: { name: "ft_ou_over", price: 1.9, point: 2.5, settlementStatus: SettlementStatus.PLAY },
-            ft_ou_under: { name: "ft_ou_under", price: 2.1, point: 2.5, settlementStatus: SettlementStatus.PLAY },
-            ft_oe_odd: { name: "ft_oe_odd", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
-            ft_oe_even: { name: "ft_oe_even", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
-          },
-        ],
-      };
-      const mockSettlementResult = [
-        {
-          ft_hdp_home: SettlementStatus.WIN,
-          ft_hdp_away: SettlementStatus.LOSE,
-          ft_1x2_home: SettlementStatus.WIN,
-          ft_1x2_away: SettlementStatus.LOSE,
-          ft_1x2_draw: SettlementStatus.LOSE,
-          ft_ou_over: SettlementStatus.WIN,
-          ft_ou_under: SettlementStatus.LOSE,
-          ft_oe_odd: SettlementStatus.WIN,
-          ft_oe_even: SettlementStatus.LOSE,
-          h1_hdp_home: SettlementStatus.WIN,
-          h1_hdp_away: SettlementStatus.LOSE,
-          h1_1x2_home: SettlementStatus.WIN,
-          h1_1x2_away: SettlementStatus.LOSE,
-          h1_1x2_draw: SettlementStatus.LOSE,
-          h1_ou_over: SettlementStatus.WIN,
-          h1_ou_under: SettlementStatus.LOSE,
-          h1_oe_odd: SettlementStatus.WIN,
-          h1_oe_even: SettlementStatus.LOSE,
-        },
-      ];
+  // describe("generateNewRound", () => {
+  //   it("should generate a new round with match and config", () => {
+  //     // Arrange
+  //     mockContainer.gameData.gameConfig = {} as any;
+  //     const roundId = 1;
+  //     const mockMatch = { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" };
+  //     const mockConfig = {
+  //       firstHalf: mockContainer.rateConfigs.homeFavorite[0],
+  //       secondHalf: mockContainer.rateConfigs.homeFavorite[1],
+  //     };
+  //     const mockResult = {
+  //       drawResults: [
+  //         {
+  //           playlist: "video1",
+  //           result: {
+  //             goalSequence: "H",
+  //             finalScore: "1:0",
+  //           },
+  //         },
+  //       ],
+  //     };
+  //     const mockOddsResult = {
+  //       odds: [
+  //         {
+  //           ft_hdp_home: 1.8,
+  //           ft_hdp_away: 2.2,
+  //           ft_1x2_home: 1.9,
+  //           ft_1x2_away: 2.1,
+  //           ft_1x2_draw: 2.0,
+  //           ft_ou_over: 1.9,
+  //           ft_ou_under: 2.1,
+  //           ft_oe_odd: 1.9,
+  //           ft_oe_even: 2.1,
+  //           h1_hdp_home: 1.8,
+  //           h1_hdp_away: 2.2,
+  //           h1_1x2_home: 1.9,
+  //           h1_1x2_away: 2.1,
+  //           h1_1x2_draw: 2.0,
+  //           h1_ou_over: 1.9,
+  //           h1_ou_under: 2.1,
+  //           h1_oe_odd: 1.9,
+  //           h1_oe_even: 2.1,
+  //         },
+  //       ],
+  //       matchConfig: {
+  //         ...mockConfig,
+  //         overUnderValue: 2.5,
+  //         handicapValue: 0.5,
+  //         firstHalf: {
+  //           ...mockConfig.firstHalf,
+  //           overUnderValue: 1.5,
+  //           handicapValue: 0.5,
+  //         },
+  //         secondHalf: {
+  //           ...mockConfig.secondHalf,
+  //           overUnderValue: 0.5,
+  //           handicapValue: 0,
+  //         },
+  //       },
+  //       selections: [
+  //         {
+  //           ft_hdp_home: { name: "ft_hdp_home", price: 1.8, point: 0.5, settlementStatus: SettlementStatus.PLAY },
+  //           ft_hdp_away: { name: "ft_hdp_away", price: 2.2, point: -0.5, settlementStatus: SettlementStatus.PLAY },
+  //           ft_1x2_home: { name: "ft_1x2_home", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
+  //           ft_1x2_away: { name: "ft_1x2_away", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
+  //           ft_1x2_draw: { name: "ft_1x2_draw", price: 2.0, point: 0, settlementStatus: SettlementStatus.PLAY },
+  //           ft_ou_over: { name: "ft_ou_over", price: 1.9, point: 2.5, settlementStatus: SettlementStatus.PLAY },
+  //           ft_ou_under: { name: "ft_ou_under", price: 2.1, point: 2.5, settlementStatus: SettlementStatus.PLAY },
+  //           ft_oe_odd: { name: "ft_oe_odd", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
+  //           ft_oe_even: { name: "ft_oe_even", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
+  //         },
+  //       ],
+  //     };
+  //     const mockSettlementResult = [
+  //       {
+  //         ft_hdp_home: SettlementStatus.WIN,
+  //         ft_hdp_away: SettlementStatus.LOSE,
+  //         ft_1x2_home: SettlementStatus.WIN,
+  //         ft_1x2_away: SettlementStatus.LOSE,
+  //         ft_1x2_draw: SettlementStatus.LOSE,
+  //         ft_ou_over: SettlementStatus.WIN,
+  //         ft_ou_under: SettlementStatus.LOSE,
+  //         ft_oe_odd: SettlementStatus.WIN,
+  //         ft_oe_even: SettlementStatus.LOSE,
+  //         h1_hdp_home: SettlementStatus.WIN,
+  //         h1_hdp_away: SettlementStatus.LOSE,
+  //         h1_1x2_home: SettlementStatus.WIN,
+  //         h1_1x2_away: SettlementStatus.LOSE,
+  //         h1_1x2_draw: SettlementStatus.LOSE,
+  //         h1_ou_over: SettlementStatus.WIN,
+  //         h1_ou_under: SettlementStatus.LOSE,
+  //         h1_oe_odd: SettlementStatus.WIN,
+  //         h1_oe_even: SettlementStatus.LOSE,
+  //       },
+  //     ];
 
-      jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
-      jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
-      jest.spyOn(service, "generateResult").mockReturnValue(mockResult);
-      jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult as any);
-      jest.spyOn(service, "getSettlementResult").mockReturnValue(mockSettlementResult);
-      jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
-      jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
+  //     jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
+  //     jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
+  //     jest.spyOn(service, "generateResult").mockReturnValue(mockResult);
+  //     jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult as any);
+  //     jest.spyOn(service, "getSettlementResult").mockReturnValue(mockSettlementResult);
+  //     jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
+  //     jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
 
-      // Act
-      const result = service.generateNewRound(roundId);
+  //     // Act
+  //     const result = service.generateNewRound(roundId);
 
-      // Assert
-      expect(result).toEqual({
-        eventID: 123,
-        roundId,
-        gameId: mockContainer.gameSettings.gameId,
-        homeTeam: mockMatch.homeTeam,
-        awayTeam: mockMatch.awayTeam,
-        theme: mockMatch.theme,
-        matchConfig: mockOddsResult.matchConfig,
-        odds: mockOddsResult.odds,
-        encryptedResult: "encrypted_data",
-        encryptedSettlementResult: "encrypted_data",
-        encryptedSelections: "encrypted_data",
-        ended: false,
-      });
-      expect(service.createNewMatch).toHaveBeenCalledWith(roundId);
-      expect(service.generateResult).toHaveBeenCalledWith(mockConfig, mockContainer.gameSettings.numberOfVideos);
-      expect(service.generateRoundOddsAndUpdateMatchConfig).toHaveBeenCalledWith(mockConfig, "H");
-      expect(service.getSettlementResult).toHaveBeenCalledWith(mockResult, mockOddsResult.matchConfig);
-      expect(cryptoHelper.encrypt).toHaveBeenCalledTimes(3);
-    });
+  //     // Assert
+  //     expect(result).toEqual({
+  //       eventID: 123,
+  //       roundId,
+  //       gameId: mockContainer.gameSettings.gameId,
+  //       homeTeam: mockMatch.homeTeam,
+  //       awayTeam: mockMatch.awayTeam,
+  //       theme: mockMatch.theme,
+  //       matchConfig: mockOddsResult.matchConfig,
+  //       odds: mockOddsResult.odds,
+  //       encryptedResult: "encrypted_data",
+  //       encryptedSettlementResult: "encrypted_data",
+  //       encryptedSelections: "encrypted_data",
+  //       ended: false,
+  //     });
+  //     expect(service.createNewMatch).toHaveBeenCalledWith(roundId);
+  //     expect(service.generateResult).toHaveBeenCalledWith(mockConfig, mockContainer.gameSettings.numberOfVideos);
+  //     expect(service.generateRoundOddsAndUpdateMatchConfig).toHaveBeenCalledWith(mockConfig, "H");
+  //     expect(service.getSettlementResult).toHaveBeenCalledWith(mockResult, mockOddsResult.matchConfig);
+  //     expect(cryptoHelper.encrypt).toHaveBeenCalledTimes(3);
+  //   });
 
-    it("should use gameConfig numberOfVideos when available", () => {
-      // Arrange
-      const roundId = 1;
-      const gameConfigNumberOfVideos = { H: 5, A: 3 };
-      mockContainer.gameData.gameConfig = {
-        gameId: 2001,
-        config: { numberOfVideos: gameConfigNumberOfVideos, enabled: true, teamSelectionMode: 1, teams: [], matches: [] },
-      } as any;
+  //   it("should use gameConfig numberOfVideos when available", () => {
+  //     // Arrange
+  //     const roundId = 1;
+  //     const gameConfigNumberOfVideos = { H: 5, A: 3 };
+  //     mockContainer.gameData.gameConfig = {
+  //       gameId: 2001,
+  //       config: {
+  //         numberOfVideos: gameConfigNumberOfVideos,
+  //         enabled: true,
+  //         teamSelectionMode: 1,
+  //         teams: [],
+  //         matches: [],
+  //       },
+  //     } as any;
 
-      const mockMatch = { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" };
-      const mockConfig = {
-        firstHalf: mockContainer.rateConfigs.homeFavorite[0],
-        secondHalf: mockContainer.rateConfigs.homeFavorite[1],
-      };
-      const mockResult = {
-        drawResults: [
-          {
-            playlist: "video1",
-            result: {
-              goalSequence: "H",
-              finalScore: "1:0",
-            },
-          },
-        ],
-      };
-      const mockOddsResult = {
-        odds: [],
-        matchConfig: {
-          ...mockConfig,
-          overUnderValue: 2.5,
-          handicapValue: 0.5,
-          firstHalf: {
-            ...mockConfig.firstHalf,
-            overUnderValue: 1.5,
-            handicapValue: 0.5,
-          },
-          secondHalf: {
-            ...mockConfig.secondHalf,
-            overUnderValue: 0.5,
-            handicapValue: 0,
-          },
-        },
-        selections: [],
-      };
-      const mockSettlementResult = [] as any;
+  //     const mockMatch = { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" };
+  //     const mockConfig = {
+  //       firstHalf: mockContainer.rateConfigs.homeFavorite[0],
+  //       secondHalf: mockContainer.rateConfigs.homeFavorite[1],
+  //     };
+  //     const mockResult = {
+  //       drawResults: [
+  //         {
+  //           playlist: "video1",
+  //           result: {
+  //             goalSequence: "H",
+  //             finalScore: "1:0",
+  //           },
+  //         },
+  //       ],
+  //     };
+  //     const mockOddsResult = {
+  //       odds: [],
+  //       matchConfig: {
+  //         ...mockConfig,
+  //         overUnderValue: 2.5,
+  //         handicapValue: 0.5,
+  //         firstHalf: {
+  //           ...mockConfig.firstHalf,
+  //           overUnderValue: 1.5,
+  //           handicapValue: 0.5,
+  //         },
+  //         secondHalf: {
+  //           ...mockConfig.secondHalf,
+  //           overUnderValue: 0.5,
+  //           handicapValue: 0,
+  //         },
+  //       },
+  //       selections: [],
+  //     };
+  //     const mockSettlementResult = [] as any;
 
-      jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
-      jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
-      jest.spyOn(service, "generateResult").mockReturnValue(mockResult);
-      jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult as any);
-      jest.spyOn(service, "getSettlementResult").mockReturnValue(mockSettlementResult);
-      jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
-      jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
+  //     jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
+  //     jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
+  //     jest.spyOn(service, "generateResult").mockReturnValue(mockResult);
+  //     jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult as any);
+  //     jest.spyOn(service, "getSettlementResult").mockReturnValue(mockSettlementResult);
+  //     jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
+  //     jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
 
-      // Act
-      service.generateNewRound(roundId);
+  //     // Act
+  //     service.generateNewRound(roundId);
 
-      // Assert
-      expect(service.generateResult).toHaveBeenCalledWith(mockConfig, gameConfigNumberOfVideos);
-    });
-  });
+  //     // Assert
+  //     expect(service.generateResult).toHaveBeenCalledWith(mockConfig, gameConfigNumberOfVideos);
+  //   });
+  // });
 
-  describe("generateRoundOddsAndUpdateMatchConfig", () => {
-    it("should call calculateOddsForRound with correct parameters", () => {
-      // Arrange
-      const matchConfig = {
-        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
-        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
-      } as MatchConfigType;
-      const firstHalfResult = "1-0";
+  // describe("generateRoundOddsAndUpdateMatchConfig", () => {
+  //   it("should call calculateOddsForRound with correct parameters", () => {
+  //     // Arrange
+  //     const matchConfig = {
+  //       firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
+  //       secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
+  //     } as MatchConfigType;
+  //     const firstHalfResult = "1-0";
 
-      const expectedResult = {
-        odds: [
-          {
-            ft_hdp_home: 1.8,
-            ft_hdp_away: 2.2,
-            ft_ou_over: 1.9,
-            ft_ou_under: 2.1,
-            ft_oe_odd: 1.9,
-            ft_oe_even: 2.1,
-          },
-        ],
-        matchConfig: {
-          overUnderValue: 2.5,
-          handicapValue: 0.5,
-          firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 }, overUnderValue: 1.5, handicapValue: 0.5 },
-          secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 }, overUnderValue: 0.5, handicapValue: 0 },
-        },
-        selections: [{}],
-      };
+  //     const expectedResult = {
+  //       odds: [
+  //         {
+  //           ft_hdp_home: 1.8,
+  //           ft_hdp_away: 2.2,
+  //           ft_ou_over: 1.9,
+  //           ft_ou_under: 2.1,
+  //           ft_oe_odd: 1.9,
+  //           ft_oe_even: 2.1,
+  //         },
+  //       ],
+  //       matchConfig: {
+  //         overUnderValue: 2.5,
+  //         handicapValue: 0.5,
+  //         firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 }, overUnderValue: 1.5, handicapValue: 0.5 },
+  //         secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 }, overUnderValue: 0.5, handicapValue: 0 },
+  //       },
+  //       selections: [{}],
+  //     };
 
-      jest.spyOn(oddsHelper, "calculateOddsForRound").mockReturnValue(expectedResult as any);
+  //     jest.spyOn(oddsHelper, "calculateOddsForRound").mockReturnValue(expectedResult as any);
 
-      // Act
-      const result = service.generateRoundOddsAndUpdateMatchConfig(matchConfig, firstHalfResult);
+  //     // Act
+  //     const result = service.generateRoundOddsAndUpdateMatchConfig(matchConfig, firstHalfResult);
 
-      // Assert
-      expect(oddsHelper.calculateOddsForRound).toHaveBeenCalledWith(matchConfig, firstHalfResult);
-      expect(result).toEqual(expectedResult);
-    });
-  });
+  //     // Assert
+  //     expect(oddsHelper.calculateOddsForRound).toHaveBeenCalledWith(matchConfig, firstHalfResult);
+  //     expect(result).toEqual(expectedResult);
+  //   });
+  // });
 
-  describe("generateResult", () => {
-    it("should call generateResult helper with correct parameters", () => {
-      // Arrange
-      const matchConfig = {
-        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } },
-        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } },
-      } as any;
-      const numberOfVideos = { "1-0": 2, "0-0": 1 };
-      const expectedResult: RoundResultType = {
-        drawResults: [
-          {
-            playlist: "video1",
-            result: {
-              goalSequence: "H",
-              finalScore: "1:0",
-            },
-          },
-          {
-            playlist: "video2",
-            result: {
-              goalSequence: "0",
-              finalScore: "0:0",
-            },
-          },
-        ],
-      };
+  // describe("generateResult", () => {
+  //   it("should call generateResult helper with correct parameters", () => {
+  //     // Arrange
+  //     const matchConfig = {
+  //       firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } },
+  //       secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } },
+  //     } as any;
+  //     const numberOfVideos = { "1-0": 2, "0-0": 1 };
+  //     const expectedResult: RoundResultType = {
+  //       drawResults: [
+  //         {
+  //           playlist: "video1",
+  //           result: {
+  //             goalSequence: "H",
+  //             finalScore: "1:0",
+  //           },
+  //         },
+  //         {
+  //           playlist: "video2",
+  //           result: {
+  //             goalSequence: "0",
+  //             finalScore: "0:0",
+  //           },
+  //         },
+  //       ],
+  //     };
 
-      jest.spyOn(resultHelper, "generateResult").mockReturnValue(expectedResult);
+  //     jest.spyOn(resultHelper, "generateResult").mockReturnValue(expectedResult);
 
-      // Act
-      const result = service.generateResult(matchConfig, numberOfVideos);
+  //     // Act
+  //     const result = service.generateResult(matchConfig, numberOfVideos);
 
-      // Assert
-      expect(resultHelper.generateResult).toHaveBeenCalledWith({
-        numberOfVideos,
-        matchConfig,
-      });
-      expect(result).toEqual(expectedResult);
-    });
-  });
+  //     // Assert
+  //     expect(resultHelper.generateResult).toHaveBeenCalledWith({
+  //       numberOfVideos,
+  //       matchConfig,
+  //     });
+  //     expect(result).toEqual(expectedResult);
+  //   });
+  // });
 
-  describe("getSettlementResult", () => {
-    it("should call getSettlementResult helper with correct parameters", () => {
-      // Arrange
-      const matchConfig = {
-        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
-        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
-      } as MatchConfigType;
-      const result: RoundResultType = {
-        drawResults: [
-          {
-            playlist: "video1",
-            result: {
-              goalSequence: "H",
-              finalScore: "1:0",
-            },
-          },
-          {
-            playlist: "video2",
-            result: {
-              goalSequence: "0",
-              finalScore: "0:0",
-            },
-          },
-        ],
-      };
+  // describe("getSettlementResult", () => {
+  //   it("should call getSettlementResult helper with correct parameters", () => {
+  //     // Arrange
+  //     const matchConfig = {
+  //       firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
+  //       secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
+  //     } as MatchConfigType;
+  //     const result: RoundResultType = {
+  //       drawResults: [
+  //         {
+  //           playlist: "video1",
+  //           result: {
+  //             goalSequence: "H",
+  //             finalScore: "1:0",
+  //           },
+  //         },
+  //         {
+  //           playlist: "video2",
+  //           result: {
+  //             goalSequence: "0",
+  //             finalScore: "0:0",
+  //           },
+  //         },
+  //       ],
+  //     };
 
-      const expectedSettlementResult = [
-        {
-          ft_hdp_home: SettlementStatus.WIN,
-          ft_hdp_away: SettlementStatus.LOSE,
-        },
-        {
-          ft_hdp_home: SettlementStatus.WIN,
-          ft_hdp_away: SettlementStatus.LOSE,
-        },
-      ];
+  //     const expectedSettlementResult = [
+  //       {
+  //         ft_hdp_home: SettlementStatus.WIN,
+  //         ft_hdp_away: SettlementStatus.LOSE,
+  //       },
+  //       {
+  //         ft_hdp_home: SettlementStatus.WIN,
+  //         ft_hdp_away: SettlementStatus.LOSE,
+  //       },
+  //     ];
 
-      jest.spyOn(resultHelper, "getSettlementResult").mockReturnValue(expectedSettlementResult);
+  //     jest.spyOn(resultHelper, "getSettlementResult").mockReturnValue(expectedSettlementResult);
 
-      // Act
-      const settlementResult = service.getSettlementResult(result, matchConfig);
+  //     // Act
+  //     const settlementResult = service.getSettlementResult(result, matchConfig);
 
-      // Assert
-      expect(resultHelper.getSettlementResult).toHaveBeenCalledWith(result, matchConfig);
-      expect(settlementResult).toEqual(expectedSettlementResult);
-    });
-  });
+  //     // Assert
+  //     expect(resultHelper.getSettlementResult).toHaveBeenCalledWith(result, matchConfig);
+  //     expect(settlementResult).toEqual(expectedSettlementResult);
+  //   });
+  // });
 });

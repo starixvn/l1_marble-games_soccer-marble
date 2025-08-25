@@ -7,6 +7,7 @@ import {
   Match,
   HalfConfigType,
   RateConfig,
+  Timeline,
 } from "../types";
 import { secureShuffle, secureRandomBool, secureRandomRange, securePickOne } from "sc-core-rng";
 import { calculateOddsForRound, mergeArrayOfRates } from "../helpers/odds-helper";
@@ -15,6 +16,9 @@ import { encrypt } from "../helpers/crypto-helper";
 import { idHelper } from "../helpers";
 import { rateConfigs } from "../game-config";
 import { GameData } from "../crons/game-data";
+
+const minBlocks = 2;
+const maxBlocks = 4;
 
 export class RoundGeneratorService {
   private readonly gameSettings: GameSettings;
@@ -67,28 +71,87 @@ export class RoundGeneratorService {
   }
 
   createNewMatchConfig(): MatchConfigType {
-    const firstHalfBlock = secureRandomRange(2, 4);
-    const secondHalfBlock = secureRandomRange(2, 4);
+    const firstHalfBlock = secureRandomRange(minBlocks, maxBlocks);
+    const secondHalfBlock = secureRandomRange(minBlocks, maxBlocks);
     const isHomeFavorite = secureRandomBool();
     const firstHalfRates: RateConfig[] = [];
+    const firstHalfMaxVideoLength = Math.round(this.gameSettings.gameTiming.videoLength / firstHalfBlock);
+    const secondHalfMaxVideoLength = Math.round(this.gameSettings.gameTiming.videoLength / secondHalfBlock);
+    let lastFirstHalfVideoLength = this.gameSettings.gameTiming.videoLength;
+    let lastSecondHalfVideoLength = this.gameSettings.gameTiming.videoLength;
+    const firstHalfVideosLength = [];
+    const secondHalfVideosLength = [];
+    const firstHalfTimelines: Timeline[] = [];
+    const secondHalfTimelines: Timeline[] = [];
+
     for (let i = 1; i < firstHalfBlock; i++) {
       firstHalfRates.push(
         isHomeFavorite ? securePickOne(this.rateConfigs.homeFavorite) : securePickOne(this.rateConfigs.awayFavorite)
       );
+
+      const videoLength = secureRandomRange(4, firstHalfMaxVideoLength);
+      firstHalfVideosLength.push(videoLength);
+      lastFirstHalfVideoLength -= videoLength;
     }
 
     firstHalfRates.push(isHomeFavorite ? this.rateConfigs.homeFavoriteDraw[0] : this.rateConfigs.awayFavoriteDraw[0]);
+    firstHalfVideosLength.push(lastFirstHalfVideoLength);
 
     const secondHalfRates: RateConfig[] = [];
     for (let i = 1; i < secondHalfBlock; i++) {
       secondHalfRates.push(
         isHomeFavorite ? securePickOne(this.rateConfigs.homeFavorite) : securePickOne(this.rateConfigs.awayFavorite)
       );
+
+      const videoLength = secureRandomRange(4, secondHalfMaxVideoLength);
+      secondHalfVideosLength.push(videoLength);
+      lastSecondHalfVideoLength -= videoLength;
     }
 
     secondHalfRates.push(isHomeFavorite ? this.rateConfigs.homeFavoriteDraw[0] : this.rateConfigs.awayFavoriteDraw[0]);
+    secondHalfVideosLength.push(lastSecondHalfVideoLength);
+
+    firstHalfVideosLength.forEach((videoLength, index) => {
+      const oddsAvailable = index === 0 ? 0 : firstHalfTimelines[index - 1].ScheduleStart;
+      const scheduleStart =
+        index === 0 ? this.gameSettings.gameTiming.oddsLength : firstHalfTimelines[index - 1].ResultAvailable;
+      const resultAvailable = scheduleStart + videoLength;
+
+      const timeline = {
+        OddsAvailable: oddsAvailable,
+        ScheduleStart: scheduleStart,
+        ResultAvailable: resultAvailable,
+      };
+
+      firstHalfTimelines.push(timeline);
+    });
+
+    secondHalfVideosLength.forEach((videoLength, index) => {
+      const oddsAvailable =
+        index === 0
+          ? firstHalfTimelines[firstHalfTimelines.length - 1].ResultAvailable
+          : secondHalfTimelines[index - 1].ScheduleStart;
+
+      const scheduleStart =
+        index === 0
+          ? oddsAvailable + this.gameSettings.gameTiming.halfTime
+          : secondHalfTimelines[index - 1].ResultAvailable;
+
+      const resultAvailable = scheduleStart + videoLength;
+
+      const timeline = {
+        OddsAvailable: oddsAvailable,
+        ScheduleStart: scheduleStart,
+        ResultAvailable: resultAvailable,
+      };
+
+      secondHalfTimelines.push(timeline);
+    });
+
+    const timelines = [...firstHalfTimelines, ...secondHalfTimelines];
 
     return {
+      timelines,
       firstHalf: {
         numberOfEventDetails: firstHalfBlock,
         eventDetailScoreRates: firstHalfRates,
@@ -141,10 +204,10 @@ export class RoundGeneratorService {
     newRound.odds = odds;
     newRound.oddsConfigs = matchConfigs;
 
-    // const settlementResult = this.getSettlementResult(result, newRound.matchConfig);
+    const settlementResult = ""; //this.getSettlementResult(result, newRound.matchConfig);
 
     newRound.encryptedResult = encrypt(result);
-    // newRound.encryptedSettlementResult = encrypt(settlementResult);
+    newRound.encryptedSettlementResult = encrypt(settlementResult);
     newRound.encryptedSelections = encrypt(selections);
 
     return newRound;

@@ -25,6 +25,7 @@ export type HalfConfigType = RateConfig & {
 };
 
 export type MatchConfigType = {
+  timelines: Timeline[];
   firstHalf: HalfConfigType;
   secondHalf: HalfConfigType;
   overUnderValue: number;
@@ -72,6 +73,7 @@ export type DrawResultType = {
 };
 
 export type RoundResultType = {
+  drawResults: DrawResultType[];
   firstHalfResults: DrawResultType[];
   secondHalfResults: DrawResultType[];
 };
@@ -119,7 +121,10 @@ export type GameSettings = {
 
 export type GameTiming = {
   wholeRound: number;
+  videoLength: number;
+  oddsLength: number;
   timelines: Array<Timeline>;
+  halfTime: number;
 };
 
 export type Timeline = {
@@ -149,10 +154,7 @@ export type GameRunningRound = {
     secondHalfMatchConfigs: MatchConfigType[];
   };
   selections: Record<string, Selection>[];
-  odds: {
-    firstHalfOdds: Record<string, number>[];
-    secondHalfOdds: Record<string, number>[];
-  };
+  odds: Record<string, number>[];
   result: RoundResultType;
   settlementResult: RoundSettlementResultType;
   eventID: number;

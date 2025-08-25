@@ -31,6 +31,9 @@ const gameSettings: GameSettings = {
       { OddsAvailable: 40, ScheduleStart: 50, ResultAvailable: 60 },
     ],
     wholeRound: 60,
+    videoLength: 10,
+    oddsLength: 10,
+    halfTime: 10,
   },
   teams: [
     "clb_rma",
