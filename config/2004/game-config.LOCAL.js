@@ -30,6 +30,7 @@ export const gameSettings = {
     timelines: [],
     videoLength: 32,
     oddsLength: 10,
+    resultLength: 10,
     halfTime: 20,
     breakTime: 3,
   },
