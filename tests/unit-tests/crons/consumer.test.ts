@@ -2,7 +2,6 @@ import { Consumer } from "../../../src/crons/consumer";
 import { mockContainer } from "../global-stubs";
 import { JobName } from "../../../src/types";
 import { idHelper } from "../../../src/helpers";
-import { Job } from "agenda";
 
 jest.mock("../../../src/helpers/id-helper");
 
@@ -63,9 +62,10 @@ describe("Consumer", () => {
         const lastEventId = 12345;
         const lastEvent = {
           scheduleStartTs: new Date("2023-01-01T10:00:00Z"),
+          scheduleEndTs: new Date("2023-01-01T10:01:00Z"),
         };
         const upcomingRoundId = 6;
-        const expectedScheduleStartTs = new Date("2023-01-01T10:01:00Z"); // +60 seconds
+        const expectedScheduleStartTs = new Date("2023-01-01T10:01:10Z"); // +10 seconds from last event schedule end
 
         mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
         mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
@@ -81,7 +81,10 @@ describe("Consumer", () => {
         expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
         expect(idHelper.createEventId).toHaveBeenCalledWith(mockGameSettings.gameId, lastRoundId);
         expect(mockEventService.fetchEvent).toHaveBeenCalledWith(lastEventId, true);
-        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(upcomingRoundId, expectedScheduleStartTs);
+        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(
+          upcomingRoundId,
+          expectedScheduleStartTs
+        );
         expect(mockJob.remove).toHaveBeenCalled();
       });
 
@@ -192,7 +195,9 @@ describe("Consumer", () => {
 
       beforeEach(async () => {
         await consumer.start();
-        jobHandler = mockAgenda.define.mock.calls.find((call: any) => call[0] === JobName.UpdateEventDetailVideoInfo)[1];
+        jobHandler = mockAgenda.define.mock.calls.find(
+          (call: any) => call[0] === JobName.UpdateEventDetailVideoInfo
+        )[1];
         mockJob = {
           attrs: {
             data: {

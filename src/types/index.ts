@@ -123,6 +123,7 @@ export type GameTiming = {
   wholeRound: number;
   videoLength: number;
   oddsLength: number;
+  resultLength: number;
   timelines: Array<Timeline>;
   halfTime: number;
   breakTime: number;

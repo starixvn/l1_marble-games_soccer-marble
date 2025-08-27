@@ -23,6 +23,7 @@ export class EventService {
     const eventStartTimeTs = Math.max(scheduleStartTs.getTime(), new Date().getTime() + 2000); // 2 seconds delay
 
     const timelines = roundData.matchConfig.timelines;
+    const wholeRound = timelines[timelines.length - 1].ResultAvailable;
     const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs), timelines);
 
     const event = {
@@ -33,6 +34,7 @@ export class EventService {
       gameId: this.gameSettings.gameId,
       eventDetails: eventDetails.map((eventDetail) => eventDetail._id),
       scheduleStartTs: new Date(eventStartTimeTs),
+      scheduleEndTs: new Date(eventStartTimeTs + wholeRound * 1000),
     };
 
     return this.eventRepository.create(event);

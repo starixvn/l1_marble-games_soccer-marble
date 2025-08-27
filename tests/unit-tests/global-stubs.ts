@@ -32,6 +32,7 @@ const gameSettings: GameSettings = {
     ],
     wholeRound: 60,
     videoLength: 10,
+    resultLength: 10,
     oddsLength: 10,
     halfTime: 10,
     breakTime: 10,
