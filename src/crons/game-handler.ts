@@ -64,9 +64,9 @@ export class GameHandler {
     }
 
     const newRound = this.roundGeneratorService.generateNewRound(roundId);
-
-    await this.roundService.insertRound(newRound as IRound);
     const event = await this.eventService.createNewEvent(newRound, scheduleStartTs);
+    await this.roundService.insertRound(newRound as IRound);
+
     const eventDetails = await this.loadEventDetailsFromEventId(event.eventID);
 
     await Promise.all(
