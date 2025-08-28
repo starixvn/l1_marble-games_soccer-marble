@@ -17,6 +17,7 @@ export const EventDetailSchema = new Schema<IEventDetail>({
   selections: [SelectionSchema],
   result: { type: Schema.Types.Mixed },
   hasResults: { type: Boolean, default: false },
+  phase: { type: Number, required: true },
 });
 
 export default mongoose.model("event_details", EventDetailSchema);

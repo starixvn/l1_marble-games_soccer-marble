@@ -24,7 +24,7 @@ export class EventService {
 
     const timelines = roundData.matchConfig.timelines;
     const wholeRound = timelines[timelines.length - 1].ResultAvailable;
-    const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs), timelines);
+    const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs), roundData);
 
     const event = {
       eventID: eventId,
@@ -43,16 +43,20 @@ export class EventService {
   private async createNewEventDetails(
     eventId: number,
     startTime: Date,
-    timelines: Timeline[]
+    roundData: GameRunningRound
   ): Promise<IEventDetail[]> {
+    const timelines = roundData.matchConfig.timelines;
+    const firstHalfNumberOfEventDetails = roundData.matchConfig.firstHalf.numberOfEventDetails;
+
     return Promise.all(
-      timelines.map((timeline) => {
+      timelines.map((timeline, index) => {
         const eventDetail: EventDetail = {
           eventID: eventId,
           oddsAvailableTs: new Date(startTime.getTime() + timeline.OddsAvailable * 1000),
           scheduleStartTs: new Date(startTime.getTime() + timeline.ScheduleStart * 1000),
           resultsAvailableTs: new Date(startTime.getTime() + timeline.ResultAvailable * 1000),
           hasResults: false,
+          phase: index < firstHalfNumberOfEventDetails ? 0 : 1,
         };
 
         return this.eventDetailsRepository.create(eventDetail);

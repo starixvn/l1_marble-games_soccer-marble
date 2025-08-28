@@ -61,6 +61,7 @@ export type EventDetail = {
     finalScore: string;
   };
   hasResults: boolean;
+  phase: number;
 };
 
 export type DrawResultType = {
