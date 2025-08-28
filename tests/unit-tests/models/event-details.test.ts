@@ -16,6 +16,7 @@ describe("Event Detail Model", () => {
           settlementStatus: SettlementStatus.PLAY,
         },
       ],
+      phase: 0,
     });
 
     expect(eventDetail.eventID).toBe(1);
@@ -28,6 +29,7 @@ describe("Event Detail Model", () => {
     expect(eventDetail.selections?.[0].point).toBe(2);
     expect(eventDetail.selections?.[0].settlementStatus).toBe(SettlementStatus.PLAY);
     expect(eventDetail.hasResults).toBe(false);
+    expect(eventDetail.phase).toBe(0);
   });
 
   it("should verify required properties", () => {
@@ -39,6 +41,7 @@ describe("Event Detail Model", () => {
     expect(validationError?.errors).toHaveProperty("oddsAvailableTs");
     expect(validationError?.errors).toHaveProperty("scheduleStartTs");
     expect(validationError?.errors).toHaveProperty("resultsAvailableTs");
+    expect(validationError?.errors).toHaveProperty("phase");
   });
 
   it("should verify selection required properties", () => {
@@ -46,6 +49,7 @@ describe("Event Detail Model", () => {
       eventID: 1,
       oddsAvailableTs: new Date(),
       scheduleStartTs: new Date(),
+      phase: 0,
     });
 
     const validationError = eventDetail.validateSync();
