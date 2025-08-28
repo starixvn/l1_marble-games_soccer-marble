@@ -105,7 +105,7 @@ export const getSettlementResultForFirstHalf = (
     }
   );
 
-  const finalFirstHalfSettlementResult = {
+  return {
     [FirstHalfOddsKey.FT_HDP_HOME]: fullTimeSettlementResult.handicapHome,
     [FirstHalfOddsKey.FT_HDP_AWAY]: fullTimeSettlementResult.handicapAway,
     [FirstHalfOddsKey.FT_1X2_HOME]: fullTimeSettlementResult.home,
@@ -136,8 +136,6 @@ export const getSettlementResultForFirstHalf = (
     [FirstHalfOddsKey.H1_AWAY_OVER]: firstHalfSettlementResult.awayOver,
     [FirstHalfOddsKey.H1_AWAY_UNDER]: firstHalfSettlementResult.awayUnder,
   };
-
-  return finalFirstHalfSettlementResult;
 };
 
 export const getSettlementResultForSecondHalf = (
@@ -159,7 +157,7 @@ export const getSettlementResultForSecondHalf = (
     }
   );
 
-  const finalSecondHalfSettlementResult = {
+  return {
     [SecondHalfOddsKey.FT_1X2_HOME]: finalFirstHalfSettlementResult[FirstHalfOddsKey.FT_1X2_HOME],
     [SecondHalfOddsKey.FT_1X2_AWAY]: finalFirstHalfSettlementResult[FirstHalfOddsKey.FT_1X2_AWAY],
     [SecondHalfOddsKey.FT_1X2_DRAW]: finalFirstHalfSettlementResult[FirstHalfOddsKey.FT_1X2_DRAW],
@@ -181,8 +179,6 @@ export const getSettlementResultForSecondHalf = (
     [SecondHalfOddsKey.FT_AWAY_OVER]: secondHalfSettlementResult.awayOver,
     [SecondHalfOddsKey.FT_AWAY_UNDER]: secondHalfSettlementResult.awayUnder,
   };
-
-  return finalSecondHalfSettlementResult;
 };
 
 export const getSettlementResult = (
