@@ -30,7 +30,7 @@
     "dotenv": "^17.2.1",
     "express": "^5.0.0",
     "extensionless": "^1.9.9",
-    "mongoose": "^8.17.2",
+    "mongoose": "^8.18.0",
     "sc-common": "^3.0.0",
     "sc-core-rng": "^1.1.0"
   },
