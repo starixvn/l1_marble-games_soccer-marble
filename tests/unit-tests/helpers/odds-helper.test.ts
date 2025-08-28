@@ -1,7 +1,7 @@
 import {
   calculateOddsForRound,
   parseScore,
-  roundToPrecision,
+  floorToPrecision,
   calculateProbabilitiesForBetChoices,
   calculateHandicapValue,
   calculateOverUnderValue,
@@ -36,28 +36,28 @@ describe("OddsHelper Tests", () => {
     });
   });
 
-  describe("roundToPrecision", () => {
+  describe("floorToPrecision", () => {
     it("should round to 2 decimal places with default precision", () => {
-      expect(roundToPrecision(1.256)).toBe(1.25);
-      expect(roundToPrecision(2.99)).toBe(2.99);
-      expect(roundToPrecision(3.505)).toBe(3.5);
+      expect(floorToPrecision(1.256)).toBe(1.25);
+      expect(floorToPrecision(2.99)).toBe(2.99);
+      expect(floorToPrecision(3.505)).toBe(3.5);
     });
 
     it("should round using custom precision values", () => {
-      expect(roundToPrecision(1.256, 10)).toBe(1.2);
-      expect(roundToPrecision(2.998, 1000)).toBe(2.998);
-      expect(roundToPrecision(3.505, 1)).toBe(3);
+      expect(floorToPrecision(1.256, 10)).toBe(1.2);
+      expect(floorToPrecision(2.998, 1000)).toBe(2.998);
+      expect(floorToPrecision(3.505, 1)).toBe(3);
     });
 
     it("should handle edge cases", () => {
-      expect(roundToPrecision(0)).toBe(0);
-      expect(roundToPrecision(-1.235)).toBe(-1.24);
-      expect(roundToPrecision(1000000.125)).toBe(1000000.12);
+      expect(floorToPrecision(0)).toBe(0);
+      expect(floorToPrecision(-1.235)).toBe(-1.24);
+      expect(floorToPrecision(1000000.125)).toBe(1000000.12);
     });
 
     it("should handle very small numbers", () => {
-      expect(roundToPrecision(0.001, 1000)).toBe(0.001);
-      expect(roundToPrecision(0.0001, 10000)).toBe(0.0001);
+      expect(floorToPrecision(0.001, 1000)).toBe(0.001);
+      expect(floorToPrecision(0.0001, 10000)).toBe(0.0001);
     });
   });
 

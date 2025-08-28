@@ -125,7 +125,6 @@ export type GameTiming = {
   videoLength: number;
   oddsLength: number;
   resultLength: number;
-  timelines: Array<Timeline>;
   halfTime: number;
   breakTime: number;
 };
@@ -145,6 +144,11 @@ export type DataResultType = {
   matchConfig: MatchConfigType;
 };
 
+export type MatchConfigsDetailType = {
+  firstHalfMatchConfigs: MatchConfigType[];
+  secondHalfMatchConfigs: MatchConfigType[];
+};
+
 export type GameRunningRound = {
   roundId: number;
   roundTime: number;
@@ -152,10 +156,7 @@ export type GameRunningRound = {
   awayTeam: string;
   theme: string;
   matchConfig: MatchConfigType;
-  oddsConfigs: {
-    firstHalfMatchConfigs: MatchConfigType[];
-    secondHalfMatchConfigs: MatchConfigType[];
-  };
+  matchConfigsDetail: MatchConfigsDetailType;
   selections: Record<string, Selection>[];
   odds: Record<string, number>[];
   result: RoundResultType;

@@ -10,6 +10,8 @@ import {
   FirstHalfOddsKey,
   SecondHalfOddsKey,
   RateConfig,
+  DrawSettlementResultType,
+  MatchConfigsDetailType,
 } from "../types";
 import { gameSettings } from "../game-config";
 
@@ -73,27 +75,28 @@ export const combineResults = (eventDetailResults: DrawResultType[]): ResultType
   };
 };
 
-export const getSettlementResult = (
+export const getSettlementResultForFirstHalf = (
   roundResult: RoundResultType,
-  matchConfig: MatchConfigType
-): RoundSettlementResultType => {
+  matchConfig: MatchConfigType,
+  liveScore: ResultType
+): DrawSettlementResultType => {
   const firstHalfResult = combineResults(roundResult.firstHalfResults);
   const secondHalfResult = combineResults(roundResult.secondHalfResults);
 
-  const firstHalfSettlementResult = getSettlementResultFromResultString(firstHalfResult.goalSequence, {
-    overUnderValue: matchConfig.firstHalf.overUnderValue,
-    handicapValue: matchConfig.firstHalf.handicapValue,
-    homeOverUnderValue: matchConfig.firstHalf.homeOverUnderValue,
-    awayOverUnderValue: matchConfig.firstHalf.awayOverUnderValue,
-  });
-  const secondHalfSettlementResult = getSettlementResultFromResultString(secondHalfResult.goalSequence, {
-    overUnderValue: matchConfig.secondHalf.overUnderValue,
-    handicapValue: matchConfig.secondHalf.handicapValue,
-    homeOverUnderValue: matchConfig.secondHalf.homeOverUnderValue,
-    awayOverUnderValue: matchConfig.secondHalf.awayOverUnderValue,
-  });
+  const firstHalfSettlementResult = getSettlementResultFromResultString(
+    firstHalfResult.goalSequence,
+    liveScore.goalSequence,
+    {
+      overUnderValue: matchConfig.firstHalf.overUnderValue,
+      handicapValue: matchConfig.firstHalf.handicapValue,
+      homeOverUnderValue: matchConfig.firstHalf.homeOverUnderValue,
+      awayOverUnderValue: matchConfig.firstHalf.awayOverUnderValue,
+    }
+  );
+
   const fullTimeSettlementResult = getSettlementResultFromResultString(
     firstHalfResult.goalSequence + secondHalfResult.goalSequence,
+    liveScore.goalSequence,
     {
       overUnderValue: matchConfig.overUnderValue,
       handicapValue: matchConfig.handicapValue,
@@ -134,20 +137,42 @@ export const getSettlementResult = (
     [FirstHalfOddsKey.H1_AWAY_UNDER]: firstHalfSettlementResult.awayUnder,
   };
 
+  return finalFirstHalfSettlementResult;
+};
+
+export const getSettlementResultForSecondHalf = (
+  roundResult: RoundResultType,
+  matchConfig: MatchConfigType,
+  finalFirstHalfSettlementResult: DrawSettlementResultType,
+  liveScore: ResultType
+): DrawSettlementResultType => {
+  const secondHalfResult = combineResults(roundResult.secondHalfResults);
+
+  const secondHalfSettlementResult = getSettlementResultFromResultString(
+    secondHalfResult.goalSequence,
+    liveScore.goalSequence,
+    {
+      overUnderValue: matchConfig.secondHalf.overUnderValue,
+      handicapValue: matchConfig.secondHalf.handicapValue,
+      homeOverUnderValue: matchConfig.secondHalf.homeOverUnderValue,
+      awayOverUnderValue: matchConfig.secondHalf.awayOverUnderValue,
+    }
+  );
+
   const finalSecondHalfSettlementResult = {
-    [SecondHalfOddsKey.FT_1X2_HOME]: fullTimeSettlementResult.home,
-    [SecondHalfOddsKey.FT_1X2_AWAY]: fullTimeSettlementResult.away,
-    [SecondHalfOddsKey.FT_1X2_DRAW]: fullTimeSettlementResult.draw,
+    [SecondHalfOddsKey.FT_1X2_HOME]: finalFirstHalfSettlementResult[FirstHalfOddsKey.FT_1X2_HOME],
+    [SecondHalfOddsKey.FT_1X2_AWAY]: finalFirstHalfSettlementResult[FirstHalfOddsKey.FT_1X2_AWAY],
+    [SecondHalfOddsKey.FT_1X2_DRAW]: finalFirstHalfSettlementResult[FirstHalfOddsKey.FT_1X2_DRAW],
     [SecondHalfOddsKey.FT_HDP_HOME]: secondHalfSettlementResult.handicapHome,
     [SecondHalfOddsKey.FT_HDP_AWAY]: secondHalfSettlementResult.handicapAway,
     [SecondHalfOddsKey.FT_OU_OVER]: secondHalfSettlementResult.over,
     [SecondHalfOddsKey.FT_OU_UNDER]: secondHalfSettlementResult.under,
     [SecondHalfOddsKey.FT_OE_ODD]:
-      firstHalfSettlementResult.even === SettlementStatus.WIN
+      finalFirstHalfSettlementResult[FirstHalfOddsKey.FT_OE_EVEN] === SettlementStatus.WIN
         ? secondHalfSettlementResult.odd
         : secondHalfSettlementResult.even,
     [SecondHalfOddsKey.FT_OE_EVEN]:
-      firstHalfSettlementResult.even === SettlementStatus.WIN
+      finalFirstHalfSettlementResult[FirstHalfOddsKey.FT_OE_EVEN] === SettlementStatus.WIN
         ? secondHalfSettlementResult.even
         : secondHalfSettlementResult.odd,
 
@@ -157,7 +182,34 @@ export const getSettlementResult = (
     [SecondHalfOddsKey.FT_AWAY_UNDER]: secondHalfSettlementResult.awayUnder,
   };
 
-  return [finalFirstHalfSettlementResult, finalSecondHalfSettlementResult];
+  return finalSecondHalfSettlementResult;
+};
+
+export const getSettlementResult = (
+  roundResult: RoundResultType,
+  matchConfigsDetail: MatchConfigsDetailType
+): RoundSettlementResultType => {
+  const firstHalfSettlementResults: DrawSettlementResultType[] = [];
+  const secondHalfSettlementResults: DrawSettlementResultType[] = [];
+
+  matchConfigsDetail.firstHalfMatchConfigs.forEach((matchConfig, index) => {
+    const liveScore = combineResults(roundResult.firstHalfResults.slice(0, index));
+    const firstHalfSettlementResult = getSettlementResultForFirstHalf(roundResult, matchConfig, liveScore);
+    firstHalfSettlementResults.push(firstHalfSettlementResult);
+  });
+
+  matchConfigsDetail.secondHalfMatchConfigs.forEach((matchConfig, index) => {
+    const liveScore = combineResults(roundResult.secondHalfResults.slice(0, index));
+    const secondHalfSettlementResult = getSettlementResultForSecondHalf(
+      roundResult,
+      matchConfig,
+      firstHalfSettlementResults[0],
+      liveScore
+    );
+    secondHalfSettlementResults.push(secondHalfSettlementResult);
+  });
+
+  return [...firstHalfSettlementResults, ...secondHalfSettlementResults];
 };
 
 const getHandicapResult = (homeGoals: number, awayGoals: number, handicapValue: number) => {
@@ -224,13 +276,17 @@ const getTeamOverUnderResult = (
   };
 };
 
-const getSettlementResultFromResultString = (resultString: string, settleConfig: SettleConfig) => {
+const getSettlementResultFromResultString = (resultString: string, liveScore: string, settleConfig: SettleConfig) => {
   const homeGoals = resultString.split("H").length - 1;
   const awayGoals = resultString.split("A").length - 1;
+  const liveHomeGoals = liveScore.split("H").length - 1;
+  const liveAwayGoals = liveScore.split("A").length - 1;
+
+  const overUnderValue = settleConfig.overUnderValue + liveHomeGoals + liveAwayGoals;
   const totalGoals = homeGoals + awayGoals;
-  const hdpResult = getHandicapResult(homeGoals, awayGoals, settleConfig.handicapValue);
+  const hdpResult = getHandicapResult(homeGoals - liveHomeGoals, awayGoals - liveAwayGoals, settleConfig.handicapValue);
   const o1x2Result = get1X2Result(homeGoals, awayGoals);
-  const ouResult = getOverUnderResult(totalGoals, settleConfig.overUnderValue);
+  const ouResult = getOverUnderResult(totalGoals, overUnderValue);
   const oeResult = getOddEvenResult(totalGoals);
   const teamOverUnderResult = getTeamOverUnderResult(
     homeGoals,

@@ -1,3 +1,4 @@
+import { MatchConfigsDetailType } from "./../types/index";
 import {
   RoundResultType,
   MatchConfigType,
@@ -178,8 +179,8 @@ export class RoundGeneratorService {
     });
   }
 
-  getSettlementResult(result: RoundResultType, matchConfig: MatchConfigType) {
-    return getSettlementResult(result, matchConfig);
+  getSettlementResult(result: RoundResultType, matchConfigsDetailType: MatchConfigsDetailType) {
+    return getSettlementResult(result, matchConfigsDetailType);
   }
 
   generateNewRound(roundId: number) {
@@ -204,9 +205,9 @@ export class RoundGeneratorService {
     const { odds, matchConfigs, selections } = this.generateRoundOddsAndUpdateMatchConfig(newRound.matchConfig, result);
 
     newRound.odds = odds;
-    newRound.oddsConfigs = matchConfigs;
+    newRound.matchConfigsDetail = matchConfigs;
 
-    const settlementResult = "";
+    const settlementResult = this.getSettlementResult(result, matchConfigs);
 
     newRound.encryptedResult = encrypt(result);
     newRound.encryptedSettlementResult = encrypt(settlementResult);

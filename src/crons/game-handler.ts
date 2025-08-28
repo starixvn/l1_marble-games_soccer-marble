@@ -131,7 +131,8 @@ export class GameHandler {
       this.logService.logError(`Result available for event detail ${eventDetailId} is late by: ${delay}ms`);
     }
 
-    if (drawIndex === this.gameSettings.gameTiming.timelines.length - 1) {
+    if (drawIndex === round.matchConfig.timelines.length - 1) {
+      await this.handleUpdateSettlementResult(round);
       await this.handleRoundEnded(roundId);
     }
   }
@@ -139,7 +140,7 @@ export class GameHandler {
   async handleUpdateSettlementResult(round: GameRunningRound) {
     let eventDetails = await this.loadEventDetailsFromEventId(round.eventID);
 
-    if (!eventDetails[this.gameSettings.gameTiming.timelines.length - 1].selections?.length) {
+    if (!eventDetails[round.matchConfig.timelines.length - 1].selections?.length) {
       await this.delayTime(1000); // delay to ensure event detail selections are updated
       eventDetails = await this.loadEventDetailsFromEventId(round.eventID);
     }

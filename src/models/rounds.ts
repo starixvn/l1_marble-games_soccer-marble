@@ -19,6 +19,7 @@ const RoundSchema = new Schema<IRound>({
   settlementResult: [{ type: Schema.Types.Mixed }],
   ended: { type: Boolean, default: false },
   matchConfig: { type: Schema.Types.Mixed },
+  matchConfigsDetail: { type: Schema.Types.Mixed },
   encryptedResult: { type: Schema.Types.Mixed },
   encryptedSettlementResult: { type: Schema.Types.Mixed },
   encryptedSelections: { type: Schema.Types.Mixed },

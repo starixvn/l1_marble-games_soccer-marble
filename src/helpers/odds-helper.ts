@@ -37,8 +37,12 @@ export const parseScore = (score: string): [number, number] => {
   return [home, away];
 };
 
-export const roundToPrecision = (value: number, precision = 100) => {
+export const floorToPrecision = (value: number, precision = 100) => {
   return Math.floor(value * precision) / precision;
+};
+
+export const roundToPrecision = (value: number, precision = 100) => {
+  return Math.round(value * precision) / precision;
 };
 
 export const mergeTwoScoreRates = (firstHalf: RateConfig, secondHalf: RateConfig): RateConfig => {
@@ -236,7 +240,7 @@ export const probabilityToBetRawOdds = (prob: number): number => {
   }
 
   const odds = 1 / prob;
-  return roundToPrecision(odds);
+  return floorToPrecision(odds);
 };
 
 export const calculateOddsFromRate = (rateConfig: RateConfig, addingScore = "0-0"): OddsCalculationResult => {

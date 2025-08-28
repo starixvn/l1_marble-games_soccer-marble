@@ -535,6 +535,12 @@ describe("GameHandler", () => {
       // Arrange
       const mockRound = {
         eventID: 12345,
+        matchConfig: {
+          timelines: [
+            { OddsAvailable: 10, ScheduleStart: 20, ResultAvailable: 30 },
+            { OddsAvailable: 40, ScheduleStart: 50, ResultAvailable: 60 },
+          ],
+        },
       } as any;
       const mockEventDetails = [
         {
@@ -547,6 +553,7 @@ describe("GameHandler", () => {
           scheduleStartTs: new Date(),
           resultsAvailableTs: new Date(),
           hasResults: false,
+          phase: 0,
         },
         {
           _id: new mongoose.Types.ObjectId("507f1f77bcf86cd799439012"),
@@ -555,6 +562,7 @@ describe("GameHandler", () => {
           scheduleStartTs: new Date(),
           resultsAvailableTs: new Date(),
           hasResults: false,
+          phase: 1,
         },
       ] as any;
       const mockSettlementResult = [
@@ -581,6 +589,12 @@ describe("GameHandler", () => {
       // Arrange
       const mockRound = {
         eventID: 12345,
+        matchConfig: {
+          timelines: [
+            { OddsAvailable: 10, ScheduleStart: 20, ResultAvailable: 30 },
+            { OddsAvailable: 40, ScheduleStart: 50, ResultAvailable: 60 },
+          ],
+        },
       } as GameRunningRound;
       const mockEventDetailsFirst = [
         {

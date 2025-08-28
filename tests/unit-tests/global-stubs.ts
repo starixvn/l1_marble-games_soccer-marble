@@ -26,10 +26,6 @@ const gameSettings: GameSettings = {
   upcomingEvents: 3,
   theme: "2001",
   gameTiming: {
-    timelines: [
-      { OddsAvailable: 10, ScheduleStart: 20, ResultAvailable: 30 },
-      { OddsAvailable: 40, ScheduleStart: 50, ResultAvailable: 60 },
-    ],
     wholeRound: 60,
     videoLength: 10,
     resultLength: 10,
