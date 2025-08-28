@@ -2,7 +2,7 @@ import { Schema } from "mongoose";
 import { EventModel, EventDetailModel } from "../models";
 import { IEventDetail } from "../models/event-details";
 import { IEvent } from "../models/events";
-import { GameSettings, AppContainer, EventDetail, GameRunningRound, Timeline } from "../types";
+import { GameSettings, AppContainer, EventDetail, GameRunningRound } from "../types";
 import { logger } from "sc-common";
 
 export class EventService {
