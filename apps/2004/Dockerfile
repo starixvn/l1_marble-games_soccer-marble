@@ -2,7 +2,7 @@ FROM hub.lumigame.com/base/node:20.9.0-alpine-24h1.1@sha256:dee2343e5063098be2d8
 WORKDIR /app
 COPY package.json package-lock.json .modprunerrc ./
 RUN npm run reg \
-    && npm install:2004
+    && npm run install:2004
 COPY . .
 
 RUN npm run app:2004:build
