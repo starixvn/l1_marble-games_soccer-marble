@@ -1,133 +1,204 @@
-# Soccer Event Generation Service
+# Soccer Marble Monorepo
 
-A Node.js service that generates soccer game events with MongoDB storage. The service automatically generates events at specific intervals and updates them based on scheduled times.
+This monorepo contains the soccer marble game applications and shared packages using npm workspaces.
+
+## Structure
+
+```
+soccer-marble/
+├── apps/
+│   ├── 2004/                    # @soccer-marble/2004 - Soccer marble game 2004 service
+│   └── soccer-marble/           # @soccer-marble/soccer-marble - Main soccer marble service
+├── packages/
+│   ├── shared-types/            # @soccer-marble/shared-types - Shared TypeScript types
+│   └── shared-utils/            # @soccer-marble/shared-utils - Shared utility functions
+├── package.json                 # Root workspace configuration
+├── .npmrc                       # NPM configuration
+└── README.md                    # This file
+```
 
 ## Features
 
-- Automatic event generation at configurable intervals
-- Event details are updated at scheduled times
-- Recovery mechanism for missed updates if service crashes
-- RESTful API for accessing events
-- MongoDB storage for persistence
-
-## Project Structure
-
-```
-├── src/
-│   ├── config/         # Configuration files
-│   ├── controllers/    # API controllers
-│   ├── models/         # MongoDB models
-│   ├── routes/         # API routes
-│   ├── services/       # Business logic services
-│   ├── types/          # TypeScript type definitions
-│   ├── utils/          # Utility functions
-│   └── index.ts        # Application entry point
-├── .env                # Environment variables
-├── .gitignore          # Git ignore file
-├── package.json        # Project dependencies
-├── tsconfig.json       # TypeScript configuration
-└── README.md           # Project documentation
-```
-
-## Event Schema
-
-```typescript
-interface Event {
-  _id: MongoObjectId;
-  eventID: number; // Sequential ID
-  eventNameAKey: string; // Home team
-  eventNameBKey: string; // Away team
-  gameId: number;
-  eventDetails: EventDetail[]; // Array of event details (halves)
-  scheduleStartTs: DateTime;
-}
-
-interface EventDetail {
-  scheduleStartTs: DateTime;
-  resultsAvailableTs: DateTime;
-  playlist?: string; // Video URL
-  goalInfo?: string; // JSON URL
-  selections?: Selection[]; // Bet choices
-  result?: Object;
-}
-
-interface Selection {
-  name: string;
-  price: number; // Bet odds
-  settlementStatus: string; // Play, Lose, Win, Draw
-}
-```
-
-## Event Generation Process
-
-1. Every specific time (configured in `.env`), the service generates a configurable number of events
-2. Each event has two event details (corresponding to two halves of a game match)
-3. At generation time, only `scheduleStartTs`, `resultsAvailableTs` are stored
-4. At `scheduleStartTs`, the service generates `playlist`, `goalInfo`, and `selections` data and updates the event
-5. At `resultsAvailableTs`, the service decrypts the result and updates the event
-
-## Recovery Mechanism
-
-If the service crashes and restarts:
-
-1. It checks if there are enough future events in the database
-2. If not, it generates new events
-3. It checks for any missed updates and applies them
-
-## Configuration
-
-Configuration is done through environment variables in the `.env` file:
-
-```
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/soccer-events
-ENCRYPTION_KEY=your-secret-encryption-key
-NODE_ENV=development
-
-# Game Configuration
-EVENTS_PER_GENERATION=4
-GAME_HALF_DURATION_SECONDS=60
-BREAK_DURATION_SECONDS=30
-GENERATION_INTERVAL_MINUTES=10
-```
-
-## API Endpoints
-
-- `GET /api/events` - Get all events
-- `GET /api/events/:id` - Get event by ID
-- `POST /api/events/generate` - Manually trigger event generation
-- `POST /api/events/check-missed` - Manually check and update missed events
-- `GET /health` - Health check endpoint
+- **Monorepo Management**: Single repository for multiple related packages
+- **Shared Dependencies**: Common types and utilities shared across apps
+- **Independent Apps**: Each app can be developed and deployed independently
+- **Workspace Scripts**: Convenient scripts to manage all workspaces
+- **Type Safety**: Shared TypeScript types across all packages
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- MongoDB
+- Node.js >= 18.0.0
+- npm >= 8.0.0
 
 ### Installation
 
-1. Clone the repository
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Configure the `.env` file
-4. Build the project:
-   ```
-   npm run build
-   ```
-5. Start the service:
-   ```
-   npm start
-   ```
-
-For development:
-
+```bash
+# Install all dependencies for all workspaces
+npm install
 ```
+
+### Development
+
+```bash
+# Run all apps in development mode
 npm run dev
+
+# Run specific app in development mode
+npm run app:2004:dev
+npm run app:soccer-marble:dev
 ```
+
+### Building
+
+```bash
+# Build all packages and apps
+npm run build
+
+# Build specific app
+npm run app:2004:build
+npm run app:soccer-marble:build
+```
+
+### Testing
+
+```bash
+# Run tests for all workspaces
+npm run test
+
+# Run tests for specific app
+npm run app:2004:test
+npm run app:soccer-marble:test
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+## Available Scripts
+
+### Root Level Scripts
+
+- `npm run build` - Build all workspaces
+- `npm run dev` - Start development mode for all workspaces
+- `npm run test` - Run tests for all workspaces
+- `npm run test:coverage` - Run tests with coverage for all workspaces
+- `npm run clean` - Clean build artifacts for all workspaces
+- `npm run type-check` - Type check all workspaces
+- `npm run install:all` - Install dependencies for all workspaces
+- `npm run update:deps` - Update dependencies for all workspaces
+
+### App-Specific Scripts
+
+- `npm run app:2004:dev` - Start 2004 app in development mode
+- `npm run app:2004:build` - Build 2004 app
+- `npm run app:2004:start` - Start 2004 app in production mode
+- `npm run app:2004:test` - Run tests for 2004 app
+
+- `npm run app:soccer-marble:dev` - Start soccer-marble app in development mode
+- `npm run app:soccer-marble:build` - Build soccer-marble app
+- `npm run app:soccer-marble:start` - Start soccer-marble app in production mode
+- `npm run app:soccer-marble:test` - Run tests for soccer-marble app
+
+## Workspaces
+
+### Apps
+
+- **@soccer-marble/2004** - Soccer marble game 2004 service
+- **@soccer-marble/soccer-marble** - Main soccer marble service
+
+### Packages
+
+- **@soccer-marble/shared-types** - Shared TypeScript type definitions
+- **@soccer-marble/shared-utils** - Shared utility functions
+
+## Adding Dependencies
+
+### To a specific workspace
+
+```bash
+# Add dependency to specific app
+npm install express --workspace=@soccer-marble/2004
+
+# Add dev dependency to specific app
+npm install -D @types/express --workspace=@soccer-marble/2004
+```
+
+### To root (affects all workspaces)
+
+```bash
+# Add dependency to root
+npm install -w typescript
+```
+
+### To all workspaces
+
+```bash
+# Add dependency to all workspaces
+npm install lodash --workspaces
+```
+
+## Adding a New Workspace
+
+1. Create the new workspace directory in `apps/` or `packages/`
+2. Add a `package.json` with a unique name following the `@soccer-marble/` scope
+3. Run `npm install` to update the workspace configuration
+
+## Workspace Commands
+
+### Running commands in specific workspaces
+
+```bash
+# Run command in specific workspace
+npm run build --workspace=@soccer-marble/2004
+
+# Run command in multiple workspaces
+npm run test --workspaces --if-present
+
+# Run command in all workspaces
+npm run build --workspaces
+```
+
+### Managing dependencies
+
+```bash
+# List all workspaces
+npm ls --workspaces
+
+# Install dependency in specific workspace
+npm install package-name --workspace=@soccer-marble/2004
+
+# Update dependencies in all workspaces
+npm update --workspaces
+```
+
+## Configuration
+
+The monorepo uses npm workspaces for dependency management. The workspace configuration is defined in the root `package.json` file.
+
+### .npmrc Configuration
+
+The `.npmrc` file contains npm configuration for the monorepo:
+
+- `save-exact=true` - Save exact versions
+- `package-lock=true` - Generate package-lock.json
+- `fund=false` - Disable funding messages
+- `audit=false` - Disable audit messages
+
+## Development Workflow
+
+1. **Start development**: `npm run dev` to start all apps
+2. **Make changes**: Edit code in the appropriate workspace
+3. **Run tests**: `npm run test` to test all workspaces
+4. **Build**: `npm run build` to build all workspaces
+5. **Deploy**: Deploy individual apps as needed
+
+## Contributing
+
+1. Make changes in the appropriate workspace
+2. Run tests to ensure everything works: `npm run test`
+3. Build the project: `npm run build`
+4. Commit your changes
 
 ## License
 

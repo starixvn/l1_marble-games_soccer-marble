@@ -1,7 +1,7 @@
 {
-  "name": "soccer-marble",
+  "name": "@soccer-marble/soccer-marble",
   "version": "1.0.0",
-  "description": "Soccer event generation service with MongoDB",
+  "description": "Main soccer marble service",
   "repository": {
     "type": "git",
     "url": "git@git3.nexdev.net:l1/marble-games/soccer-marble.git"
@@ -17,7 +17,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest --testPathPatterns=tests/unit-tests/",
-    "test-coverage": "jest --collect-coverage --testPathPatterns=tests/unit-tests/"
+    "test-coverage": "jest --collect-coverage --testPathPatterns=tests/unit-tests/",
+    "clean": "rm -rf build dist",
+    "type-check": "tsc --noEmit"
   },
   "jestSonar": {
     "reportPath": "reports",
