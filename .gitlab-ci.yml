@@ -15,5 +15,6 @@ include:
       - ./coverage
     reports:
       junit:
-        - ./coverage/unit-tests.xml
+        - ./apps/2004/coverage/unit-tests.xml
+        - ./apps/soccer-marble/coverage/unit-tests.xml
     expire_in: 1 day
