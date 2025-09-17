@@ -13,7 +13,7 @@ import {
 import { secureShuffle, secureRandomBool, secureRandomRange, securePickOne } from "sc-core-rng";
 import { calculateOddsForRound, mergeArrayOfRates } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
-import { encrypt } from "../helpers/crypto-helper";
+import { encrypt } from "@soccer-marble/shared-utils";
 import { idHelper } from "../helpers";
 import { rateConfigs } from "../game-config";
 import { GameData } from "../crons/game-data";

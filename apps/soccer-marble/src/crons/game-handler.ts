@@ -3,7 +3,7 @@ import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { RoundGeneratorService } from "../services/round-generator-service";
 import { logger } from "sc-common";
-import { decrypt } from "../helpers/crypto-helper";
+import { decrypt } from "@soccer-marble/shared-utils";
 import { IRound } from "../models/rounds";
 import { GameData } from "./game-data";
 import { Scheduler } from "./scheduler";
@@ -98,7 +98,11 @@ export class GameHandler {
     }
   }
 
-  async handleVideoInfoAvailableForEventDetail(drawIndex: number, eventDetailId: Schema.Types.ObjectId, roundId: number) {
+  async handleVideoInfoAvailableForEventDetail(
+    drawIndex: number,
+    eventDetailId: Schema.Types.ObjectId,
+    roundId: number
+  ) {
     const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
     const round = await this.loadRoundFromRoundId(roundId);
     eventDetail.playlist = round.result.drawResults[drawIndex].playlist;

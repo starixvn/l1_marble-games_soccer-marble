@@ -11,7 +11,7 @@
   "main": "./build/app.js",
   "type": "module",
   "scripts": {
-    "start": "node ./build/app.js",
+    "start": "node --experimental-loader=extensionless ./build/app.js",
     "dev": "cross-env NODE_ENV=development tsx watch ./src/app.ts",
     "reg": "npm set registry http://npm.lumigame.com",
     "build": "tsc",
@@ -27,6 +27,8 @@
     "indent": 4
   },
   "dependencies": {
+    "@soccer-marble/shared-types": "1.0.0",
+    "@soccer-marble/shared-utils": "1.0.0",
     "agenda": "^5.0.0",
     "awilix": "^12.0.5",
     "dotenv": "^17.2.1",

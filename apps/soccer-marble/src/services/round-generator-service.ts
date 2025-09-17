@@ -2,8 +2,8 @@ import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, AppCo
 import { secureShuffle, secureRandomBool } from "sc-core-rng";
 import { calculateOddsForRound } from "../helpers/odds-helper";
 import { generateResult, getSettlementResult } from "../helpers/result-helper";
-import { encrypt } from "../helpers/crypto-helper";
-import { idHelper } from "../helpers";
+import { encrypt } from "@soccer-marble/shared-utils";
+import { idHelper } from "@soccer-marble/shared-utils";
 import { rateConfigs } from "../game-config";
 import { GameData } from "../crons/game-data";
 

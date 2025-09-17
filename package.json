@@ -23,9 +23,16 @@
     "app:soccer-marble:build": "npm run build --workspace=@soccer-marble/soccer-marble",
     "app:soccer-marble:start": "npm run start --workspace=@soccer-marble/soccer-marble",
     "app:soccer-marble:test": "npm run test --workspace=@soccer-marble/soccer-marble",
+    "shared:types:build": "npm run build --workspace=@soccer-marble/shared-types",
+    "shared:types:dev": "npm run dev --workspace=@soccer-marble/shared-types",
+    "shared:utils:build": "npm run build --workspace=@soccer-marble/shared-utils",
+    "shared:utils:dev": "npm run dev --workspace=@soccer-marble/shared-utils",
+    "shared:build": "npm run shared:types:build && npm run shared:utils:build",
+    "shared:dev": "npm run shared:types:dev & npm run shared:utils:dev",
     "install:all": "npm install",
     "install:2004": "npm install --workspace=@soccer-marble/2004",
     "install:soccer-marble": "npm install --workspace=@soccer-marble/soccer-marble",
+    "install:shared": "npm install --workspace=@soccer-marble/shared-types && npm install --workspace=@soccer-marble/shared-utils",
     "update:deps": "npm update --workspaces"
   },
   "devDependencies": {
@@ -35,5 +42,6 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
-  }
+  },
+  "packageManager": "npm@10.0.0"
 }
