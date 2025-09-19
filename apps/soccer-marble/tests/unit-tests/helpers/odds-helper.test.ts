@@ -1,66 +1,55 @@
-import {
-  calculateOddsForRound,
-  parseScore,
-  roundToPrecision,
-  calculateFullTimeScoreRates,
-  calculateProbabilitiesForBetChoices,
-  calculateHandicapValue,
-  calculateOverUnderValue,
-  calculateBetOdds,
-  probabilityToBetRawOdds,
-  calculateFulltimeOdds,
-  calculateHalfOdds,
-} from "../../../src/helpers/odds-helper";
+import { OddsGeneratorService } from "../../../src/helpers/odds-helper";
 import { FirstHalfOddsKey, SecondHalfOddsKey, SettlementStatus } from "../../../src/types";
 
 describe("OddsHelper Tests", () => {
+  const oddsGeneratorService = new OddsGeneratorService();
   describe("parseScore", () => {
     it("should parse a simple score string into an array of numbers", () => {
-      expect(parseScore("1-0")).toEqual([1, 0]);
-      expect(parseScore("0-1")).toEqual([0, 1]);
-      expect(parseScore("2-2")).toEqual([2, 2]);
+      expect(oddsGeneratorService.parseScore("1-0")).toEqual([1, 0]);
+      expect(oddsGeneratorService.parseScore("0-1")).toEqual([0, 1]);
+      expect(oddsGeneratorService.parseScore("2-2")).toEqual([2, 2]);
     });
 
     it("should handle high-scoring matches", () => {
-      expect(parseScore("5-3")).toEqual([5, 3]);
-      expect(parseScore("7-0")).toEqual([7, 0]);
-      expect(parseScore("0-8")).toEqual([0, 8]);
+      expect(oddsGeneratorService.parseScore("5-3")).toEqual([5, 3]);
+      expect(oddsGeneratorService.parseScore("7-0")).toEqual([7, 0]);
+      expect(oddsGeneratorService.parseScore("0-8")).toEqual([0, 8]);
     });
 
     it("should handle single-digit scores", () => {
-      expect(parseScore("0-0")).toEqual([0, 0]);
-      expect(parseScore("1-1")).toEqual([1, 1]);
-      expect(parseScore("9-9")).toEqual([9, 9]);
+      expect(oddsGeneratorService.parseScore("0-0")).toEqual([0, 0]);
+      expect(oddsGeneratorService.parseScore("1-1")).toEqual([1, 1]);
+      expect(oddsGeneratorService.parseScore("9-9")).toEqual([9, 9]);
     });
 
     it("should handle double-digit scores", () => {
-      expect(parseScore("10-5")).toEqual([10, 5]);
-      expect(parseScore("15-12")).toEqual([15, 12]);
+      expect(oddsGeneratorService.parseScore("10-5")).toEqual([10, 5]);
+      expect(oddsGeneratorService.parseScore("15-12")).toEqual([15, 12]);
     });
   });
 
   describe("roundToPrecision", () => {
     it("should round to 2 decimal places with default precision", () => {
-      expect(roundToPrecision(1.256)).toBe(1.25);
-      expect(roundToPrecision(2.99)).toBe(2.99);
-      expect(roundToPrecision(3.505)).toBe(3.5);
+      expect(oddsGeneratorService.roundToPrecision(1.256)).toBe(1.25);
+      expect(oddsGeneratorService.roundToPrecision(2.99)).toBe(2.99);
+      expect(oddsGeneratorService.roundToPrecision(3.505)).toBe(3.5);
     });
 
     it("should round using custom precision values", () => {
-      expect(roundToPrecision(1.256, 10)).toBe(1.2);
-      expect(roundToPrecision(2.998, 1000)).toBe(2.998);
-      expect(roundToPrecision(3.505, 1)).toBe(3);
+      expect(oddsGeneratorService.roundToPrecision(1.256, 10)).toBe(1.2);
+      expect(oddsGeneratorService.roundToPrecision(2.998, 1000)).toBe(2.998);
+      expect(oddsGeneratorService.roundToPrecision(3.505, 1)).toBe(3);
     });
 
     it("should handle edge cases", () => {
-      expect(roundToPrecision(0)).toBe(0);
-      expect(roundToPrecision(-1.235)).toBe(-1.24);
-      expect(roundToPrecision(1000000.125)).toBe(1000000.12);
+      expect(oddsGeneratorService.roundToPrecision(0)).toBe(0);
+      expect(oddsGeneratorService.roundToPrecision(-1.235)).toBe(-1.24);
+      expect(oddsGeneratorService.roundToPrecision(1000000.125)).toBe(1000000.12);
     });
 
     it("should handle very small numbers", () => {
-      expect(roundToPrecision(0.001, 1000)).toBe(0.001);
-      expect(roundToPrecision(0.0001, 10000)).toBe(0.0001);
+      expect(oddsGeneratorService.roundToPrecision(0.001, 1000)).toBe(0.001);
+      expect(oddsGeneratorService.roundToPrecision(0.0001, 10000)).toBe(0.0001);
     });
   });
 
@@ -79,7 +68,7 @@ describe("OddsHelper Tests", () => {
         },
       };
 
-      const result = calculateFullTimeScoreRates(firstHalf, secondHalf);
+      const result = oddsGeneratorService.calculateFullTimeScoreRates(firstHalf, secondHalf);
 
       expect(result).toEqual({
         "2-0": 0.25,
@@ -97,7 +86,7 @@ describe("OddsHelper Tests", () => {
         "1-1": 0.3,
       };
 
-      const result = calculateProbabilitiesForBetChoices(scoreRates);
+      const result = oddsGeneratorService.calculateProbabilitiesForBetChoices(scoreRates);
 
       expect(result.probabilities).toEqual({
         hdpHome: expect.any(Number),
@@ -126,7 +115,7 @@ describe("OddsHelper Tests", () => {
         "0-1": 0.5,
       };
 
-      const result = calculateProbabilitiesForBetChoices(scoreRates, "1-0");
+      const result = oddsGeneratorService.calculateProbabilitiesForBetChoices(scoreRates, "1-0");
 
       // With adding score 1-0, 1-0 becomes 2-0 (home win), 0-1 becomes 1-1 (draw)
       expect(result.probabilities.home).toBe(0.5);
@@ -142,7 +131,7 @@ describe("OddsHelper Tests", () => {
         "3-0": 0.25, // 3 goals (odd)
       };
 
-      const result = calculateProbabilitiesForBetChoices(scoreRates);
+      const result = oddsGeneratorService.calculateProbabilitiesForBetChoices(scoreRates);
 
       expect(result.probabilities.even).toBe(0.5); // 0-0 and 2-0
       expect(result.probabilities.odd).toBe(0.5); // 1-0 and 3-0
@@ -151,42 +140,42 @@ describe("OddsHelper Tests", () => {
 
   describe("calculateHandicapValue", () => {
     it("should calculate handicap value based on home and away scores", () => {
-      expect(calculateHandicapValue(2, 1)).toBe(-0.5);
-      expect(calculateHandicapValue(1, 2)).toBe(1.5);
-      expect(calculateHandicapValue(1, 1)).toBe(0.5);
-      expect(calculateHandicapValue(1.2, 2)).toBe(0.5);
-      expect(calculateHandicapValue(2, 1.2)).toBe(-0.5);
+      expect(oddsGeneratorService.calculateHandicapValue(2, 1)).toBe(-0.5);
+      expect(oddsGeneratorService.calculateHandicapValue(1, 2)).toBe(1.5);
+      expect(oddsGeneratorService.calculateHandicapValue(1, 1)).toBe(0.5);
+      expect(oddsGeneratorService.calculateHandicapValue(1.2, 2)).toBe(0.5);
+      expect(oddsGeneratorService.calculateHandicapValue(2, 1.2)).toBe(-0.5);
     });
 
     it("should handle edge cases", () => {
-      expect(calculateHandicapValue(0, 0)).toBe(0.5);
-      expect(calculateHandicapValue(5, 0)).toBe(-4.5);
-      expect(calculateHandicapValue(0, 5)).toBe(5.5);
+      expect(oddsGeneratorService.calculateHandicapValue(0, 0)).toBe(0.5);
+      expect(oddsGeneratorService.calculateHandicapValue(5, 0)).toBe(-4.5);
+      expect(oddsGeneratorService.calculateHandicapValue(0, 5)).toBe(5.5);
     });
 
     it("should handle decimal scores", () => {
-      expect(calculateHandicapValue(1.7, 2.3)).toBe(0.5);
-      expect(calculateHandicapValue(2.8, 1.1)).toBe(-1.5);
+      expect(oddsGeneratorService.calculateHandicapValue(1.7, 2.3)).toBe(0.5);
+      expect(oddsGeneratorService.calculateHandicapValue(2.8, 1.1)).toBe(-1.5);
     });
   });
 
   describe("calculateOverUnderValue", () => {
     it("should calculate over/under value based on home and away scores", () => {
-      expect(calculateOverUnderValue(2, 1)).toBe(3.5);
-      expect(calculateOverUnderValue(1, 2)).toBe(3.5);
-      expect(calculateOverUnderValue(1, 1)).toBe(2.5);
-      expect(calculateOverUnderValue(1.2, 2.2)).toBe(3.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(2, 1)).toBe(3.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(1, 2)).toBe(3.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(1, 1)).toBe(2.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(1.2, 2.2)).toBe(3.5);
     });
 
     it("should handle edge cases", () => {
-      expect(calculateOverUnderValue(0, 0)).toBe(0.5);
-      expect(calculateOverUnderValue(5, 5)).toBe(10.5);
-      expect(calculateOverUnderValue(10, 0)).toBe(10.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(0, 0)).toBe(0.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(5, 5)).toBe(10.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(10, 0)).toBe(10.5);
     });
 
     it("should handle decimal scores", () => {
-      expect(calculateOverUnderValue(1.7, 2.3)).toBe(4.5);
-      expect(calculateOverUnderValue(0.8, 1.2)).toBe(2.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(1.7, 2.3)).toBe(4.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(0.8, 1.2)).toBe(2.5);
     });
   });
 
@@ -198,7 +187,7 @@ describe("OddsHelper Tests", () => {
         draw: 0.2,
       };
 
-      const result = calculateBetOdds(probabilities);
+      const result = oddsGeneratorService.calculateBetOdds(probabilities);
 
       expect(result).toEqual({
         home: 2,
@@ -213,7 +202,7 @@ describe("OddsHelper Tests", () => {
         away: 0.9,
       };
 
-      const result = calculateBetOdds(probabilities);
+      const result = oddsGeneratorService.calculateBetOdds(probabilities);
 
       expect(result.home).toBe(10);
       expect(result.away).toBe(1.11);
@@ -222,7 +211,7 @@ describe("OddsHelper Tests", () => {
     it("should handle empty probabilities", () => {
       const probabilities = {};
 
-      const result = calculateBetOdds(probabilities);
+      const result = oddsGeneratorService.calculateBetOdds(probabilities);
 
       expect(result).toEqual({});
     });
@@ -230,21 +219,434 @@ describe("OddsHelper Tests", () => {
 
   describe("probabilityToBetRawOdds", () => {
     it("should convert probability to bet odds", () => {
-      expect(probabilityToBetRawOdds(0.5)).toBe(2);
-      expect(probabilityToBetRawOdds(0.25)).toBe(4);
-      expect(probabilityToBetRawOdds(0.1)).toBe(10);
+      expect(oddsGeneratorService.probabilityToBetRawOdds(0.5)).toBe(2);
+      expect(oddsGeneratorService.probabilityToBetRawOdds(0.25)).toBe(4);
+      expect(oddsGeneratorService.probabilityToBetRawOdds(0.1)).toBe(10);
     });
 
     it("should handle edge cases", () => {
-      expect(probabilityToBetRawOdds(0)).toBe(0);
-      expect(probabilityToBetRawOdds(1)).toBe(0);
-      expect(probabilityToBetRawOdds(0.01)).toBe(100);
-      expect(probabilityToBetRawOdds(0.99)).toBe(1.01);
+      expect(oddsGeneratorService.probabilityToBetRawOdds(0)).toBe(0);
+      expect(oddsGeneratorService.probabilityToBetRawOdds(1)).toBe(0);
+      expect(oddsGeneratorService.probabilityToBetRawOdds(0.01)).toBe(100);
+      expect(oddsGeneratorService.probabilityToBetRawOdds(0.99)).toBe(1.01);
     });
 
     it("should handle invalid probabilities", () => {
-      expect(probabilityToBetRawOdds(-0.1)).toBe(0);
-      expect(probabilityToBetRawOdds(1.1)).toBe(0);
+      expect(oddsGeneratorService.probabilityToBetRawOdds(-0.1)).toBe(0);
+      expect(oddsGeneratorService.probabilityToBetRawOdds(1.1)).toBe(0);
+    });
+  });
+
+  describe("calculateAverageScore", () => {
+    it("should calculate average scores from score rates", () => {
+      const scoreRates = {
+        "1-0": 0.4,
+        "0-1": 0.3,
+        "1-1": 0.3,
+      };
+
+      const result = oddsGeneratorService.calculateAverageScore(scoreRates);
+
+      expect(result.homeScore).toBeCloseTo(0.7, 4);
+      expect(result.awayScore).toBeCloseTo(0.6, 4);
+    });
+
+    it("should handle single score rate", () => {
+      const scoreRates = {
+        "2-1": 1.0,
+      };
+
+      const result = oddsGeneratorService.calculateAverageScore(scoreRates);
+
+      expect(result.homeScore).toBe(2);
+      expect(result.awayScore).toBe(1);
+    });
+
+    it("should handle zero scores", () => {
+      const scoreRates = {
+        "0-0": 1.0,
+      };
+
+      const result = oddsGeneratorService.calculateAverageScore(scoreRates);
+
+      expect(result.homeScore).toBe(0);
+      expect(result.awayScore).toBe(0);
+    });
+
+    it("should handle high scoring rates", () => {
+      const scoreRates = {
+        "5-3": 0.5,
+        "3-5": 0.5,
+      };
+
+      const result = oddsGeneratorService.calculateAverageScore(scoreRates);
+
+      expect(result.homeScore).toBe(4);
+      expect(result.awayScore).toBe(4);
+    });
+  });
+
+  describe("update1X2", () => {
+    it("should update counters for home win", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.update1X2(counters, 2, 1, 0.5);
+
+      expect(counters.home).toBe(0.5);
+      expect(counters.away).toBe(0);
+      expect(counters.draw).toBe(0);
+    });
+
+    it("should update counters for away win", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.update1X2(counters, 1, 2, 0.3);
+
+      expect(counters.home).toBe(0);
+      expect(counters.away).toBe(0.3);
+      expect(counters.draw).toBe(0);
+    });
+
+    it("should update counters for draw", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.update1X2(counters, 1, 1, 0.2);
+
+      expect(counters.home).toBe(0);
+      expect(counters.away).toBe(0);
+      expect(counters.draw).toBe(0.2);
+    });
+  });
+
+  describe("updateHandicap", () => {
+    it("should update counters for home handicap win", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateHandicap(counters, 2, 1, -0.5, 0.4);
+
+      expect(counters.hdpHome).toBe(0.4);
+      expect(counters.hdpAway).toBe(0);
+    });
+
+    it("should update counters for away handicap win", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateHandicap(counters, 1, 2, 0.5, 0.3);
+
+      expect(counters.hdpHome).toBe(0);
+      expect(counters.hdpAway).toBe(0.3);
+    });
+
+    it("should handle handicap draw (no update)", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateHandicap(counters, 1, 1, 0, 0.2);
+
+      expect(counters.hdpHome).toBe(0);
+      expect(counters.hdpAway).toBe(0);
+    });
+  });
+
+  describe("updateOverUnder", () => {
+    it("should update counters for over", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateOverUnder(counters, 3, 2.5, 0.5);
+
+      expect(counters.over).toBe(0.5);
+      expect(counters.under).toBe(0);
+    });
+
+    it("should update counters for under", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateOverUnder(counters, 2, 2.5, 0.3);
+
+      expect(counters.over).toBe(0);
+      expect(counters.under).toBe(0.3);
+    });
+
+    it("should handle exact match (no update)", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateOverUnder(counters, 2, 2, 0.2);
+
+      expect(counters.over).toBe(0);
+      expect(counters.under).toBe(0);
+    });
+  });
+
+  describe("updateEvenOdd", () => {
+    it("should update counters for even goals", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateEvenOdd(counters, 4, 0.6);
+
+      expect(counters.even).toBe(0.6);
+      expect(counters.odd).toBe(0);
+    });
+
+    it("should update counters for odd goals", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateEvenOdd(counters, 3, 0.4);
+
+      expect(counters.even).toBe(0);
+      expect(counters.odd).toBe(0.4);
+    });
+
+    it("should handle zero goals", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateEvenOdd(counters, 0, 0.1);
+
+      expect(counters.even).toBe(0.1);
+      expect(counters.odd).toBe(0);
+    });
+  });
+
+  describe("updateTeamOverUnder", () => {
+    it("should update counters for home team over/under", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateTeamOverUnder(counters, 2, 1, 1.5, 0.5, 0.3);
+
+      expect(counters.homeOver).toBe(0.3);
+      expect(counters.homeUnder).toBe(0);
+      expect(counters.awayOver).toBe(0.3);
+      expect(counters.awayUnder).toBe(0);
+    });
+
+    it("should update counters for home team under", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateTeamOverUnder(counters, 1, 2, 1.5, 2.5, 0.4);
+
+      expect(counters.homeOver).toBe(0);
+      expect(counters.homeUnder).toBe(0.4);
+      expect(counters.awayOver).toBe(0);
+      expect(counters.awayUnder).toBe(0.4);
+    });
+
+    it("should handle exact matches (no update)", () => {
+      const counters = {
+        hdpHome: 0,
+        hdpAway: 0,
+        home: 0,
+        away: 0,
+        draw: 0,
+        over: 0,
+        under: 0,
+        even: 0,
+        odd: 0,
+        homeOver: 0,
+        awayOver: 0,
+        homeUnder: 0,
+        awayUnder: 0,
+      };
+
+      oddsGeneratorService.updateTeamOverUnder(counters, 1, 1, 1, 1, 0.2);
+
+      expect(counters.homeOver).toBe(0);
+      expect(counters.homeUnder).toBe(0);
+      expect(counters.awayOver).toBe(0);
+      expect(counters.awayUnder).toBe(0);
     });
   });
 
@@ -265,7 +667,7 @@ describe("OddsHelper Tests", () => {
         },
       } as any;
 
-      const result = calculateFulltimeOdds(matchConfig);
+      const result = oddsGeneratorService.calculateFulltimeOdds(matchConfig);
 
       expect(result).toEqual({
         odds: expect.any(Object),
@@ -294,7 +696,7 @@ describe("OddsHelper Tests", () => {
         },
       } as any;
 
-      const result = calculateFulltimeOdds(matchConfig);
+      const result = oddsGeneratorService.calculateFulltimeOdds(matchConfig);
 
       expect(result.odds).toBeDefined();
       expect(result.overUnderValue).toBeDefined();
@@ -311,7 +713,7 @@ describe("OddsHelper Tests", () => {
         },
       };
 
-      const result = calculateHalfOdds(halfConfig);
+      const result = oddsGeneratorService.calculateHalfOdds(halfConfig);
 
       expect(result).toEqual({
         odds: expect.any(Object),
@@ -330,7 +732,7 @@ describe("OddsHelper Tests", () => {
         },
       };
 
-      const result = calculateHalfOdds(halfConfig, "1-0");
+      const result = oddsGeneratorService.calculateHalfOdds(halfConfig, "1-0");
 
       expect(result).toEqual({
         odds: expect.any(Object),
@@ -385,7 +787,7 @@ describe("OddsHelper Tests", () => {
 
       const firstHalfScore = "HH";
 
-      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
 
       expect(result).toHaveProperty("odds");
       expect(result).toHaveProperty("matchConfig");
@@ -412,7 +814,7 @@ describe("OddsHelper Tests", () => {
 
       const firstHalfScore = "HA";
 
-      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
 
       expect(result.odds).toHaveLength(2);
       expect(result.selections).toHaveLength(2);
@@ -441,7 +843,7 @@ describe("OddsHelper Tests", () => {
 
       const firstHalfScore = "AA";
 
-      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
 
       expect(result.odds).toHaveLength(2);
       expect(result.selections).toHaveLength(2);
@@ -465,7 +867,7 @@ describe("OddsHelper Tests", () => {
 
       const firstHalfScore = "HHHAA"; // 3 home goals, 2 away goals
 
-      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
 
       expect(result.odds).toHaveLength(2);
       expect(result.selections).toHaveLength(2);
@@ -489,7 +891,7 @@ describe("OddsHelper Tests", () => {
 
       const firstHalfScore = "H";
 
-      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
 
       const firstHalfSelections = result.selections[0];
       expect(firstHalfSelections[FirstHalfOddsKey.FT_HDP_HOME].point).toBeDefined();
@@ -516,7 +918,7 @@ describe("OddsHelper Tests", () => {
 
       const firstHalfScore = "HH";
 
-      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
 
       const firstHalfSelections = result.selections[0];
       const secondHalfSelections = result.selections[1];
@@ -545,11 +947,11 @@ describe("OddsHelper Tests", () => {
 
       // Test with odd number of goals in first half
       const oddFirstHalfScore = "H";
-      const oddResult = calculateOddsForRound(matchConfig, oddFirstHalfScore);
+      const oddResult = oddsGeneratorService.calculateOddsForRound(matchConfig, oddFirstHalfScore);
 
       // Test with even number of goals in first half
       const evenFirstHalfScore = "HH";
-      const evenResult = calculateOddsForRound(matchConfig, evenFirstHalfScore);
+      const evenResult = oddsGeneratorService.calculateOddsForRound(matchConfig, evenFirstHalfScore);
 
       expect(oddResult.odds[1][SecondHalfOddsKey.FT_OE_ODD]).toBeDefined();
       expect(oddResult.odds[1][SecondHalfOddsKey.FT_OE_EVEN]).toBeDefined();
@@ -575,7 +977,7 @@ describe("OddsHelper Tests", () => {
 
       const firstHalfScore = "H";
 
-      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
 
       expect(result.matchConfig.overUnderValue).toBeDefined();
       expect(result.matchConfig.handicapValue).toBeDefined();
@@ -965,7 +1367,7 @@ describe("OddsHelper Tests", () => {
 
       const firstHalfScore = "0";
 
-      const result = calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
 
       expect(result).toEqual(expectedData);
     });

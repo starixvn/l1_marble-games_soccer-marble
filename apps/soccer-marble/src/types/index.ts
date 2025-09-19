@@ -10,6 +10,8 @@ import Agenda from "agenda";
 import { Scheduler } from "../crons/scheduler";
 import { Consumer } from "../crons/consumer";
 import { GameData } from "../crons/game-data";
+import { ResultGeneratorService } from "../helpers/result-helper";
+import { OddsGeneratorService } from "../helpers/odds-helper";
 
 export type RateConfig = {
   scoreRate: Record<string, number>;
@@ -103,6 +105,8 @@ export interface AppContainer {
   scheduler: Scheduler;
   consumer: Consumer;
   gameData: GameData;
+  resultGeneratorService: ResultGeneratorService;
+  oddsGeneratorService: OddsGeneratorService;
 }
 
 export type GameSettings = {

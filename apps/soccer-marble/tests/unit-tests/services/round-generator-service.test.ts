@@ -1,22 +1,25 @@
 import * as rngModule from "sc-core-rng";
-import * as oddsHelper from "../../../src/helpers/odds-helper";
-import * as resultHelper from "../../../src/helpers/result-helper";
 import { MatchConfigType, RoundResultType, SettlementStatus } from "../../../src/types";
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { mockContainer } from "../global-stubs";
 import { idHelper, cryptoHelper } from "@soccer-marble/shared-utils";
+import { OddsGeneratorService } from "../../../src/helpers/odds-helper";
+import { ResultGeneratorService } from "../../../src/helpers/result-helper";
 
 jest.mock("sc-core-rng");
-jest.mock("../../../src/helpers/odds-helper");
-jest.mock("../../../src/helpers/result-helper");
 jest.mock("@soccer-marble/shared-utils");
 
 describe("RoundGeneratorService", () => {
   let service: RoundGeneratorService;
+  let oddsGeneratorService: OddsGeneratorService;
+  let resultGeneratorService: ResultGeneratorService;
 
   beforeEach(() => {
     jest.clearAllMocks();
     service = new RoundGeneratorService(mockContainer);
+
+    oddsGeneratorService = mockContainer.oddsGeneratorService;
+    resultGeneratorService = mockContainer.resultGeneratorService;
   });
 
   describe("createNewMatchFromRandomTeams", () => {
@@ -601,13 +604,13 @@ describe("RoundGeneratorService", () => {
         selections: [{}],
       };
 
-      jest.spyOn(oddsHelper, "calculateOddsForRound").mockReturnValue(expectedResult as any);
+      jest.spyOn(oddsGeneratorService, "calculateOddsForRound").mockReturnValue(expectedResult as any);
 
       // Act
       const result = service.generateRoundOddsAndUpdateMatchConfig(matchConfig, firstHalfResult);
 
       // Assert
-      expect(oddsHelper.calculateOddsForRound).toHaveBeenCalledWith(matchConfig, firstHalfResult);
+      expect(oddsGeneratorService.calculateOddsForRound).toHaveBeenCalledWith(matchConfig, firstHalfResult);
       expect(result).toEqual(expectedResult);
     });
   });
@@ -639,13 +642,13 @@ describe("RoundGeneratorService", () => {
         ],
       };
 
-      jest.spyOn(resultHelper, "generateResult").mockReturnValue(expectedResult);
+      jest.spyOn(resultGeneratorService, "generateResult").mockReturnValue(expectedResult);
 
       // Act
       const result = service.generateResult(matchConfig, numberOfVideos);
 
       // Assert
-      expect(resultHelper.generateResult).toHaveBeenCalledWith({
+      expect(resultGeneratorService.generateResult).toHaveBeenCalledWith({
         numberOfVideos,
         matchConfig,
       });
@@ -690,13 +693,13 @@ describe("RoundGeneratorService", () => {
         },
       ];
 
-      jest.spyOn(resultHelper, "getSettlementResult").mockReturnValue(expectedSettlementResult);
+      jest.spyOn(resultGeneratorService, "getSettlementResult").mockReturnValue(expectedSettlementResult);
 
       // Act
       const settlementResult = service.getSettlementResult(result, matchConfig);
 
       // Assert
-      expect(resultHelper.getSettlementResult).toHaveBeenCalledWith(result, matchConfig);
+      expect(resultGeneratorService.getSettlementResult).toHaveBeenCalledWith(result, matchConfig);
       expect(settlementResult).toEqual(expectedSettlementResult);
     });
   });

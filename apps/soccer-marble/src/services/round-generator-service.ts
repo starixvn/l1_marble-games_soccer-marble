@@ -1,7 +1,7 @@
 import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, AppContainer, Match } from "../types";
 import { secureShuffle, secureRandomBool } from "sc-core-rng";
-import { calculateOddsForRound } from "../helpers/odds-helper";
-import { generateResult, getSettlementResult } from "../helpers/result-helper";
+import { OddsGeneratorService } from "../helpers/odds-helper";
+import { ResultGeneratorService } from "../helpers/result-helper";
 import { encrypt, idHelper } from "@soccer-marble/shared-utils";
 import { rateConfigs } from "../game-config";
 import { GameData } from "../crons/game-data";
@@ -10,11 +10,15 @@ export class RoundGeneratorService {
   private readonly gameSettings: GameSettings;
   private readonly rateConfigs: typeof rateConfigs;
   private readonly gameData: GameData;
+  private readonly oddsGeneratorService: OddsGeneratorService;
+  private readonly resultGeneratorService: ResultGeneratorService;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
     this.rateConfigs = container.rateConfigs;
     this.gameData = container.gameData;
+    this.oddsGeneratorService = container.oddsGeneratorService;
+    this.resultGeneratorService = container.resultGeneratorService;
   }
 
   createNewMatchFromRandomTeams() {
@@ -67,18 +71,18 @@ export class RoundGeneratorService {
   }
 
   generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, firstHalfResult: string) {
-    return calculateOddsForRound(matchConfig, firstHalfResult);
+    return this.oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfResult);
   }
 
   generateResult(matchConfig: MatchConfigType, numberOfVideos: Record<string, number>) {
-    return generateResult({
+    return this.resultGeneratorService.generateResult({
       numberOfVideos,
       matchConfig,
     });
   }
 
   getSettlementResult(result: RoundResultType, matchConfig: MatchConfigType) {
-    return getSettlementResult(result, matchConfig);
+    return this.resultGeneratorService.getSettlementResult(result, matchConfig);
   }
 
   generateNewRound(roundId: number) {

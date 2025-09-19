@@ -1,5 +1,5 @@
 import { rateConfigs } from "../../src/game-config";
-import { calculateOddsForRound } from "../../src/helpers/odds-helper";
+import { OddsGeneratorService } from "../../src/helpers/odds-helper";
 import { MatchConfigType } from "../../src/types";
 
 describe("rateConfigs", () => {
@@ -12,7 +12,7 @@ describe("rateConfigs", () => {
             secondHalf: secondHalfConfig,
           } as MatchConfigType;
 
-          const result = calculateOddsForRound(matchConfig, "0");
+          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
 
           const firstHalfHandicapValue = result.matchConfig.firstHalf.handicapValue;
           const fulltimeHandicapValue = result.matchConfig.handicapValue;
@@ -33,7 +33,7 @@ describe("rateConfigs", () => {
             secondHalf: secondHalfConfig,
           } as MatchConfigType;
 
-          const result = calculateOddsForRound(matchConfig, "0");
+          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
 
           const firstHalfHandicapValue = result.matchConfig.firstHalf.handicapValue;
           const fulltimeHandicapValue = result.matchConfig.handicapValue;

@@ -15,6 +15,8 @@ import { GameData } from "../../src/crons/game-data";
 import { Scheduler } from "../../src/crons/scheduler";
 import { Consumer } from "../../src/crons/consumer";
 import { Agenda } from "agenda";
+import { ResultGeneratorService } from "../../src/helpers/result-helper";
+import { OddsGeneratorService } from "../../src/helpers/odds-helper";
 const mockLogService: typeof logger = {
   log: jest.fn(),
   logError: jest.fn(),
@@ -87,6 +89,8 @@ const mockRoundGeneratorService = stub<RoundGeneratorService>();
 const mockRoundService = stub<RoundService>();
 const mockEventService = stub<EventService>();
 const mockGameConfigService = stub<GameConfigService>();
+const mockResultGeneratorService = stub<ResultGeneratorService>();
+const mockOddsGeneratorService = stub<OddsGeneratorService>();
 
 const mockGameHandler = stub<GameHandler>();
 const mockGameData = stub<GameData>();
@@ -155,6 +159,8 @@ const mockContainer: AppContainer = {
   eventRepository: mockEventRepository,
   gameConfigRepository: mockGameConfigRepository,
   roundRepository: mockRoundRepository,
+  resultGeneratorService: mockResultGeneratorService,
+  oddsGeneratorService: mockOddsGeneratorService,
 };
 
 export { mockContainer };
