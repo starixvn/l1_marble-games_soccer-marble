@@ -1,4 +1,4 @@
-import { OddsGeneratorService } from "../../../src/helpers/odds-helper";
+import { OddsGeneratorService } from "../../../src/helpers/odds-generator-service";
 import { FirstHalfOddsKey, SecondHalfOddsKey, SettlementStatus } from "../../../src/types";
 
 describe("OddsHelper Tests", () => {

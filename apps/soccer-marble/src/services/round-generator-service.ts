@@ -1,7 +1,7 @@
 import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, AppContainer, Match } from "../types";
 import { secureShuffle, secureRandomBool } from "sc-core-rng";
-import { OddsGeneratorService } from "../helpers/odds-helper";
-import { ResultGeneratorService } from "../helpers/result-helper";
+import { OddsGeneratorService } from "../helpers/odds-generator-service";
+import { ResultGeneratorService } from "../helpers/result-generator-service";
 import { encrypt, idHelper } from "@soccer-marble/shared-utils";
 import { rateConfigs } from "../game-config";
 import { GameData } from "../crons/game-data";

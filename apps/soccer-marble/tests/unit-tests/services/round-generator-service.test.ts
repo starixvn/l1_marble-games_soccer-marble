@@ -3,8 +3,8 @@ import { MatchConfigType, RoundResultType, SettlementStatus } from "../../../src
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { mockContainer } from "../global-stubs";
 import { idHelper, cryptoHelper } from "@soccer-marble/shared-utils";
-import { OddsGeneratorService } from "../../../src/helpers/odds-helper";
-import { ResultGeneratorService } from "../../../src/helpers/result-helper";
+import { OddsGeneratorService } from "../../../src/helpers/odds-generator-service";
+import { ResultGeneratorService } from "../../../src/helpers/result-generator-service";
 
 jest.mock("sc-core-rng");
 jest.mock("@soccer-marble/shared-utils");

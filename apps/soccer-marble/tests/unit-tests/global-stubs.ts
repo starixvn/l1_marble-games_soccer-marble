@@ -15,8 +15,8 @@ import { GameData } from "../../src/crons/game-data";
 import { Scheduler } from "../../src/crons/scheduler";
 import { Consumer } from "../../src/crons/consumer";
 import { Agenda } from "agenda";
-import { ResultGeneratorService } from "../../src/helpers/result-helper";
-import { OddsGeneratorService } from "../../src/helpers/odds-helper";
+import { ResultGeneratorService } from "../../src/helpers/result-generator-service";
+import { OddsGeneratorService } from "../../src/helpers/odds-generator-service";
 const mockLogService: typeof logger = {
   log: jest.fn(),
   logError: jest.fn(),

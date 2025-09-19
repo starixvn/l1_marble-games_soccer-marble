@@ -11,8 +11,8 @@ import { GameHandler } from "./crons/game-handler";
 import { Consumer } from "./crons/consumer";
 import { Scheduler } from "./crons/scheduler";
 import { GameData } from "./crons/game-data";
-import { ResultGeneratorService } from "./helpers/result-helper";
-import { OddsGeneratorService } from "./helpers/odds-helper";
+import { ResultGeneratorService } from "./helpers/result-generator-service";
+import { OddsGeneratorService } from "./helpers/odds-generator-service";
 
 export class ContainerRegistry {
   container: AwilixContainer<AppContainer>;
