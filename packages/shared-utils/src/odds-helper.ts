@@ -1,5 +1,3 @@
-import { RateConfig, SettlementStatus, FirstHalfOddsKey, SecondHalfOddsKey } from "@soccer-marble/shared-types";
-
 type BetChoices =
   | "hdpHome"
   | "hdpAway"

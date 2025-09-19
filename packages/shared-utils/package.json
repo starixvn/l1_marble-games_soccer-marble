@@ -10,6 +10,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@soccer-marble/shared-types": "1.0.0",
     "sc-core-rng": "^1.0.0"
   },
   "devDependencies": {

@@ -1,26 +1,49 @@
-FROM hub.lumigame.com/base/node:20.9.0-alpine-24h1.1@sha256:dee2343e5063098be2d8766e25b12b0bd7e3fc3982bd340d5b04e4f518574c68 AS builder
+ARG NODE_IMAGE=hub.lumigame.com/base/node:20.9.0-alpine-24h1.1@sha256:dee2343e5063098be2d8766e25b12b0bd7e3fc3982bd340d5b04e4f518574c68
+ARG APP_NAME=@soccer-marble/soccer-marble
+
+# ---------------------------- deps --------------------------
+FROM ${NODE_IMAGE} AS deps
 WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY apps/soccer-marble/package.json apps/soccer-marble/package.json
+COPY packages/*/package.json packages/
+
+RUN npm set registry http://npm.lumigame.com
+
+RUN npm ci
+
+# ---------------------------- build --------------------------------
+FROM ${NODE_IMAGE} AS build
+WORKDIR /app
+COPY --from=deps /app /app
+
 COPY . .
-RUN npm run reg \
-    && npm run install:soccer-marble
 
+RUN npm i
+RUN npm run shared:build
 RUN npm run app:soccer-marble:build
-RUN rm -rf ./node_modules
-RUN npm install --production \
-    && npx mod-pruner prune --force 
+RUN npm prune --omit=dev --workspaces
+RUN npx mod-pruner prune --force
 
-FROM hub.lumigame.com/base/node:20.9.0-alpine-24h1.1@sha256:dee2343e5063098be2d8766e25b12b0bd7e3fc3982bd340d5b04e4f518574c68
+# ---------------------------- runner -------------------------------
+FROM ${NODE_IMAGE} AS runner
 ARG NODE_ENV=production
-ENV NODE_ENV $NODE_ENV
-RUN mkdir /app && chown node:node /app
-WORKDIR /app
+ENV NODE_ENV=${NODE_ENV}
 
+RUN mkdir /app && chown node:node /app
 USER node
-ENV PATH /app/node_modules/.bin:$PATH
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/soccer-marble/build ./
-COPY --from=builder /app/apps/soccer-marble/package.json ./
-COPY --from=builder /app/package-lock.json ./
+WORKDIR /app
+ENV PATH=/app/node_modules/.bin:$PATH
+
+COPY --from=build /app/node_modules ./node_modules
+
+COPY --from=build /app/apps/soccer-marble/build ./       
+COPY --from=build /app/apps/soccer-marble/package.json ./package.json
+COPY --from=build /app/package-lock.json ./package-lock.json
+
+# copy symlink targets for workspace packages used at runtime
+COPY --from=build /app/packages/ ./packages/
 
 EXPOSE 5000
-CMD [ "node", "--experimental-loader=extensionless","./app.js" ]
+CMD ["node", "--experimental-loader=extensionless", "./app.js"]
