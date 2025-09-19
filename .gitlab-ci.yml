@@ -9,6 +9,15 @@ include:
     file: "luminet.gitlab-ci.yml"
 
 .unit_test_js:
+  before_script:
+  - |
+    if [ "$NPM_LOCAL_HOST" != "" ]; then
+      echo "Using local npm registry: $NPM_LOCAL_HOST"
+      npm set registry $NPM_LOCAL_HOST
+    fi
+  - echo $SRC_PATH
+  - cd "$SRC_PATH"
+  - npm install
   artifacts:
     when: always
     paths:
