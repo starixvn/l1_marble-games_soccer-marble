@@ -11,6 +11,7 @@
     "build": "npm run build --workspaces",
     "dev": "npm run dev --workspaces",
     "test": "npm run test --workspaces",
+    "pretest-coverage": "npm run shared:build",
     "test-coverage": "npm run test-coverage --workspaces",
     "reg": "npm set registry http://npm.lumigame.com",
     "clean": "npm run clean --workspaces",
