@@ -1,11 +1,9 @@
 import { Consumer } from "../../../src/crons/consumer";
 import { mockContainer } from "../global-stubs";
 import { JobName } from "../../../src/types";
-import { idHelper } from "../../../src/helpers";
-import { Job } from "agenda";
+import { idHelper } from "@soccer-marble/shared-utils";
 
-jest.mock("../../../src/helpers/id-helper");
-
+jest.mock("@soccer-marble/shared-utils");
 describe("Consumer", () => {
   let consumer: Consumer;
   let mockAgenda: any;
@@ -81,7 +79,10 @@ describe("Consumer", () => {
         expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
         expect(idHelper.createEventId).toHaveBeenCalledWith(mockGameSettings.gameId, lastRoundId);
         expect(mockEventService.fetchEvent).toHaveBeenCalledWith(lastEventId, true);
-        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(upcomingRoundId, expectedScheduleStartTs);
+        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(
+          upcomingRoundId,
+          expectedScheduleStartTs
+        );
         expect(mockJob.remove).toHaveBeenCalled();
       });
 
@@ -192,7 +193,9 @@ describe("Consumer", () => {
 
       beforeEach(async () => {
         await consumer.start();
-        jobHandler = mockAgenda.define.mock.calls.find((call: any) => call[0] === JobName.UpdateEventDetailVideoInfo)[1];
+        jobHandler = mockAgenda.define.mock.calls.find(
+          (call: any) => call[0] === JobName.UpdateEventDetailVideoInfo
+        )[1];
         mockJob = {
           attrs: {
             data: {

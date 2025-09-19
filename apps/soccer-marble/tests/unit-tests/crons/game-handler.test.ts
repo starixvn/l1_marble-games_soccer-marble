@@ -1,11 +1,11 @@
 import { GameHandler } from "../../../src/crons/game-handler";
 import { mockContainer } from "../global-stubs";
 import { GameRunningRound, SettlementStatus } from "../../../src/types";
-import { decrypt } from "../../../src/helpers/crypto-helper";
+import { decrypt } from "@soccer-marble/shared-utils";
 import { IEventDetail } from "../../../src/models/event-details";
 import mongoose from "mongoose";
 
-jest.mock("../../../src/helpers/crypto-helper");
+jest.mock("@soccer-marble/shared-utils");
 
 describe("GameHandler", () => {
   let gameHandler: GameHandler;
@@ -269,7 +269,10 @@ describe("GameHandler", () => {
       expect(decrypt).toHaveBeenCalledWith("encrypted_selections");
       expect(mockEventDetail.selections).toEqual([{ name: "ft_hdp_home", price: 1.8 }]);
       expect(mockEventDetail.oddsAvailableTs).toBeInstanceOf(Date);
-      expect(mockEventService.updateEventDetail).toHaveBeenCalledWith(mockEventDetail, ["selections", "oddsAvailableTs"]);
+      expect(mockEventService.updateEventDetail).toHaveBeenCalledWith(mockEventDetail, [
+        "selections",
+        "oddsAvailableTs",
+      ]);
     });
   });
 

@@ -1,11 +1,11 @@
 import { GameHandler } from "../../../src/crons/game-handler";
 import { mockContainer } from "../global-stubs";
 import { GameRunningRound, SettlementStatus } from "../../../src/types";
-import { decrypt } from "../../../src/helpers/crypto-helper";
+import { decrypt } from "@soccer-marble/shared-utils";
 import { IEventDetail } from "../../../src/models/event-details";
 import mongoose from "mongoose";
 
-jest.mock("../../../src/helpers/crypto-helper");
+jest.mock("@soccer-marble/shared-utils");
 
 describe("GameHandler", () => {
   let gameHandler: GameHandler;

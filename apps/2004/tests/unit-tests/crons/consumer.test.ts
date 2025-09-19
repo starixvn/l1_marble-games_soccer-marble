@@ -1,9 +1,9 @@
 import { Consumer } from "../../../src/crons/consumer";
 import { mockContainer } from "../global-stubs";
 import { JobName } from "../../../src/types";
-import { idHelper } from "../../../src/helpers";
+import { idHelper } from "@soccer-marble/shared-utils";
 
-jest.mock("../../../src/helpers/id-helper");
+jest.mock("@soccer-marble/shared-utils");
 
 describe("Consumer", () => {
   let consumer: Consumer;

@@ -83,3 +83,4 @@ coverage/
 # Reports
 **/reports
 junit.xml
+test-report.xml

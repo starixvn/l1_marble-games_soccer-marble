@@ -1,17 +1,11 @@
 import * as rngModule from "sc-core-rng";
-import * as oddsHelper from "../../../src/helpers/odds-helper";
-import * as resultHelper from "../../../src/helpers/result-helper";
-import * as cryptoHelper from "../../../src/helpers/crypto-helper";
-import { MatchConfigType, RoundResultType, SettlementStatus } from "../../../src/types";
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { mockContainer } from "../global-stubs";
-import { idHelper } from "../../../src/helpers";
 
 jest.mock("sc-core-rng");
 jest.mock("../../../src/helpers/odds-helper");
 jest.mock("../../../src/helpers/result-helper");
-jest.mock("../../../src/helpers/crypto-helper");
-jest.mock("../../../src/helpers/id-helper");
+jest.mock("@soccer-marble/shared-utils");
 
 describe("RoundGeneratorService", () => {
   let service: RoundGeneratorService;

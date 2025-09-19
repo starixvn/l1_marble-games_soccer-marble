@@ -1,4 +1,4 @@
-import { encrypt, decrypt } from "../../../src/helpers/crypto-helper";
+import { encrypt, decrypt } from "../../../src/crypto-helper";
 import crypto from "crypto";
 
 describe("crypto-helper", () => {
