@@ -4,7 +4,7 @@ import { AppContainer, GameSettings, JobName } from "../types";
 import { GameHandler } from "./game-handler";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
-import { idHelper } from "../helpers";
+import { idHelper } from "@soccer-marble/shared-utils";
 
 export class Consumer {
   private readonly agenda: Agenda;

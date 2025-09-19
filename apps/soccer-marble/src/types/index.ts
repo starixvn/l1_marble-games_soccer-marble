@@ -10,8 +10,8 @@ import Agenda from "agenda";
 import { Scheduler } from "../crons/scheduler";
 import { Consumer } from "../crons/consumer";
 import { GameData } from "../crons/game-data";
-import { ResultGeneratorService } from "../helpers/result-generator-service";
-import { OddsGeneratorService } from "../helpers/odds-generator-service";
+import { ResultGeneratorService } from "../services/result-generator-service";
+import { OddsGeneratorService } from "../services/odds-generator-service";
 
 export type RateConfig = {
   scoreRate: Record<string, number>;

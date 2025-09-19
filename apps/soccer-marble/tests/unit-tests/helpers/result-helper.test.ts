@@ -1,4 +1,4 @@
-import { ResultGeneratorService } from "../../../src/helpers/result-generator-service";
+import { ResultGeneratorService } from "../../../src/services/result-generator-service";
 import crypto from "crypto";
 import { SettlementStatus } from "../../../src/types";
 

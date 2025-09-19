@@ -1,5 +1,5 @@
 import { rateConfigs } from "../../src/game-config";
-import { OddsGeneratorService } from "../../src/helpers/odds-generator-service";
+import { OddsGeneratorService } from "../../src/services/odds-generator-service";
 import { MatchConfigType } from "../../src/types";
 
 describe("rateConfigs", () => {
