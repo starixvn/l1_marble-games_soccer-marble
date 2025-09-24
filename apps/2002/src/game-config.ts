@@ -10,12 +10,12 @@ export const appConfigs = {
     url: process.env.NODE_ENV === "production" ? "mongodb://host.docker.internal:27017" : "mongodb://localhost:27017",
     authSource: "",
     dbName: "marble-football",
-    collectionName: "soccer_marble_2001_jobs",
+    collectionName: "soccer_marble_2002_jobs",
     replicaSet: "",
   },
   sentry: {
     sentryUrl: "https://6b0f71afab190ba976d8bdc7a43969fe@sentry-k8s.lumigame.com/15",
-    logIdentifier: "Soccer-Marble-2001-Service",
+    logIdentifier: "Soccer-Marble-2002-Service",
     env: "DEV",
   },
 };
