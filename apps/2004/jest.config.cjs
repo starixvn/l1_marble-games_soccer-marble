@@ -9,6 +9,9 @@ module.exports = async () => {
     transformIgnorePatterns: [
       "node_modules/(?!(sc-base-database|sc-common|sc-game-base|sc-base-apis|sc-api-client|jest-auto-fixture|nanoid|crypto-random-string|sc-game-service-integration-utils|sc-game-management-client|prom-client)/.*)",
     ],
+    moduleNameMapper: {
+      "^@soccer-marble/shared-utils$": "<rootDir>/../../packages/shared-utils/src/index.ts",
+    },
     preset: "ts-jest",
     testEnvironment: "node",
     testResultsProcessor: "jest-sonar-reporter",
