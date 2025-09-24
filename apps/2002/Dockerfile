@@ -7,7 +7,6 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY apps/2002/package.json apps/2002/package.json
-COPY apps/soccer-marble/package.json apps/soccer-marble/package.json
 COPY packages/*/package.json packages/
 
 RUN npm set registry http://npm.lumigame.com
@@ -44,7 +43,6 @@ COPY --from=build /app/apps/2002/package.json ./package.json
 COPY --from=build /app/package-lock.json ./package-lock.json
 
 # copy symlink targets for workspace packages used at runtime
-COPY --from=build /app/apps/soccer-marble/ ./apps/soccer-marble/
 COPY --from=build /app/packages/ ./packages/
 
 EXPOSE 5000

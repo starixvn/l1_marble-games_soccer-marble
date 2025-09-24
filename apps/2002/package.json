@@ -1,7 +1,7 @@
 {
-  "name": "@soccer-marble/2001",
+  "name": "@soccer-marble/2002",
   "version": "1.0.0",
-  "description": "Soccer marble game 2001 service",
+  "description": "Soccer marble game 2002 service",
   "repository": {
     "type": "git",
     "url": "git@git3.nexdev.net:l1/marble-games/soccer-marble.git"
