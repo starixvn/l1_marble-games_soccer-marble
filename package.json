@@ -22,10 +22,9 @@
     "app:2003:build": "npm run build --workspace=@soccer-marble/2003",
     "app:2004:build": "npm run build --workspace=@soccer-marble/2004",
     "app:2005:build": "npm run build --workspace=@soccer-marble/2005",
-    "app:soccer-marble:build": "npm run build --workspace=@soccer-marble/soccer-marble-base",
-    "shared:types:build": "npm run build --workspace=@soccer-marble/shared-types",
+    "shared:soccer-marble:build": "npm run build --workspace=@soccer-marble/soccer-marble-base",
     "shared:utils:build": "npm run build --workspace=@soccer-marble/shared-utils",
-    "shared:build": "npm run shared:types:build && npm run shared:utils:build",
+    "shared:build": "npm run shared:utils:build && npm run shared:soccer-marble:build",
     "update:deps": "npm update --workspaces"
   },
   "devDependencies": {

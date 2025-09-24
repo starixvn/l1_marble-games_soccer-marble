@@ -18,7 +18,8 @@ FROM ${NODE_IMAGE} AS build
 WORKDIR /app
 COPY --from=deps /app /app
 
-COPY . .
+COPY packages/ packages/
+COPY apps/2000/ apps/2000/
 
 RUN npm i
 RUN npm run shared:build
