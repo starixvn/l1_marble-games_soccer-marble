@@ -5,7 +5,6 @@ import { GameConfigService } from "../../src/services/game-config-service";
 import { EventService } from "../../src/services/event-service";
 import { RoundService } from "../../src/services/round-service";
 import { RoundGeneratorService } from "../../src/services/round-generator-service";
-import { rateConfigs } from "../../src/game-config";
 import { IEvent } from "../../src/models/events";
 import mongoose from "mongoose";
 import { IEventDetail } from "../../src/models/event-details";
@@ -17,14 +16,17 @@ import { Consumer } from "../../src/crons/consumer";
 import { Agenda } from "agenda";
 import { ResultGeneratorService } from "../../src/services/result-generator-service";
 import { OddsGeneratorService } from "../../src/services/odds-generator-service";
+import { Configuration } from "../../src/configuration";
 const mockLogService: typeof logger = {
   log: jest.fn(),
   logError: jest.fn(),
   logInfo: jest.fn(),
   logWarning: jest.fn(),
 } as unknown as typeof logger;
+
 const gameSettings: GameSettings = {
   gameId: 2001,
+  modelPrefix: "2001",
   upcomingEvents: 3,
   theme: "2001",
   gameTiming: {
@@ -85,6 +87,10 @@ const gameSettings: GameSettings = {
     H: 19,
   },
 };
+const rateConfigs = {
+  homeFavorite: [{ scoreRate: { "1-0": 0.2, "0-1": 0.1 } }, { scoreRate: { "1-0": 0.3, "0-1": 0.1 } }],
+  awayFavorite: [{ scoreRate: { "1-0": 0.1, "0-1": 0.2 } }, { scoreRate: { "1-0": 0.1, "0-1": 0.3 } }],
+};
 const mockRoundGeneratorService = stub<RoundGeneratorService>();
 const mockRoundService = stub<RoundService>();
 const mockEventService = stub<EventService>();
@@ -138,10 +144,12 @@ const mockRoundRepository = {
   exec: jest.fn(),
 } as unknown as mongoose.Model<IRound>;
 
+const mockConfiguration = stub<Configuration>();
+
 const mockContainer: AppContainer = {
   gameSettings,
   appConfigs: {} as any,
-  rateConfigs: rateConfigs,
+  rateConfigs,
 
   gameHandler: mockGameHandler,
   agenda: mockAgenda,
@@ -161,6 +169,7 @@ const mockContainer: AppContainer = {
   roundRepository: mockRoundRepository,
   resultGeneratorService: mockResultGeneratorService,
   oddsGeneratorService: mockOddsGeneratorService,
+  configuration: mockConfiguration,
 };
 
 export { mockContainer };

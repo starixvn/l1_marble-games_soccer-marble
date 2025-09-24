@@ -81,7 +81,7 @@ export class EventService {
     return eventDetail;
   }
 
-  async fetchAllUpcomingEvents() {
+  async fetchAllUpcomingEvents(): Promise<IEvent[]> {
     return this.eventRepository
       .find({ gameId: this.gameSettings.gameId, scheduleStartTs: { $gt: new Date() } }, "eventID")
       .lean()

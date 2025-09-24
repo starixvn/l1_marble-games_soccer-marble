@@ -1,6 +1,7 @@
 import { ResultGeneratorService } from "../../../src/services/result-generator-service";
 import crypto from "crypto";
 import { SettlementStatus } from "../../../src/types";
+import { mockContainer } from "../global-stubs";
 
 const NUMBER_OF_VIDEOS = {
   HAA: 1,
@@ -10,7 +11,7 @@ const NUMBER_OF_VIDEOS = {
 };
 
 describe("result helper tests", () => {
-  const resultGeneratorService = new ResultGeneratorService();
+  const resultGeneratorService = new ResultGeneratorService(mockContainer);
 
   describe("getScoreFromScoreRate", () => {
     it("should return one of the valid scores", () => {

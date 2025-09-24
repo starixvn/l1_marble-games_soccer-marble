@@ -1,24 +1,22 @@
 {
-  "name": "@soccer-marble/soccer-marble",
+  "name": "@soccer-marble/soccer-marble-base",
   "version": "1.0.0",
-  "description": "Main soccer marble service",
+  "description": "Soccer marble base package",
   "repository": {
     "type": "git",
     "url": "git@git3.nexdev.net:l1/marble-games/soccer-marble.git"
   },
   "author": "",
   "license": "ISC",
-  "main": "./build/app.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "start": "node --experimental-loader=extensionless ./build/app.js",
-    "dev": "cross-env NODE_ENV=development tsx watch ./src/app.ts",
     "reg": "npm set registry http://npm.lumigame.com",
     "build": "tsc",
-    "watch": "tsc -w",
     "test": "jest --testPathPatterns=tests/unit-tests/",
     "test-coverage": "jest --collect-coverage --testPathPatterns=tests/unit-tests/",
-    "clean": "rm -rf build dist",
+    "clean": "rm -rf dist",
     "type-check": "tsc --noEmit"
   },
   "jestSonar": {

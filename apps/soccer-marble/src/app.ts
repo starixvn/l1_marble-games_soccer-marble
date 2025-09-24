@@ -1,86 +1,99 @@
 import express, { Request, Response } from "express";
 import http from "http";
-import { ContainerRegistry } from "./container-registry";
 import { StartUp } from "./start-up";
 import mongoose from "mongoose";
 import { setSecurityHeaders } from "./middleware/security-header";
 import { errorHandler } from "./middleware/error-handler";
 import Agenda from "agenda";
-import { asValue } from "awilix";
+import { asValue, AwilixContainer } from "awilix";
 import { logger } from "sc-common";
+import { AppContainer } from "./types";
 import { Configuration } from "./configuration";
 
-let shuttingDown = false;
+export class App {
+  private readonly logService: typeof logger;
+  private readonly appConfigs: any;
+  private readonly configuration: Configuration;
+  private readonly container: AwilixContainer<AppContainer>;
+  private shuttingDown = false;
 
-const gracefulShutdown = async (agenda: Agenda, logService: typeof logger) => {
-  if (shuttingDown) {
-    return;
+  constructor(container: AwilixContainer<AppContainer>) {
+    this.logService = container.resolve("logService");
+    this.appConfigs = container.resolve("appConfigs");
+    this.configuration = container.resolve("configuration");
+    this.container = container;
   }
 
-  shuttingDown = true;
+  async gracefulShutdown(agenda: Agenda) {
+    if (this.shuttingDown) {
+      return;
+    }
 
-  try {
-    await agenda.stop();
-    logService.log("Agenda disconnected. Gracefully shutting down...", "info");
-  } catch (err) {
-    logService.logError(`Error during shutdown: ${err}`);
-    process.exit(1);
-  }
-};
+    this.shuttingDown = true;
 
-const run = async () => {
-  const container = new ContainerRegistry().register();
-  const appConfigs = container.resolve("appConfigs");
-  const logService = container.resolve("logService");
-  const configuration = new Configuration();
-  await configuration.configureDatabaseAndSentry(appConfigs);
-  const { agenda, connected: agendaConnected } = await configuration.configureAgenda(appConfigs);
-
-  if (!agenda) {
-    throw new Error("Agenda connection failed! Please check the MongoDB connection details.");
+    try {
+      await agenda.stop();
+      this.logService.log("Agenda disconnected. Gracefully shutting down...", "info");
+    } catch (err) {
+      this.logService.logError(`Error during shutdown: ${err}`);
+      process.exit(1);
+    }
   }
 
-  container.register({
-    agenda: asValue(agenda),
-  });
-
-  const startUp = new StartUp(container);
-
-  // Create Express app
-  const app = express();
-
-  // Middleware
-  app.use(express.json());
-  app.use(setSecurityHeaders);
-  app.use(errorHandler);
-
-  app.set("port", appConfigs.hostingPort);
-
-  // Routes
-  app.get("/", (req: Request, res: Response) => {
-    const dbStatus = mongoose.connection.readyState === 1 && agendaConnected ? "connected" : "disconnected";
-    res.status(dbStatus === "connected" ? 200 : 500).json({
-      status: dbStatus === "connected" ? "ok" : "error",
-      message: "Soccer marble service running",
-      database: dbStatus,
-      timestamp: new Date().toISOString(),
+  async registerAgenda(agenda: Agenda) {
+    this.container.register({
+      agenda: asValue(agenda),
     });
-  });
+  }
 
-  const httpServer = http.createServer(app);
+  async initializeAgenda() {
+    const { agenda, connected } = await this.configuration.configureAgenda();
 
-  httpServer.listen(app.get("port"), () => {
-    console.log(`Express server started and running on port ${app.get("port")}!`);
-  });
+    if (!agenda) {
+      throw new Error("Agenda connection failed! Please check the MongoDB connection details.");
+    }
 
-  process.on("SIGTERM", async () => {
-    await gracefulShutdown(agenda, logService);
-  });
+    this.registerAgenda(agenda);
 
-  await startUp.start();
-};
+    return { agenda, connected };
+  }
 
-run().catch((error) => {
-  console.error("App running error:", error);
-  process.exit(1);
-});
+  async run() {
+    await this.configuration.configureDatabaseAndSentry();
+    const { agenda, connected: agendaConnected } = await this.initializeAgenda();
+    const startUp = new StartUp(this.container);
+
+    // Create Express app
+    const app = express();
+
+    // Middleware
+    app.use(express.json());
+    app.use(setSecurityHeaders);
+    app.use(errorHandler);
+
+    app.set("port", this.appConfigs.hostingPort);
+
+    // Routes
+    app.get("/", (req: Request, res: Response) => {
+      const dbStatus = mongoose.connection.readyState === 1 && agendaConnected ? "connected" : "disconnected";
+      res.status(dbStatus === "connected" ? 200 : 500).json({
+        status: dbStatus === "connected" ? "ok" : "error",
+        message: "Soccer marble service running",
+        database: dbStatus,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    const httpServer = http.createServer(app);
+
+    httpServer.listen(app.get("port"), () => {
+      console.log(`Express server started and running on port ${app.get("port")}!`);
+    });
+
+    process.on("SIGTERM", async () => {
+      await this.gracefulShutdown(agenda);
+    });
+
+    await startUp.start();
+  }
+}

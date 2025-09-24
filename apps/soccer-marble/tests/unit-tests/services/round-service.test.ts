@@ -140,32 +140,6 @@ describe("RoundService", () => {
     });
   });
 
-  describe("fetchAllUnfinishedRounds", () => {
-    it("should fetch all unfinished rounds", async () => {
-      // Arrange
-      const mockRounds = [
-        { roundId: 1, ended: false },
-        { roundId: 2, ended: false },
-      ];
-
-      (mockContainer.roundRepository.find as jest.Mock).mockReturnValue({
-        lean: jest.fn().mockReturnValue({
-          exec: jest.fn().mockResolvedValue(mockRounds),
-        }),
-      });
-
-      // Act
-      const result = await service.fetchAllUnfinishedRounds();
-
-      // Assert
-      expect(mockContainer.roundRepository.find).toHaveBeenCalledWith({
-        gameId: mockContainer.gameSettings.gameId,
-        ended: false,
-      });
-      expect(result).toEqual(mockRounds);
-    });
-  });
-
   describe("fetchRoundData", () => {
     it("should fetch round data by ID", async () => {
       // Arrange

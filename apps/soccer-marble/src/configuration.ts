@@ -1,29 +1,37 @@
 import { logger } from "sc-common";
 import mongoose from "mongoose";
-import { appConfigs } from "./game-config";
 import { Agenda } from "agenda";
+import { AppContainer } from "./types";
 
 export class Configuration {
-  private buildAgendaMongoUri(config: typeof appConfigs): string {
-    const params = new URLSearchParams();
+  private readonly appConfigs: any;
+  private readonly logService: typeof logger;
 
-    if (config.agenda.authSource) {
-      params.append("authSource", config.agenda.authSource);
-    }
-
-    if (config.agenda.replicaSet) {
-      params.append("replicaSet", config.agenda.replicaSet);
-    }
-
-    return `${config.agenda.url}/${config.agenda.dbName}?${params.toString()}`;
+  constructor(container: AppContainer) {
+    this.appConfigs = container.appConfigs;
+    this.logService = container.logService;
   }
 
-  async configureAgenda(config: typeof appConfigs) {
+  private buildAgendaMongoUri(): string {
+    const params = new URLSearchParams();
+
+    if (this.appConfigs.agenda.authSource) {
+      params.append("authSource", this.appConfigs.agenda.authSource);
+    }
+
+    if (this.appConfigs.agenda.replicaSet) {
+      params.append("replicaSet", this.appConfigs.agenda.replicaSet);
+    }
+
+    return `${this.appConfigs.agenda.url}/${this.appConfigs.agenda.dbName}?${params.toString()}`;
+  }
+
+  async configureAgenda() {
     try {
       const agenda = new Agenda({
         db: {
-          address: this.buildAgendaMongoUri(config),
-          collection: config.agenda.collectionName,
+          address: this.buildAgendaMongoUri(),
+          collection: this.appConfigs.agenda.collectionName,
         },
         processEvery: "1 second",
         defaultLockLifetime: 5000,
@@ -39,9 +47,9 @@ export class Configuration {
     }
   }
 
-  async configureDatabaseAndSentry(config: typeof appConfigs) {
-    logger.start(config.sentry as any);
-    await this.configureDatabase(config.database);
+  async configureDatabaseAndSentry() {
+    this.logService.start(this.appConfigs.sentry as any);
+    await this.configureDatabase(this.appConfigs.database);
   }
 
   async configureDatabase({ url = "", options = {} }) {
@@ -49,31 +57,31 @@ export class Configuration {
       await mongoose.connect(url, options);
 
       this.setupMongoEventHandlers();
-      logger.log("MongoDB database connection established successfully", "info");
+      this.logService.log("MongoDB database connection established successfully", "info");
     } catch (error) {
-      logger.logError(`Failed to connect to MongoDB: ${error}`);
+      this.logService.logError(`Failed to connect to MongoDB: ${error}`);
     }
   }
 
   private setupMongoEventHandlers() {
     mongoose.connection.on("connected", () => {
-      logger.log(`MongoDB connected at ${new Date()}`, "info");
+      this.logService.log(`MongoDB connected at ${new Date()}`, "info");
     });
 
     mongoose.connection.on("reconnected", () => {
-      logger.logWarning(`MongoDB reconnected at ${new Date()}`);
+      this.logService.logWarning(`MongoDB reconnected at ${new Date()}`);
     });
 
     mongoose.connection.on("disconnected", () => {
-      logger.logWarning(`MongoDB disconnected at ${new Date()}`);
+      this.logService.logWarning(`MongoDB disconnected at ${new Date()}`);
     });
 
     mongoose.connection.on("error", (err) => {
-      logger.logError(`MongoDB connection error: ${err}`);
+      this.logService.logError(`MongoDB connection error: ${err}`);
     });
 
     mongoose.connection.on("close", () => {
-      logger.logWarning("MongoDB connection pool closed");
+      this.logService.logWarning("MongoDB connection pool closed");
     });
   }
 }

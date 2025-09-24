@@ -3,12 +3,11 @@ import { secureShuffle, secureRandomBool } from "sc-core-rng";
 import { OddsGeneratorService } from "./odds-generator-service";
 import { ResultGeneratorService } from "./result-generator-service";
 import { encrypt, idHelper } from "@soccer-marble/shared-utils";
-import { rateConfigs } from "../game-config";
 import { GameData } from "../crons/game-data";
 
 export class RoundGeneratorService {
   private readonly gameSettings: GameSettings;
-  private readonly rateConfigs: typeof rateConfigs;
+  private readonly rateConfigs: any;
   private readonly gameData: GameData;
   private readonly oddsGeneratorService: OddsGeneratorService;
   private readonly resultGeneratorService: ResultGeneratorService;

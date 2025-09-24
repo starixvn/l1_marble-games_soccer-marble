@@ -10,8 +10,8 @@ import {
   SettlementStatus,
   FirstHalfOddsKey,
   SecondHalfOddsKey,
+  AppContainer,
 } from "../types";
-import { gameSettings } from "../game-config";
 
 type SettleConfig = {
   overUnderValue: number;
@@ -21,6 +21,12 @@ type SettleConfig = {
 };
 
 export class ResultGeneratorService {
+  private readonly gameSettings: any;
+
+  constructor(container: AppContainer) {
+    this.gameSettings = container.gameSettings;
+  }
+
   generateResult = (data: DataResultType): RoundResultType => {
     const numberOfVideos = data.numberOfVideos;
     const firstHalf = this.generateResultForHalf(data.matchConfig.firstHalf);
@@ -261,7 +267,7 @@ export class ResultGeneratorService {
     videoDefault = false,
     ignoredVideo = ""
   ) => {
-    const currentNumberOfVideos = numberOfVideos[result] || gameSettings.numberOfVideos[result];
+    const currentNumberOfVideos = numberOfVideos[result] || this.gameSettings.numberOfVideos[result];
     let videoIndex = videoDefault ? 0 : secureRandomRange(0, currentNumberOfVideos - 1);
     let videoName = crypto.createHash("sha256").update(`${result}-${videoIndex}`).digest("hex");
 

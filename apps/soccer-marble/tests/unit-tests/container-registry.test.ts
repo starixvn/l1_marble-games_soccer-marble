@@ -3,13 +3,13 @@ import { RoundGeneratorService } from "../../src/services/round-generator-servic
 import { RoundService } from "../../src/services/round-service";
 import { EventService } from "../../src/services/event-service";
 import { GameConfigService } from "../../src/services/game-config-service";
-import { EventDetailModel, EventModel, RoundModel, GameConfigModel } from "../../src/models";
-import { appConfigs, gameSettings, rateConfigs } from "../../src/game-config";
+import { EventDetailModel, EventModel, GameConfigModel } from "../../src/models";
 import { logger } from "sc-common";
 import { GameData } from "../../src/crons/game-data";
 import { GameHandler } from "../../src/crons/game-handler";
 import { Consumer } from "../../src/crons/consumer";
 import { Scheduler } from "../../src/crons/scheduler";
+import { createRoundModel } from "../../src/models/rounds";
 
 // Mock all dependencies
 jest.mock("sc-common", () => ({
@@ -34,11 +34,15 @@ jest.mock("../../src/models");
 
 describe("ContainerRegistry", () => {
   let containerRegistry: ContainerRegistry;
+  let appConfigs = { data: "appConfigs" } as any;
+  let gameSettings = { data: "gameSettings", modelPrefix: "test" } as any;
+  let rateConfigs = { data: "rateConfigs" } as any;
+  let RoundModel = createRoundModel(gameSettings);
 
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();
-    containerRegistry = new ContainerRegistry();
+    containerRegistry = new ContainerRegistry(appConfigs, gameSettings, rateConfigs);
   });
 
   describe("constructor", () => {

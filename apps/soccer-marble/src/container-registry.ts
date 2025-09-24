@@ -1,8 +1,8 @@
 import { AppContainer } from "./types/index";
 import { createContainer, AwilixContainer, InjectionMode, asValue, asClass } from "awilix";
 import { logger } from "sc-common";
-import { EventDetailModel, EventModel, RoundModel, GameConfigModel } from "./models";
-import { appConfigs, gameSettings, rateConfigs } from "./game-config";
+import { EventDetailModel, EventModel, GameConfigModel } from "./models";
+import { createRoundModel } from "./models/rounds";
 import { RoundGeneratorService } from "./services/round-generator-service";
 import { RoundService } from "./services/round-service";
 import { EventService } from "./services/event-service";
@@ -13,11 +13,19 @@ import { Scheduler } from "./crons/scheduler";
 import { GameData } from "./crons/game-data";
 import { ResultGeneratorService } from "./services/result-generator-service";
 import { OddsGeneratorService } from "./services/odds-generator-service";
+import { Configuration } from "./configuration";
 
 export class ContainerRegistry {
   container: AwilixContainer<AppContainer>;
+  private readonly appConfigs: any;
+  private readonly gameSettings: any;
+  private readonly rateConfigs: any;
 
-  constructor() {
+  constructor(appConfigs: any, gameSettings: any, rateConfigs: any) {
+    this.appConfigs = appConfigs;
+    this.gameSettings = gameSettings;
+    this.rateConfigs = rateConfigs;
+
     this.container = createContainer<AppContainer>({
       injectionMode: InjectionMode.PROXY,
     });
@@ -34,17 +42,20 @@ export class ContainerRegistry {
 
   registerConfigs() {
     this.container.register({
-      appConfigs: asValue(appConfigs),
-      gameSettings: asValue(gameSettings),
-      rateConfigs: asValue(rateConfigs),
+      appConfigs: asValue(this.appConfigs),
+      gameSettings: asValue(this.gameSettings),
+      rateConfigs: asValue(this.rateConfigs),
+      configuration: asClass(Configuration).singleton(),
     });
   }
 
   registerModels() {
+    const roundModel = createRoundModel(this.gameSettings);
+
     this.container.register({
       eventDetailsRepository: asValue(EventDetailModel),
       eventRepository: asValue(EventModel),
-      roundRepository: asValue(RoundModel),
+      roundRepository: asValue(roundModel),
       gameConfigRepository: asValue(GameConfigModel),
     });
   }

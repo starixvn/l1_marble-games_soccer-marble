@@ -1,6 +1,5 @@
-import mongoose, { Schema } from "mongoose";
-import { GameRunningRound } from "../types";
-import { gameSettings } from "../game-config";
+import mongoose, { Schema, Model } from "mongoose";
+import { GameRunningRound, GameSettings } from "../types";
 
 export interface IRound extends GameRunningRound {
   _id: mongoose.Schema.Types.ObjectId;
@@ -24,4 +23,6 @@ const RoundSchema = new Schema<IRound>({
   encryptedSelections: { type: Schema.Types.Mixed },
 });
 
-export default mongoose.model<IRound>(`${gameSettings.modelPrefix}_rounds`, RoundSchema);
+export const createRoundModel = (gameSettings: GameSettings): Model<IRound> => {
+  return mongoose.model<IRound>(`${gameSettings.modelPrefix}_rounds`, RoundSchema);
+};

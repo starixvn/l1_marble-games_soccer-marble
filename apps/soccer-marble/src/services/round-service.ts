@@ -1,11 +1,11 @@
 import { AppContainer, GameSettings } from "../types";
-import { RoundModel } from "../models";
 import { IRound } from "../models/rounds";
 import { IEventDetail } from "../models/event-details";
 import { logger } from "sc-common";
+import { Model } from "mongoose";
 
 export class RoundService {
-  private readonly roundRepository: typeof RoundModel;
+  private readonly roundRepository: Model<IRound>;
   private readonly gameSettings: GameSettings;
   private readonly logService: typeof logger;
 
@@ -20,16 +20,6 @@ export class RoundService {
       sort: { roundId: -1 },
     });
     return round?.roundId ?? 0;
-  }
-
-  async fetchAllUnfinishedRounds() {
-    return this.roundRepository
-      .find({
-        gameId: this.gameSettings.gameId,
-        ended: false,
-      })
-      .lean()
-      .exec();
   }
 
   async fetchRoundData(roundId: number): Promise<IRound> {

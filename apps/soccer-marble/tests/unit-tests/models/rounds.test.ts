@@ -1,6 +1,9 @@
-import RoundModel from "../../../src/models/rounds";
+import { createRoundModel } from "../../../src/models/rounds";
 
 describe("Round Model", () => {
+  const RoundModel = createRoundModel({
+    modelPrefix: "2001",
+  } as any);
   it("should create model with default properties", () => {
     const round = new RoundModel({
       roundId: 1,

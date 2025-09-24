@@ -1,6 +1,7 @@
 import { logger } from "sc-common";
-import { EventDetailModel, EventModel, GameConfigModel, RoundModel } from "../models";
-import { appConfigs, rateConfigs } from "../game-config";
+import { EventDetailModel, EventModel, GameConfigModel } from "../models";
+import { Model } from "mongoose";
+import { IRound } from "../models/rounds";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { RoundGeneratorService } from "../services/round-generator-service";
@@ -12,6 +13,7 @@ import { Consumer } from "../crons/consumer";
 import { GameData } from "../crons/game-data";
 import { ResultGeneratorService } from "../services/result-generator-service";
 import { OddsGeneratorService } from "../services/odds-generator-service";
+import { Configuration } from "../configuration";
 
 export type RateConfig = {
   scoreRate: Record<string, number>;
@@ -88,13 +90,13 @@ export type Event = {
 };
 
 export interface AppContainer {
-  appConfigs: typeof appConfigs;
+  appConfigs: any;
   logService: typeof logger;
   gameSettings: GameSettings;
-  rateConfigs: typeof rateConfigs;
+  rateConfigs: any;
   eventDetailsRepository: typeof EventDetailModel;
   eventRepository: typeof EventModel;
-  roundRepository: typeof RoundModel;
+  roundRepository: Model<IRound>;
   gameConfigRepository: typeof GameConfigModel;
   roundGeneratorService: RoundGeneratorService;
   roundService: RoundService;
@@ -107,10 +109,12 @@ export interface AppContainer {
   gameData: GameData;
   resultGeneratorService: ResultGeneratorService;
   oddsGeneratorService: OddsGeneratorService;
+  configuration: Configuration;
 }
 
 export type GameSettings = {
   gameId: number;
+  modelPrefix: string;
   theme: string;
   upcomingEvents: number;
   gameTiming: GameTiming;
