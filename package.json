@@ -16,6 +16,7 @@
     "reg": "npm set registry http://npm.lumigame.com",
     "clean": "npm run clean --workspaces",
     "type-check": "npm run type-check --workspaces",
+    "app:2000:build": "npm run build --workspace=@soccer-marble/2000",
     "app:2001:build": "npm run build --workspace=@soccer-marble/2001",
     "app:2002:build": "npm run build --workspace=@soccer-marble/2002",
     "app:2003:build": "npm run build --workspace=@soccer-marble/2003",
