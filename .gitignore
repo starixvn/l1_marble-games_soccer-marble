@@ -84,5 +84,3 @@ coverage/
 **/reports
 junit.xml
 test-report.xml
-
-apps/2001/*
