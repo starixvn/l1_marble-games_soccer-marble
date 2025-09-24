@@ -1,6 +1,8 @@
 import { ContainerRegistry } from "@soccer-marble/soccer-marble-base";
 import { App } from "@soccer-marble/soccer-marble-base";
-import { appConfigs, gameSettings, rateConfigs } from "./game-config";
+import { appConfigs } from "./game-config";
+import { gameSettings } from "./game-settings";
+import { rateConfigs } from "./rate-configs";
 
 const run = async () => {
   const container = new ContainerRegistry(appConfigs, gameSettings, rateConfigs).register();
