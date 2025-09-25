@@ -3,8 +3,8 @@ import { logger } from "sc-common";
 import { GameConfigService } from "../services/game-config-service";
 
 export class GameData {
-  private readonly gameConfigService: GameConfigService;
-  private readonly logService: typeof logger;
+  protected readonly gameConfigService: GameConfigService;
+  protected readonly logService: typeof logger;
   gameConfig: GameConfig | null = null;
 
   constructor(container: AppContainer) {

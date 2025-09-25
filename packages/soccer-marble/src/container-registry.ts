@@ -17,9 +17,9 @@ import { Configuration } from "./configuration";
 
 export class ContainerRegistry {
   container: AwilixContainer<AppContainer>;
-  private readonly appConfigs: any;
-  private readonly gameSettings: any;
-  private readonly rateConfigs: any;
+  protected readonly appConfigs: any;
+  protected readonly gameSettings: any;
+  protected readonly rateConfigs: any;
 
   constructor(appConfigs: any, gameSettings: any, rateConfigs: any) {
     this.appConfigs = appConfigs;

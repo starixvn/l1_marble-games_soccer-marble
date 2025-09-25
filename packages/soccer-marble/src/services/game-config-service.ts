@@ -1,8 +1,8 @@
 import { AppContainer, GameConfig, GameSettings } from "../types";
 import { GameConfigModel } from "../models";
 export class GameConfigService {
-  private readonly gameConfigRepository: typeof GameConfigModel;
-  private readonly gameSettings: GameSettings;
+  protected readonly gameConfigRepository: typeof GameConfigModel;
+  protected readonly gameSettings: GameSettings;
 
   constructor(container: AppContainer) {
     this.gameConfigRepository = container.gameConfigRepository;

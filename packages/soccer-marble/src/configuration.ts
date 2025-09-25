@@ -4,15 +4,15 @@ import { Agenda } from "agenda";
 import { AppContainer } from "./types";
 
 export class Configuration {
-  private readonly appConfigs: any;
-  private readonly logService: typeof logger;
+  protected readonly appConfigs: any;
+  protected readonly logService: typeof logger;
 
   constructor(container: AppContainer) {
     this.appConfigs = container.appConfigs;
     this.logService = container.logService;
   }
 
-  private buildAgendaMongoUri(): string {
+  buildAgendaMongoUri(): string {
     const params = new URLSearchParams();
 
     if (this.appConfigs.agenda.authSource) {
@@ -63,7 +63,7 @@ export class Configuration {
     }
   }
 
-  private setupMongoEventHandlers() {
+  setupMongoEventHandlers() {
     mongoose.connection.on("connected", () => {
       this.logService.log(`MongoDB connected at ${new Date()}`, "info");
     });

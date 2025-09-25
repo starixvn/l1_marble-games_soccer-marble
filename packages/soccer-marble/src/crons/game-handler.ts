@@ -13,13 +13,13 @@ import { IEventDetail } from "../models/event-details";
 const maxDelay = 1000;
 
 export class GameHandler {
-  private readonly roundService: RoundService;
-  private readonly eventService: EventService;
-  private readonly roundGeneratorService: RoundGeneratorService;
-  private readonly logService: typeof logger;
-  private readonly gameData: GameData;
-  private readonly scheduler: Scheduler;
-  private readonly gameSettings: GameSettings;
+  protected readonly roundService: RoundService;
+  protected readonly eventService: EventService;
+  protected readonly roundGeneratorService: RoundGeneratorService;
+  protected readonly logService: typeof logger;
+  protected readonly gameData: GameData;
+  protected readonly scheduler: Scheduler;
+  protected readonly gameSettings: GameSettings;
 
   constructor(container: AppContainer) {
     this.logService = container.logService;
@@ -31,7 +31,7 @@ export class GameHandler {
     this.gameSettings = container.gameSettings;
   }
 
-  private async delayTime(ms: number) {
+  async delayTime(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 

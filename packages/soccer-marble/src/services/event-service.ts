@@ -6,10 +6,10 @@ import { GameSettings, AppContainer, EventDetail, GameRunningRound } from "../ty
 import { logger } from "sc-common";
 
 export class EventService {
-  private readonly eventRepository: typeof EventModel;
-  private readonly eventDetailsRepository: typeof EventDetailModel;
-  private readonly gameSettings: GameSettings;
-  private readonly logService: typeof logger;
+  protected readonly eventRepository: typeof EventModel;
+  protected readonly eventDetailsRepository: typeof EventDetailModel;
+  protected readonly gameSettings: GameSettings;
+  protected readonly logService: typeof logger;
 
   constructor(container: AppContainer) {
     this.eventRepository = container.eventRepository;
@@ -38,11 +38,7 @@ export class EventService {
     return this.eventRepository.create(event);
   }
 
-  private async createNewEventDetails(
-    eventId: number,
-    startTime: Date,
-    roundData: GameRunningRound
-  ): Promise<IEventDetail[]> {
+  async createNewEventDetails(eventId: number, startTime: Date, roundData: GameRunningRound): Promise<IEventDetail[]> {
     const timelines = roundData.matchConfig.gameTiming.timelines;
 
     return Promise.all(

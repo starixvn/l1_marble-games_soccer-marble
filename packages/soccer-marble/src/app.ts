@@ -11,11 +11,11 @@ import { AppContainer } from "./types";
 import { Configuration } from "./configuration";
 
 export class App {
-  private readonly logService: typeof logger;
-  private readonly appConfigs: any;
-  private readonly configuration: Configuration;
-  private readonly container: AwilixContainer<AppContainer>;
-  private shuttingDown = false;
+  protected readonly logService: typeof logger;
+  protected readonly appConfigs: any;
+  protected readonly configuration: Configuration;
+  protected readonly container: AwilixContainer<AppContainer>;
+  protected shuttingDown = false;
 
   constructor(container: AwilixContainer<AppContainer>) {
     this.logService = container.resolve("logService");

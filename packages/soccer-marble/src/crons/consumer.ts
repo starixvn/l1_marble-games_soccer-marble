@@ -7,12 +7,12 @@ import { EventService } from "../services/event-service";
 import { idHelper } from "@soccer-marble/shared-utils";
 
 export class Consumer {
-  private readonly agenda: Agenda;
-  private readonly logService: typeof logger;
-  private readonly gameHandler: GameHandler;
-  private readonly roundService: RoundService;
-  private readonly eventService: EventService;
-  private readonly gameSettings: GameSettings;
+  protected readonly agenda: Agenda;
+  protected readonly logService: typeof logger;
+  protected readonly gameHandler: GameHandler;
+  protected readonly roundService: RoundService;
+  protected readonly eventService: EventService;
+  protected readonly gameSettings: GameSettings;
 
   constructor(container: AppContainer) {
     this.agenda = container.agenda;

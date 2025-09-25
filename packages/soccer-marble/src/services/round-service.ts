@@ -5,9 +5,9 @@ import { logger } from "sc-common";
 import { Model } from "mongoose";
 
 export class RoundService {
-  private readonly roundRepository: Model<IRound>;
-  private readonly gameSettings: GameSettings;
-  private readonly logService: typeof logger;
+  protected readonly roundRepository: Model<IRound>;
+  protected readonly gameSettings: GameSettings;
+  protected readonly logService: typeof logger;
 
   constructor(container: AppContainer) {
     this.roundRepository = container.roundRepository;

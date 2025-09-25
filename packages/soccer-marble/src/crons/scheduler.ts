@@ -5,13 +5,13 @@ import { GameData } from "./game-data";
 import { IEventDetail } from "../models/event-details";
 
 export class Scheduler {
-  private readonly agenda: Agenda;
-  private readonly eventService: EventService;
-  private readonly gameData: GameData;
-  private readonly gameSettings: GameSettings;
-  private gameStatusInterval: NodeJS.Timeout | null = null;
-  private wholeRoundInterval: NodeJS.Timeout | null = null;
-  private readonly scheduleBufferMs = 100;
+  protected readonly agenda: Agenda;
+  protected readonly eventService: EventService;
+  protected readonly gameData: GameData;
+  protected readonly gameSettings: GameSettings;
+  protected gameStatusInterval: NodeJS.Timeout | null = null;
+  protected wholeRoundInterval: NodeJS.Timeout | null = null;
+  protected readonly scheduleBufferMs = 100;
 
   constructor(container: AppContainer) {
     this.agenda = container.agenda;
@@ -20,7 +20,7 @@ export class Scheduler {
     this.gameSettings = container.gameSettings;
   }
 
-  private clearIntervals() {
+  clearIntervals() {
     if (this.gameStatusInterval) {
       clearInterval(this.gameStatusInterval);
       this.gameStatusInterval = null;
@@ -31,7 +31,7 @@ export class Scheduler {
     }
   }
 
-  private async checkGameStatus() {
+  async checkGameStatus() {
     await this.gameData.loadGameConfig();
 
     if (this.gameData.gameConfig?.config?.enabled) {

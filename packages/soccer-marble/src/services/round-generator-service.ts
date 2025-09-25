@@ -6,11 +6,11 @@ import { encrypt, idHelper } from "@soccer-marble/shared-utils";
 import { GameData } from "../crons/game-data";
 
 export class RoundGeneratorService {
-  private readonly gameSettings: GameSettings;
-  private readonly rateConfigs: any;
-  private readonly gameData: GameData;
-  private readonly oddsGeneratorService: OddsGeneratorService;
-  private readonly resultGeneratorService: ResultGeneratorService;
+  protected readonly gameSettings: GameSettings;
+  protected readonly rateConfigs: any;
+  protected readonly gameData: GameData;
+  protected readonly oddsGeneratorService: OddsGeneratorService;
+  protected readonly resultGeneratorService: ResultGeneratorService;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;

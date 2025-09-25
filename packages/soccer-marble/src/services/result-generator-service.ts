@@ -21,7 +21,7 @@ type SettleConfig = {
 };
 
 export class ResultGeneratorService {
-  private readonly gameSettings: any;
+  protected readonly gameSettings: any;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
