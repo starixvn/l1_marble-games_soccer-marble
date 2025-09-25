@@ -10,7 +10,7 @@ const NUMBER_OF_VIDEOS = {
   H: 1,
 };
 
-describe("result helper tests", () => {
+describe("ResultGeneratorService tests", () => {
   const resultGeneratorService = new ResultGeneratorService(mockContainer);
 
   describe("getScoreFromScoreRate", () => {

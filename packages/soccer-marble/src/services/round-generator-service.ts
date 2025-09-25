@@ -71,8 +71,8 @@ export class RoundGeneratorService {
     } as MatchConfigType;
   }
 
-  generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, firstHalfResult: string) {
-    return this.oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfResult);
+  generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, result: RoundResultType) {
+    return this.oddsGeneratorService.calculateOddsForRound(matchConfig, result);
   }
 
   generateResult(matchConfig: MatchConfigType, numberOfVideos: Record<string, number>) {
@@ -105,10 +105,7 @@ export class RoundGeneratorService {
 
     const result = this.generateResult(newRound.matchConfig, numberOfVideos);
 
-    const { odds, matchConfig, selections } = this.generateRoundOddsAndUpdateMatchConfig(
-      newRound.matchConfig,
-      result.drawResults[0].result.goalSequence
-    );
+    const { odds, matchConfig, selections } = this.generateRoundOddsAndUpdateMatchConfig(newRound.matchConfig, result);
 
     newRound.odds = odds;
     newRound.matchConfig = matchConfig;

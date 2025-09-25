@@ -5,22 +5,10 @@ import {
   Selection,
   FirstHalfOddsKey,
   SecondHalfOddsKey,
+  BetChoices,
+  RoundResultType,
+  OddsCalculationResult,
 } from "../types";
-
-type BetChoices =
-  | "hdpHome"
-  | "hdpAway"
-  | "home"
-  | "away"
-  | "draw"
-  | "over"
-  | "under"
-  | "even"
-  | "odd"
-  | "homeOver"
-  | "awayOver"
-  | "homeUnder"
-  | "awayUnder";
 
 export class OddsGeneratorService {
   parseScore = (score: string): [number, number] => {
@@ -28,12 +16,16 @@ export class OddsGeneratorService {
     return [home, away];
   };
 
-  roundToPrecision = (value: number, precision = 100) => {
+  floorToPrecision = (value: number, precision = 100) => {
     return Math.floor(value * precision) / precision;
   };
 
-  calculateFullTimeScoreRates = (firstHalf: RateConfig, secondHalf: RateConfig): Record<string, number> => {
-    const fulltimeScoreRates: Record<string, number> = {};
+  roundToPrecision = (value: number, precision = 100) => {
+    return Math.round(value * precision) / precision;
+  };
+
+  mergeTwoScoreRates = (firstHalf: RateConfig, secondHalf: RateConfig): RateConfig => {
+    const mergeScoreRates: Record<string, number> = {};
 
     for (const [fhScore, fhRate] of Object.entries(firstHalf.scoreRate)) {
       const [fhHome, fhAway] = this.parseScore(fhScore);
@@ -43,11 +35,13 @@ export class OddsGeneratorService {
         const finalScore = `${fhHome + shHome}-${fhAway + shAway}`;
         const combinedRate = fhRate * shRate;
 
-        fulltimeScoreRates[finalScore] = (fulltimeScoreRates[finalScore] || 0) + combinedRate;
+        mergeScoreRates[finalScore] = (mergeScoreRates[finalScore] || 0) + combinedRate;
       }
     }
 
-    return fulltimeScoreRates;
+    return {
+      scoreRate: mergeScoreRates,
+    };
   };
 
   calculateAverageScore = (scoreRates: Record<string, number>) => {
@@ -215,38 +209,29 @@ export class OddsGeneratorService {
     }
 
     const odds = 1 / prob;
-    return this.roundToPrecision(odds);
+    return this.floorToPrecision(odds);
   };
 
-  calculateFulltimeOdds = (matchConfig: MatchConfigType) => {
-    const fullTimeScoreRates = this.calculateFullTimeScoreRates(matchConfig.firstHalf, matchConfig.secondHalf);
+  calculateOddsFromRate = (rateConfig: RateConfig, addingScore = "0-0"): OddsCalculationResult => {
     const { probabilities, overUnderValue, handicapValue, homeOverUnderValue, awayOverUnderValue } =
-      this.calculateProbabilitiesForBetChoices(fullTimeScoreRates);
-    const odds = this.calculateBetOdds(probabilities);
-
-    return { odds, overUnderValue, handicapValue, homeOverUnderValue, awayOverUnderValue };
-  };
-
-  calculateHalfOdds = (halfConfig: RateConfig, addingScore = "0-0") => {
-    const { probabilities, overUnderValue, handicapValue, homeOverUnderValue, awayOverUnderValue } =
-      this.calculateProbabilitiesForBetChoices(halfConfig.scoreRate, addingScore);
+      this.calculateProbabilitiesForBetChoices(rateConfig.scoreRate, addingScore);
 
     const odds = this.calculateBetOdds(probabilities);
 
     return { odds, overUnderValue, handicapValue, homeOverUnderValue, awayOverUnderValue };
   };
 
-  calculateOddsForRound = (matchConfig: MatchConfigType, firstHalfResult: string) => {
+  calculateOddsForRound = (matchConfig: MatchConfigType, result: RoundResultType) => {
+    const firstHalfResult = result.drawResults[0].result.goalSequence;
     const fhHomeGoals = firstHalfResult.split("H").length - 1;
     const fhAwayGoals = firstHalfResult.split("A").length - 1;
     const fhTotalGoals = fhHomeGoals + fhAwayGoals;
 
-    const fulltime = this.calculateFulltimeOdds({
-      firstHalf: matchConfig.firstHalf,
-      secondHalf: matchConfig.secondHalf,
-    } as MatchConfigType);
+    const fullTimeScoreRates = this.mergeTwoScoreRates(matchConfig.firstHalf, matchConfig.secondHalf);
 
-    const firstHalf = this.calculateHalfOdds(matchConfig.firstHalf);
+    const fulltime = this.calculateOddsFromRate(fullTimeScoreRates);
+
+    const firstHalf = this.calculateOddsFromRate(matchConfig.firstHalf);
 
     const updatedFirstHalf = {
       ...matchConfig.firstHalf,
@@ -287,7 +272,7 @@ export class OddsGeneratorService {
     };
 
     const addingScore = `${fhHomeGoals}-${fhAwayGoals}`;
-    const secondHalf = this.calculateHalfOdds(matchConfig.secondHalf, addingScore);
+    const secondHalf = this.calculateOddsFromRate(matchConfig.secondHalf, addingScore);
 
     const updatedSecondHalf = {
       ...matchConfig.secondHalf,

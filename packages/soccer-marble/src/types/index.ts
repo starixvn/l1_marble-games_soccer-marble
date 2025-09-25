@@ -15,6 +15,21 @@ import { ResultGeneratorService } from "../services/result-generator-service";
 import { OddsGeneratorService } from "../services/odds-generator-service";
 import { Configuration } from "../configuration";
 
+export type BetChoices =
+  | "hdpHome"
+  | "hdpAway"
+  | "home"
+  | "away"
+  | "draw"
+  | "over"
+  | "under"
+  | "even"
+  | "odd"
+  | "homeOver"
+  | "awayOver"
+  | "homeUnder"
+  | "awayUnder";
+
 export type RateConfig = {
   scoreRate: Record<string, number>;
 };
@@ -247,3 +262,11 @@ export enum SecondHalfOddsKey {
   FT_AWAY_OVER = "ft_away_over",
   FT_AWAY_UNDER = "ft_away_under",
 }
+
+export type OddsCalculationResult = {
+  odds: Record<string, number>;
+  overUnderValue: number;
+  handicapValue: number;
+  homeOverUnderValue: number;
+  awayOverUnderValue: number;
+};

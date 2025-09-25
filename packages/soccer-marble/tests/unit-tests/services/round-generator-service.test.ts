@@ -506,7 +506,7 @@ describe("RoundGeneratorService", () => {
       });
       expect(service.createNewMatch).toHaveBeenCalledWith(roundId);
       expect(service.generateResult).toHaveBeenCalledWith(mockConfig, mockContainer.gameSettings.numberOfVideos);
-      expect(service.generateRoundOddsAndUpdateMatchConfig).toHaveBeenCalledWith(mockConfig, "H");
+      expect(service.generateRoundOddsAndUpdateMatchConfig).toHaveBeenCalledWith(mockConfig, mockResult as any);
       expect(service.getSettlementResult).toHaveBeenCalledWith(mockResult, mockOddsResult.matchConfig);
       expect(cryptoHelper.encrypt).toHaveBeenCalledTimes(3);
     });
@@ -586,7 +586,15 @@ describe("RoundGeneratorService", () => {
         firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
         secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
       } as MatchConfigType;
-      const firstHalfResult = "1-0";
+      const roundResult = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "1-0",
+            },
+          },
+        ],
+      };
 
       const expectedResult = {
         odds: [
@@ -611,10 +619,10 @@ describe("RoundGeneratorService", () => {
       jest.spyOn(oddsGeneratorService, "calculateOddsForRound").mockReturnValue(expectedResult as any);
 
       // Act
-      const result = service.generateRoundOddsAndUpdateMatchConfig(matchConfig, firstHalfResult);
+      const result = service.generateRoundOddsAndUpdateMatchConfig(matchConfig, roundResult as any);
 
       // Assert
-      expect(oddsGeneratorService.calculateOddsForRound).toHaveBeenCalledWith(matchConfig, firstHalfResult);
+      expect(oddsGeneratorService.calculateOddsForRound).toHaveBeenCalledWith(matchConfig, roundResult);
       expect(result).toEqual(expectedResult);
     });
   });

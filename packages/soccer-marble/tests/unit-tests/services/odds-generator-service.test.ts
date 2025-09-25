@@ -1,7 +1,7 @@
 import { OddsGeneratorService } from "../../../src/services/odds-generator-service";
 import { FirstHalfOddsKey, SecondHalfOddsKey, SettlementStatus } from "../../../src/types";
 
-describe("OddsHelper Tests", () => {
+describe("OddsGeneratorService Tests", () => {
   const oddsGeneratorService = new OddsGeneratorService();
   describe("parseScore", () => {
     it("should parse a simple score string into an array of numbers", () => {
@@ -30,31 +30,31 @@ describe("OddsHelper Tests", () => {
 
   describe("roundToPrecision", () => {
     it("should round to 2 decimal places with default precision", () => {
-      expect(oddsGeneratorService.roundToPrecision(1.256)).toBe(1.25);
-      expect(oddsGeneratorService.roundToPrecision(2.99)).toBe(2.99);
-      expect(oddsGeneratorService.roundToPrecision(3.505)).toBe(3.5);
+      expect(oddsGeneratorService.floorToPrecision(1.256)).toBe(1.25);
+      expect(oddsGeneratorService.floorToPrecision(2.99)).toBe(2.99);
+      expect(oddsGeneratorService.floorToPrecision(3.505)).toBe(3.5);
     });
 
     it("should round using custom precision values", () => {
-      expect(oddsGeneratorService.roundToPrecision(1.256, 10)).toBe(1.2);
-      expect(oddsGeneratorService.roundToPrecision(2.998, 1000)).toBe(2.998);
-      expect(oddsGeneratorService.roundToPrecision(3.505, 1)).toBe(3);
+      expect(oddsGeneratorService.floorToPrecision(1.256, 10)).toBe(1.2);
+      expect(oddsGeneratorService.floorToPrecision(2.998, 1000)).toBe(2.998);
+      expect(oddsGeneratorService.floorToPrecision(3.505, 1)).toBe(3);
     });
 
     it("should handle edge cases", () => {
-      expect(oddsGeneratorService.roundToPrecision(0)).toBe(0);
-      expect(oddsGeneratorService.roundToPrecision(-1.235)).toBe(-1.24);
-      expect(oddsGeneratorService.roundToPrecision(1000000.125)).toBe(1000000.12);
+      expect(oddsGeneratorService.floorToPrecision(0)).toBe(0);
+      expect(oddsGeneratorService.floorToPrecision(-1.235)).toBe(-1.24);
+      expect(oddsGeneratorService.floorToPrecision(1000000.125)).toBe(1000000.12);
     });
 
     it("should handle very small numbers", () => {
-      expect(oddsGeneratorService.roundToPrecision(0.001, 1000)).toBe(0.001);
-      expect(oddsGeneratorService.roundToPrecision(0.0001, 10000)).toBe(0.0001);
+      expect(oddsGeneratorService.floorToPrecision(0.001, 1000)).toBe(0.001);
+      expect(oddsGeneratorService.floorToPrecision(0.0001, 10000)).toBe(0.0001);
     });
   });
 
-  describe("calculateFullTimeScoreRates", () => {
-    it("should calculate full time score rates from first and second half rates", () => {
+  describe("mergeTwoScoreRates", () => {
+    it("should merge score rates from 2 rates", () => {
       const firstHalf = {
         scoreRate: {
           "1-0": 0.5,
@@ -68,12 +68,14 @@ describe("OddsHelper Tests", () => {
         },
       };
 
-      const result = oddsGeneratorService.calculateFullTimeScoreRates(firstHalf, secondHalf);
+      const result = oddsGeneratorService.mergeTwoScoreRates(firstHalf, secondHalf);
 
       expect(result).toEqual({
-        "2-0": 0.25,
-        "1-1": 0.5, // Combined probability for both 1-1 scenarios
-        "0-2": 0.25,
+        scoreRate: {
+          "2-0": 0.25,
+          "1-1": 0.5, // Combined probability for both 1-1 scenarios
+          "0-2": 0.25,
+        },
       });
     });
   });
@@ -650,61 +652,7 @@ describe("OddsHelper Tests", () => {
     });
   });
 
-  describe("calculateFulltimeOdds", () => {
-    it("should calculate full time odds from match config", () => {
-      const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-      } as any;
-
-      const result = oddsGeneratorService.calculateFulltimeOdds(matchConfig);
-
-      expect(result).toEqual({
-        odds: expect.any(Object),
-        overUnderValue: expect.any(Number),
-        handicapValue: expect.any(Number),
-        homeOverUnderValue: expect.any(Number),
-        awayOverUnderValue: expect.any(Number),
-      });
-    });
-
-    it("should handle complex match config", () => {
-      const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "2-1": 0.3,
-            "1-0": 0.4,
-            "0-1": 0.3,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "1-1": 0.5,
-            "2-0": 0.3,
-            "0-2": 0.2,
-          },
-        },
-      } as any;
-
-      const result = oddsGeneratorService.calculateFulltimeOdds(matchConfig);
-
-      expect(result.odds).toBeDefined();
-      expect(result.overUnderValue).toBeDefined();
-      expect(result.handicapValue).toBeDefined();
-    });
-  });
-
-  describe("calculateHalfOdds", () => {
+  describe("calculateOddsFromRate", () => {
     it("should calculate half odds from half config", () => {
       const halfConfig = {
         scoreRate: {
@@ -713,7 +661,7 @@ describe("OddsHelper Tests", () => {
         },
       };
 
-      const result = oddsGeneratorService.calculateHalfOdds(halfConfig);
+      const result = oddsGeneratorService.calculateOddsFromRate(halfConfig);
 
       expect(result).toEqual({
         odds: expect.any(Object),
@@ -732,7 +680,7 @@ describe("OddsHelper Tests", () => {
         },
       };
 
-      const result = oddsGeneratorService.calculateHalfOdds(halfConfig, "1-0");
+      const result = oddsGeneratorService.calculateOddsFromRate(halfConfig, "1-0");
 
       expect(result).toEqual({
         odds: expect.any(Object),
@@ -785,9 +733,17 @@ describe("OddsHelper Tests", () => {
         },
       } as any;
 
-      const firstHalfScore = "HH";
+      const roundResult = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "HH",
+            },
+          },
+        ],
+      };
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
       expect(result).toHaveProperty("odds");
       expect(result).toHaveProperty("matchConfig");
@@ -812,9 +768,17 @@ describe("OddsHelper Tests", () => {
         },
       } as any;
 
-      const firstHalfScore = "HA";
+      const roundResult = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "HA",
+            },
+          },
+        ],
+      };
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
       expect(result.odds).toHaveLength(2);
       expect(result.selections).toHaveLength(2);
@@ -841,9 +805,17 @@ describe("OddsHelper Tests", () => {
         },
       } as any;
 
-      const firstHalfScore = "AA";
+      const roundResult = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "AA",
+            },
+          },
+        ],
+      };
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
       expect(result.odds).toHaveLength(2);
       expect(result.selections).toHaveLength(2);
@@ -865,9 +837,17 @@ describe("OddsHelper Tests", () => {
         },
       } as any;
 
-      const firstHalfScore = "HHHAA"; // 3 home goals, 2 away goals
+      const roundResult = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "HHHAA",
+            },
+          },
+        ],
+      };
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
       expect(result.odds).toHaveLength(2);
       expect(result.selections).toHaveLength(2);
@@ -889,9 +869,17 @@ describe("OddsHelper Tests", () => {
         },
       } as any;
 
-      const firstHalfScore = "H";
+      const roundResult = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "H",
+            },
+          },
+        ],
+      };
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
       const firstHalfSelections = result.selections[0];
       expect(firstHalfSelections[FirstHalfOddsKey.FT_HDP_HOME].point).toBeDefined();
@@ -916,9 +904,17 @@ describe("OddsHelper Tests", () => {
         },
       } as any;
 
-      const firstHalfScore = "HH";
+      const roundResult = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "HH",
+            },
+          },
+        ],
+      };
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
       const firstHalfSelections = result.selections[0];
       const secondHalfSelections = result.selections[1];
@@ -946,12 +942,28 @@ describe("OddsHelper Tests", () => {
       } as any;
 
       // Test with odd number of goals in first half
-      const oddFirstHalfScore = "H";
-      const oddResult = oddsGeneratorService.calculateOddsForRound(matchConfig, oddFirstHalfScore);
+      const oddFirstHalfScore = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "H",
+            },
+          },
+        ],
+      };
+      const oddResult = oddsGeneratorService.calculateOddsForRound(matchConfig, oddFirstHalfScore as any);
 
       // Test with even number of goals in first half
-      const evenFirstHalfScore = "HH";
-      const evenResult = oddsGeneratorService.calculateOddsForRound(matchConfig, evenFirstHalfScore);
+      const evenFirstHalfScore = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "HH",
+            },
+          },
+        ],
+      };
+      const evenResult = oddsGeneratorService.calculateOddsForRound(matchConfig, evenFirstHalfScore as any);
 
       expect(oddResult.odds[1][SecondHalfOddsKey.FT_OE_ODD]).toBeDefined();
       expect(oddResult.odds[1][SecondHalfOddsKey.FT_OE_EVEN]).toBeDefined();
@@ -975,9 +987,17 @@ describe("OddsHelper Tests", () => {
         },
       } as any;
 
-      const firstHalfScore = "H";
+      const roundResult = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "H",
+            },
+          },
+        ],
+      };
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
       expect(result.matchConfig.overUnderValue).toBeDefined();
       expect(result.matchConfig.handicapValue).toBeDefined();
@@ -1365,9 +1385,17 @@ describe("OddsHelper Tests", () => {
         ],
       };
 
-      const firstHalfScore = "0";
+      const roundResult = {
+        drawResults: [
+          {
+            result: {
+              goalSequence: "0",
+            },
+          },
+        ],
+      };
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, firstHalfScore);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
       expect(result).toEqual(expectedData);
     });
