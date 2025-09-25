@@ -17,7 +17,7 @@ include:
     fi
   - echo $SRC_PATH
   - cd "$SRC_PATH"
-  - npm install
+  - npm ci
   artifacts:
     when: always
     paths:

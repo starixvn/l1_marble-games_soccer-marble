@@ -14,11 +14,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "sc-core-rng": "^1.0.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "sc-core-rng": "1.0.0"
   },
   "files": [
     "dist"
