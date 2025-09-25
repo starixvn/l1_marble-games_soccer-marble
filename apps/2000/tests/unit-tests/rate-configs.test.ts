@@ -1,6 +1,6 @@
-import { rateConfigs } from "../../src/game-config";
-import { OddsGeneratorService } from "../../../soccer-marble/src/services/odds-generator-service";
-import { MatchConfigType } from "../../../soccer-marble/src/types";
+import { rateConfigs } from "../../src/rate-configs";
+import { OddsGeneratorService } from "@soccer-marble/soccer-marble-base";
+import { MatchConfigType } from "@soccer-marble/soccer-marble-base/dist/types";
 
 describe("rateConfigs", () => {
   describe("awayFavorite", () => {
@@ -10,7 +10,7 @@ describe("rateConfigs", () => {
           const matchConfig = {
             firstHalf: firstHalfConfig,
             secondHalf: secondHalfConfig,
-          } as MatchConfigType;
+          } as unknown as MatchConfigType;
 
           const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
 
@@ -31,7 +31,7 @@ describe("rateConfigs", () => {
           const matchConfig = {
             firstHalf: firstHalfConfig,
             secondHalf: secondHalfConfig,
-          } as MatchConfigType;
+          } as unknown as MatchConfigType;
 
           const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
 

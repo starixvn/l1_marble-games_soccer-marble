@@ -28,7 +28,10 @@
     "update:deps": "npm update --workspaces"
   },
   "devDependencies": {
+    "@babel/core": "7.28.4",
+    "@babel/preset-env": "7.28.3",
     "@types/node": "^20.0.0",
+    "babel-jest": "29.7.0",
     "typescript": "^5.9.2"
   },
   "engines": {

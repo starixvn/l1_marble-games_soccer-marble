@@ -1,6 +1,4 @@
-export { AppContainer } from "./types/index";
-export { createContainer, AwilixContainer, InjectionMode, asValue, asClass } from "awilix";
-export { logger } from "sc-common";
+export * from "./types/index";
 export { EventDetailModel, EventModel, GameConfigModel } from "./models";
 export { createRoundModel } from "./models/rounds";
 export { RoundGeneratorService } from "./services/round-generator-service";
