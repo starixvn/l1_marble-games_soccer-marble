@@ -441,7 +441,7 @@ describe("GameHandler", () => {
   });
 
   describe("handleResultAvailableForEventDetail", () => {
-    it("should update event detail with result and handle round end for last timeline", async () => {
+    it("should update event detail with result and handle round end for last event detail", async () => {
       // Arrange
       const drawIndex = 1; // Last timeline
       const eventDetailId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011") as any;
@@ -461,7 +461,9 @@ describe("GameHandler", () => {
         eventID: 12345,
         gameId: 2001,
         ended: false,
-        matchConfig: {} as any,
+        matchConfig: {
+          numberOfEventDetails: 2,
+        } as any,
         result: {
           drawResults: [
             { result: { goalSequence: "H", finalScore: "1:0" } },
@@ -488,9 +490,9 @@ describe("GameHandler", () => {
       expect(gameHandler.handleRoundEnded).toHaveBeenCalledWith(roundId);
     });
 
-    it("should not handle round end for non-last timeline", async () => {
+    it("should not handle round end for non-last event detail", async () => {
       // Arrange
-      const drawIndex = 0; // First timeline
+      const drawIndex = 0; // First event detail
       const eventDetailId = new mongoose.Types.ObjectId("507f1f77bcf86cd799439011") as any;
       const roundId = 123;
       const mockEventDetail = {
@@ -508,13 +510,14 @@ describe("GameHandler", () => {
         eventID: 12345,
         gameId: 2001,
         ended: false,
-        matchConfig: {} as any,
+        matchConfig: {
+          numberOfEventDetails: 2,
+        } as any,
         result: {
           drawResults: [{ result: { goalSequence: "H", finalScore: "1:0" } }],
         },
       } as any;
 
-      mockGameSettings.gameTiming.timelines = [{}, {}]; // 2 timelines
       mockEventService.fetchEventDetail.mockResolvedValue(mockEventDetail);
       jest.spyOn(gameHandler, "loadRoundFromRoundId").mockResolvedValue(mockRound);
       jest.spyOn(gameHandler, "handleUpdateSettlementResult").mockResolvedValue(undefined);
@@ -535,6 +538,9 @@ describe("GameHandler", () => {
       // Arrange
       const mockRound = {
         eventID: 12345,
+        matchConfig: {
+          numberOfEventDetails: 2,
+        },
       } as any;
       const mockEventDetails = [
         {
@@ -581,6 +587,9 @@ describe("GameHandler", () => {
       // Arrange
       const mockRound = {
         eventID: 12345,
+        matchConfig: {
+          numberOfEventDetails: 2,
+        },
       } as GameRunningRound;
       const mockEventDetailsFirst = [
         {

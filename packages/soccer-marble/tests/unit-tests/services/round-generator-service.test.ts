@@ -353,6 +353,8 @@ describe("RoundGeneratorService", () => {
       expect(secureRandomBoolMock).toHaveBeenCalled();
       expect(shuffleMock).toHaveBeenCalledWith(mockContainer.rateConfigs.homeFavorite);
       expect(result).toEqual({
+        gameTiming: mockContainer.gameSettings.gameTiming,
+        numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
         firstHalf: mockContainer.rateConfigs.homeFavorite[1],
         secondHalf: mockContainer.rateConfigs.homeFavorite[0],
       });
@@ -372,6 +374,8 @@ describe("RoundGeneratorService", () => {
       expect(secureRandomBoolMock).toHaveBeenCalled();
       expect(shuffleMock).toHaveBeenCalledWith(mockContainer.rateConfigs.awayFavorite);
       expect(result).toEqual({
+        gameTiming: mockContainer.gameSettings.gameTiming,
+        numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
         firstHalf: mockContainer.rateConfigs.awayFavorite[1],
         secondHalf: mockContainer.rateConfigs.awayFavorite[0],
       });

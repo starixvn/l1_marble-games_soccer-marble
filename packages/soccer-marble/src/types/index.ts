@@ -27,6 +27,8 @@ export type HalfConfigType = RateConfig & {
 };
 
 export type MatchConfigType = {
+  gameTiming: GameTiming;
+  numberOfEventDetails: number;
   firstHalf: HalfConfigType;
   secondHalf: HalfConfigType;
   overUnderValue: number;
@@ -62,6 +64,7 @@ export type EventDetail = {
     finalScore: string;
   };
   hasResults: boolean;
+  phase: number;
 };
 
 export type DrawResultType = {

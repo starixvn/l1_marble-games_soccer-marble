@@ -6,26 +6,10 @@ describe("rateConfigs", () => {
     it("should always away favorite", () => {
       for (const firstHalfConfig of rateConfigs.awayFavorite) {
         for (const secondHalfConfig of rateConfigs.awayFavorite) {
-          const matchConfig: MatchConfigType = {
-            firstHalf: {
-              ...firstHalfConfig,
-              overUnderValue: 2.5,
-              handicapValue: 0.5,
-              homeOverUnderValue: 1.5,
-              awayOverUnderValue: 1.5,
-            },
-            secondHalf: {
-              ...secondHalfConfig,
-              overUnderValue: 2.5,
-              handicapValue: 0.5,
-              homeOverUnderValue: 1.5,
-              awayOverUnderValue: 1.5,
-            },
-            overUnderValue: 2.5,
-            handicapValue: 0.5,
-            homeOverUnderValue: 1.5,
-            awayOverUnderValue: 1.5,
-          };
+          const matchConfig = {
+            firstHalf: firstHalfConfig,
+            secondHalf: secondHalfConfig,
+          } as unknown as MatchConfigType;
 
           const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
 
@@ -43,26 +27,10 @@ describe("rateConfigs", () => {
     it("should always home favorite", () => {
       for (const firstHalfConfig of rateConfigs.homeFavorite) {
         for (const secondHalfConfig of rateConfigs.homeFavorite) {
-          const matchConfig: MatchConfigType = {
-            firstHalf: {
-              ...firstHalfConfig,
-              overUnderValue: 2.5,
-              handicapValue: -0.5,
-              homeOverUnderValue: 1.5,
-              awayOverUnderValue: 1.5,
-            },
-            secondHalf: {
-              ...secondHalfConfig,
-              overUnderValue: 2.5,
-              handicapValue: -0.5,
-              homeOverUnderValue: 1.5,
-              awayOverUnderValue: 1.5,
-            },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-            homeOverUnderValue: 1.5,
-            awayOverUnderValue: 1.5,
-          };
+          const matchConfig = {
+            firstHalf: firstHalfConfig,
+            secondHalf: secondHalfConfig,
+          } as unknown as MatchConfigType;
 
           const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
 

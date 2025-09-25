@@ -1,6 +1,5 @@
 import { rateConfigs } from "../../src/rate-configs";
-import { OddsGeneratorService } from "@soccer-marble/soccer-marble-base";
-import { MatchConfigType } from "@soccer-marble/soccer-marble-base/dist/types";
+import { OddsGeneratorService, MatchConfigType } from "@soccer-marble/soccer-marble-base";
 
 describe("rateConfigs", () => {
   describe("awayFavorite", () => {

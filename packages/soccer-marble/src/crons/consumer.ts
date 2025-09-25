@@ -23,7 +23,7 @@ export class Consumer {
     this.gameSettings = container.gameSettings;
   }
 
-  async start() {
+  consumeScheduleUpcomingEvent() {
     this.agenda.define(JobName.ScheduleUpcomingEvent, async (job: Job) => {
       try {
         const upcomingEvents = await this.eventService.fetchAllUpcomingEvents();
@@ -34,9 +34,7 @@ export class Consumer {
           const lastEvent = await this.eventService.fetchEvent(lastEventId, true);
 
           const upcomingRoundId = lastRoundId + 1;
-          const upcomingScheduleStartTs = lastEvent
-            ? new Date(lastEvent.scheduleStartTs.getTime() + this.gameSettings.gameTiming.wholeRound * 1000)
-            : new Date();
+          const upcomingScheduleStartTs = lastEvent ? new Date(lastEvent.scheduleEndTs.getTime()) : new Date();
 
           await this.gameHandler.createUpcomingRoundAndEvent(upcomingRoundId, upcomingScheduleStartTs);
         }
@@ -46,7 +44,9 @@ export class Consumer {
         await job.remove();
       }
     });
+  }
 
+  consumeUpdateEventDetailOdds() {
     this.agenda.define(JobName.UpdateEventDetailOdds, async (job: Job) => {
       try {
         const { eventDetailId, eventID, drawIndex } = job.attrs.data;
@@ -60,7 +60,9 @@ export class Consumer {
         await job.remove();
       }
     });
+  }
 
+  consumeUpdateEventDetailVideoInfo() {
     this.agenda.define(JobName.UpdateEventDetailVideoInfo, async (job: Job) => {
       try {
         const { eventDetailId, eventID, drawIndex } = job.attrs.data;
@@ -73,7 +75,9 @@ export class Consumer {
         await job.remove();
       }
     });
+  }
 
+  consumeUpdateEventDetailResult() {
     this.agenda.define(JobName.UpdateEventDetailResult, async (job: Job) => {
       try {
         const { eventDetailId, eventID, drawIndex } = job.attrs.data;
@@ -86,5 +90,12 @@ export class Consumer {
         await job.remove();
       }
     });
+  }
+
+  async start() {
+    this.consumeScheduleUpcomingEvent();
+    this.consumeUpdateEventDetailOdds();
+    this.consumeUpdateEventDetailVideoInfo();
+    this.consumeUpdateEventDetailResult();
   }
 }

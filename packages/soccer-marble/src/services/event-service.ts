@@ -21,8 +21,8 @@ export class EventService {
   async createNewEvent(roundData: GameRunningRound, scheduleStartTs: Date) {
     const eventId = roundData.eventID;
     const eventStartTimeTs = Math.max(scheduleStartTs.getTime(), new Date().getTime() + 2000); // 2 seconds delay
-
-    const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs));
+    const wholeRound = roundData.matchConfig.gameTiming.wholeRound;
+    const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs), roundData);
 
     const event = {
       eventID: eventId,
@@ -32,21 +32,28 @@ export class EventService {
       gameId: this.gameSettings.gameId,
       eventDetails: eventDetails.map((eventDetail) => eventDetail._id),
       scheduleStartTs: new Date(eventStartTimeTs),
+      scheduleEndTs: new Date(eventStartTimeTs + wholeRound * 1000),
     };
 
     return this.eventRepository.create(event);
   }
 
-  private async createNewEventDetails(eventId: number, startTime: Date): Promise<IEventDetail[]> {
-    const { timelines } = this.gameSettings.gameTiming;
+  private async createNewEventDetails(
+    eventId: number,
+    startTime: Date,
+    roundData: GameRunningRound
+  ): Promise<IEventDetail[]> {
+    const timelines = roundData.matchConfig.gameTiming.timelines;
+
     return Promise.all(
-      timelines.map((timeline) => {
+      timelines.map((timeline, index) => {
         const eventDetail: EventDetail = {
           eventID: eventId,
           oddsAvailableTs: new Date(startTime.getTime() + timeline.OddsAvailable * 1000),
           scheduleStartTs: new Date(startTime.getTime() + timeline.ScheduleStart * 1000),
           resultsAvailableTs: new Date(startTime.getTime() + timeline.ResultAvailable * 1000),
           hasResults: false,
+          phase: index,
         };
 
         return this.eventDetailsRepository.create(eventDetail);

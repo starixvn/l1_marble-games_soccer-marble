@@ -22,9 +22,8 @@ include:
     when: always
     paths:
       - ./**/lcov.info
-      - ./coverage
+      - ./**/coverage
     reports:
       junit:
-        - ./apps/2004/coverage/unit-tests.xml
-        - ./apps/soccer-marble/coverage/unit-tests.xml
+        - ./**/coverage/unit-tests.xml
     expire_in: 1 day

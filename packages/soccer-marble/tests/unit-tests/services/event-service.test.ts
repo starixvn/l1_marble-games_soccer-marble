@@ -24,6 +24,14 @@ describe("EventService", () => {
     it("should create event details and event with correct data", async () => {
       // Arrange
       const roundData = {
+        matchConfig: {
+          gameTiming: {
+            timelines: [
+              { OddsAvailable: 1, ScheduleStart: 2, ResultAvailable: 3 },
+              { OddsAvailable: 1, ScheduleStart: 2, ResultAvailable: 3 },
+            ],
+          },
+        },
         roundId: 1,
         roundTime: 0,
         homeTeam: "clb_rma",

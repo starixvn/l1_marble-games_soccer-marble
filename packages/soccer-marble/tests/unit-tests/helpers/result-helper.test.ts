@@ -345,6 +345,8 @@ describe("result helper tests", () => {
 
   describe("getSettlementResult", () => {
     const matchConfig = {
+      gameTiming: mockContainer.gameSettings.gameTiming,
+      numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
       firstHalf: {
         overUnderValue: 1.5,
         handicapValue: -0.5,

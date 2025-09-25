@@ -64,6 +64,8 @@ export class RoundGeneratorService {
     const configs = secureShuffle(isHomeFavorite ? this.rateConfigs.homeFavorite : this.rateConfigs.awayFavorite);
 
     return {
+      gameTiming: this.gameSettings.gameTiming,
+      numberOfEventDetails: this.gameSettings.gameTiming.timelines.length,
       firstHalf: configs[0],
       secondHalf: configs[1],
     } as MatchConfigType;

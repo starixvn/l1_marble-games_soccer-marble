@@ -61,9 +61,10 @@ describe("Consumer", () => {
         const lastEventId = 12345;
         const lastEvent = {
           scheduleStartTs: new Date("2023-01-01T10:00:00Z"),
+          scheduleEndTs: new Date("2023-01-01T10:01:01Z"),
         };
         const upcomingRoundId = 6;
-        const expectedScheduleStartTs = new Date("2023-01-01T10:01:00Z"); // +60 seconds
+        const expectedScheduleStartTs = new Date("2023-01-01T10:01:01Z"); // schedule end time of last event
 
         mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
         mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
