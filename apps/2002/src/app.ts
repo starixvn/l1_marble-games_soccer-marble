@@ -1,5 +1,4 @@
-import { ContainerRegistry } from "@soccer-marble/soccer-marble-base";
-import { App } from "@soccer-marble/soccer-marble-base";
+import { App, ContainerRegistry } from "@soccer-marble/soccer-marble-base";
 import { appConfigs } from "./game-config";
 import { gameSettings } from "./game-settings";
 import { rateConfigs } from "./rate-configs";

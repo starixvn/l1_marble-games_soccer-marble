@@ -48,7 +48,7 @@ export class Configuration {
   }
 
   async configureDatabaseAndSentry() {
-    this.logService.start(this.appConfigs.sentry as any);
+    this.logService.start(this.appConfigs.sentry);
     await this.configureDatabase(this.appConfigs.database);
   }
 
