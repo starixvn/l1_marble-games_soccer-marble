@@ -1,4 +1,4 @@
-import { RoundResultType, MatchConfigType, GameRunningRound, GameSettings, AppContainer, Match } from "../types";
+import { MatchConfigType, GameRunningRound, GameSettings, AppContainer, Match } from "../types";
 import { secureShuffle, secureRandomBool } from "sc-core-rng";
 import { OddsGeneratorService } from "./odds-generator-service";
 import { ResultGeneratorService } from "./result-generator-service";
@@ -71,21 +71,6 @@ export class RoundGeneratorService {
     } as MatchConfigType;
   }
 
-  generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, result: RoundResultType) {
-    return this.oddsGeneratorService.calculateOddsForRound(matchConfig, result);
-  }
-
-  generateResult(matchConfig: MatchConfigType, numberOfVideos: Record<string, number>) {
-    return this.resultGeneratorService.generateResult({
-      numberOfVideos,
-      matchConfig,
-    });
-  }
-
-  getSettlementResult(result: RoundResultType, matchConfig: MatchConfigType) {
-    return this.resultGeneratorService.getSettlementResult(result, matchConfig);
-  }
-
   generateNewRound(roundId: number) {
     const newRound = {
       gameId: this.gameSettings.gameId,
@@ -103,14 +88,20 @@ export class RoundGeneratorService {
 
     const numberOfVideos = this.gameData.gameConfig?.config?.numberOfVideos ?? this.gameSettings.numberOfVideos;
 
-    const result = this.generateResult(newRound.matchConfig, numberOfVideos);
+    const result = this.resultGeneratorService.generateResult({
+      numberOfVideos: numberOfVideos,
+      matchConfig: newRound.matchConfig,
+    });
 
-    const { odds, matchConfig, selections } = this.generateRoundOddsAndUpdateMatchConfig(newRound.matchConfig, result);
+    const { odds, matchConfig, selections } = this.oddsGeneratorService.calculateOddsForRound(
+      newRound.matchConfig,
+      result
+    );
 
     newRound.odds = odds;
     newRound.matchConfig = matchConfig;
 
-    const settlementResult = this.getSettlementResult(result, newRound.matchConfig);
+    const settlementResult = this.resultGeneratorService.getSettlementResult(result, newRound.matchConfig);
 
     newRound.encryptedResult = encrypt(result);
     newRound.encryptedSettlementResult = encrypt(settlementResult);

@@ -1,5 +1,5 @@
 import * as rngModule from "sc-core-rng";
-import { MatchConfigType, RoundResultType, SettlementStatus } from "../../../src/types";
+import { MatchConfigType, SettlementStatus } from "../../../src/types";
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { mockContainer } from "../global-stubs";
 import { idHelper, cryptoHelper } from "@soccer-marble/shared-utils";
@@ -480,9 +480,9 @@ describe("RoundGeneratorService", () => {
 
       jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
       jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
-      jest.spyOn(service, "generateResult").mockReturnValue(mockResult);
-      jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult as any);
-      jest.spyOn(service, "getSettlementResult").mockReturnValue(mockSettlementResult);
+      jest.spyOn(resultGeneratorService, "generateResult").mockReturnValue(mockResult);
+      jest.spyOn(oddsGeneratorService, "calculateOddsForRound").mockReturnValue(mockOddsResult as any);
+      jest.spyOn(resultGeneratorService, "getSettlementResult").mockReturnValue(mockSettlementResult);
       jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
       jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
 
@@ -505,9 +505,12 @@ describe("RoundGeneratorService", () => {
         ended: false,
       });
       expect(service.createNewMatch).toHaveBeenCalledWith(roundId);
-      expect(service.generateResult).toHaveBeenCalledWith(mockConfig, mockContainer.gameSettings.numberOfVideos);
-      expect(service.generateRoundOddsAndUpdateMatchConfig).toHaveBeenCalledWith(mockConfig, mockResult as any);
-      expect(service.getSettlementResult).toHaveBeenCalledWith(mockResult, mockOddsResult.matchConfig);
+      expect(resultGeneratorService.generateResult).toHaveBeenCalledWith({
+        matchConfig: mockConfig,
+        numberOfVideos: mockContainer.gameSettings.numberOfVideos,
+      });
+      expect(oddsGeneratorService.calculateOddsForRound).toHaveBeenCalledWith(mockConfig, mockResult as any);
+      expect(resultGeneratorService.getSettlementResult).toHaveBeenCalledWith(mockResult, mockOddsResult.matchConfig);
       expect(cryptoHelper.encrypt).toHaveBeenCalledTimes(3);
     });
 
@@ -565,9 +568,9 @@ describe("RoundGeneratorService", () => {
 
       jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
       jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
-      jest.spyOn(service, "generateResult").mockReturnValue(mockResult);
-      jest.spyOn(service, "generateRoundOddsAndUpdateMatchConfig").mockReturnValue(mockOddsResult as any);
-      jest.spyOn(service, "getSettlementResult").mockReturnValue(mockSettlementResult);
+      jest.spyOn(resultGeneratorService, "generateResult").mockReturnValue(mockResult);
+      jest.spyOn(oddsGeneratorService, "calculateOddsForRound").mockReturnValue(mockOddsResult as any);
+      jest.spyOn(resultGeneratorService, "getSettlementResult").mockReturnValue(mockSettlementResult);
       jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
       jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
 
@@ -575,7 +578,10 @@ describe("RoundGeneratorService", () => {
       service.generateNewRound(roundId);
 
       // Assert
-      expect(service.generateResult).toHaveBeenCalledWith(mockConfig, gameConfigNumberOfVideos);
+      expect(resultGeneratorService.generateResult).toHaveBeenCalledWith({
+        matchConfig: mockConfig,
+        numberOfVideos: gameConfigNumberOfVideos,
+      });
     });
   });
 
@@ -619,100 +625,11 @@ describe("RoundGeneratorService", () => {
       jest.spyOn(oddsGeneratorService, "calculateOddsForRound").mockReturnValue(expectedResult as any);
 
       // Act
-      const result = service.generateRoundOddsAndUpdateMatchConfig(matchConfig, roundResult as any);
+      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
       // Assert
       expect(oddsGeneratorService.calculateOddsForRound).toHaveBeenCalledWith(matchConfig, roundResult);
       expect(result).toEqual(expectedResult);
-    });
-  });
-
-  describe("generateResult", () => {
-    it("should call generateResult helper with correct parameters", () => {
-      // Arrange
-      const matchConfig = {
-        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } },
-        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } },
-      } as any;
-      const numberOfVideos = { "1-0": 2, "0-0": 1 };
-      const expectedResult: RoundResultType = {
-        drawResults: [
-          {
-            playlist: "video1",
-            result: {
-              goalSequence: "H",
-              finalScore: "1:0",
-            },
-          },
-          {
-            playlist: "video2",
-            result: {
-              goalSequence: "0",
-              finalScore: "0:0",
-            },
-          },
-        ],
-      };
-
-      jest.spyOn(resultGeneratorService, "generateResult").mockReturnValue(expectedResult);
-
-      // Act
-      const result = service.generateResult(matchConfig, numberOfVideos);
-
-      // Assert
-      expect(resultGeneratorService.generateResult).toHaveBeenCalledWith({
-        numberOfVideos,
-        matchConfig,
-      });
-      expect(result).toEqual(expectedResult);
-    });
-  });
-
-  describe("getSettlementResult", () => {
-    it("should call getSettlementResult helper with correct parameters", () => {
-      // Arrange
-      const matchConfig = {
-        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
-        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
-      } as MatchConfigType;
-      const result: RoundResultType = {
-        drawResults: [
-          {
-            playlist: "video1",
-            result: {
-              goalSequence: "H",
-              finalScore: "1:0",
-            },
-          },
-          {
-            playlist: "video2",
-            result: {
-              goalSequence: "0",
-              finalScore: "0:0",
-            },
-          },
-        ],
-      };
-
-      const expectedSettlementResult = [
-        {
-          ft_hdp_home: SettlementStatus.WIN,
-          ft_hdp_away: SettlementStatus.LOSE,
-        },
-        {
-          ft_hdp_home: SettlementStatus.WIN,
-          ft_hdp_away: SettlementStatus.LOSE,
-        },
-      ];
-
-      jest.spyOn(resultGeneratorService, "getSettlementResult").mockReturnValue(expectedSettlementResult);
-
-      // Act
-      const settlementResult = service.getSettlementResult(result, matchConfig);
-
-      // Assert
-      expect(resultGeneratorService.getSettlementResult).toHaveBeenCalledWith(result, matchConfig);
-      expect(settlementResult).toEqual(expectedSettlementResult);
     });
   });
 });
