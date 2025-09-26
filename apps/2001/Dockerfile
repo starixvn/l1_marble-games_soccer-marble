@@ -11,7 +11,7 @@ COPY packages/*/package.json packages/
 
 RUN npm run reg
 
-RUN npm ci
+RUN npm ci --ignore-scripts
 
 # ---------------------------- build --------------------------------
 FROM ${NODE_IMAGE} AS build
