@@ -83,7 +83,7 @@ export type EventDetail = {
 };
 
 export type DrawResultType = {
-  playlist: string;
+  playlist?: string;
   goalInfo?: string;
   result: {
     goalSequence: string;
@@ -269,4 +269,16 @@ export type OddsCalculationResult = {
   handicapValue: number;
   homeOverUnderValue: number;
   awayOverUnderValue: number;
+};
+
+export type SettleConfig = {
+  overUnderValue: number;
+  handicapValue: number;
+  homeOverUnderValue: number;
+  awayOverUnderValue: number;
+};
+
+export type ResultType = {
+  goalSequence: string;
+  finalScore: string;
 };

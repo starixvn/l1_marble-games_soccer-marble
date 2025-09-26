@@ -11,14 +11,9 @@ import {
   FirstHalfOddsKey,
   SecondHalfOddsKey,
   AppContainer,
+  SettleConfig,
 } from "../types";
-
-type SettleConfig = {
-  overUnderValue: number;
-  handicapValue: number;
-  homeOverUnderValue: number;
-  awayOverUnderValue: number;
-};
+import { resultHelper } from "../helpers";
 
 export class ResultGeneratorService {
   protected readonly gameSettings: any;
@@ -134,79 +129,15 @@ export class ResultGeneratorService {
     return [finalFirstHalfSettlementResult, finalSecondHalfSettlementResult];
   };
 
-  getHandicapResult = (homeGoals: number, awayGoals: number, handicapValue: number) => {
-    const adjustedHomeGoals = homeGoals + handicapValue;
-
-    if (adjustedHomeGoals === awayGoals) {
-      return {
-        hdpHome: SettlementStatus.DRAW,
-        hdpAway: SettlementStatus.DRAW,
-      };
-    }
-
-    return {
-      hdpHome: adjustedHomeGoals > awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
-      hdpAway: adjustedHomeGoals < awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    };
-  };
-
-  get1X2Result = (homeGoals: number, awayGoals: number) => {
-    return {
-      home: homeGoals > awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
-      away: awayGoals > homeGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
-      draw: homeGoals === awayGoals ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    };
-  };
-
-  getOverUnderResult = (totalGoals: number, overUnderValue: number) => {
-    if (totalGoals === overUnderValue) {
-      return {
-        over: SettlementStatus.DRAW,
-        under: SettlementStatus.DRAW,
-      };
-    }
-
-    return {
-      over: totalGoals > overUnderValue ? SettlementStatus.WIN : SettlementStatus.LOSE,
-      under: totalGoals < overUnderValue ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    };
-  };
-
-  getOddEvenResult = (totalGoals: number) => {
-    return {
-      odd: totalGoals % 2 === 1 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-      even: totalGoals % 2 === 0 ? SettlementStatus.WIN : SettlementStatus.LOSE,
-    };
-  };
-
-  getTeamOverUnderResult = (
-    homeGoals: number,
-    awayGoals: number,
-    homeOverUnderValue: number,
-    awayOverUnderValue: number
-  ) => {
-    const isHomeOver = homeGoals > homeOverUnderValue;
-    const isAwayOver = awayGoals > awayOverUnderValue;
-    const isHomeUnder = homeGoals < homeOverUnderValue;
-    const isAwayUnder = awayGoals < awayOverUnderValue;
-
-    return {
-      homeOver: isHomeOver ? SettlementStatus.WIN : isHomeUnder ? SettlementStatus.LOSE : SettlementStatus.DRAW,
-      awayOver: isAwayOver ? SettlementStatus.WIN : isAwayUnder ? SettlementStatus.LOSE : SettlementStatus.DRAW,
-      homeUnder: isHomeUnder ? SettlementStatus.WIN : isHomeOver ? SettlementStatus.LOSE : SettlementStatus.DRAW,
-      awayUnder: isAwayUnder ? SettlementStatus.WIN : isAwayOver ? SettlementStatus.LOSE : SettlementStatus.DRAW,
-    };
-  };
-
   getSettlementResultFromResultString = (resultString: string, settleConfig: SettleConfig) => {
     const homeGoals = resultString.split("H").length - 1;
     const awayGoals = resultString.split("A").length - 1;
     const totalGoals = homeGoals + awayGoals;
-    const hdpResult = this.getHandicapResult(homeGoals, awayGoals, settleConfig.handicapValue);
-    const o1x2Result = this.get1X2Result(homeGoals, awayGoals);
-    const ouResult = this.getOverUnderResult(totalGoals, settleConfig.overUnderValue);
-    const oeResult = this.getOddEvenResult(totalGoals);
-    const teamOverUnderResult = this.getTeamOverUnderResult(
+    const hdpResult = resultHelper.getHandicapResult(homeGoals, awayGoals, settleConfig.handicapValue);
+    const o1x2Result = resultHelper.get1X2Result(homeGoals, awayGoals);
+    const ouResult = resultHelper.getOverUnderResult(totalGoals, settleConfig.overUnderValue);
+    const oeResult = resultHelper.getOddEvenResult(totalGoals);
+    const teamOverUnderResult = resultHelper.getTeamOverUnderResult(
       homeGoals,
       awayGoals,
       settleConfig.homeOverUnderValue,
@@ -231,7 +162,7 @@ export class ResultGeneratorService {
   };
 
   generateResultForHalf = (halfConfig: HalfConfigType) => {
-    const scoreResult = this.getScoreFromScoreRate(halfConfig.scoreRate);
+    const scoreResult = resultHelper.getScoreFromScoreRate(halfConfig.scoreRate);
 
     const [homeGoals, awayGoals] = scoreResult.split("-").map(Number);
     const sequence = Array(homeGoals).fill("H").concat(Array(awayGoals).fill("A"));
@@ -242,13 +173,6 @@ export class ResultGeneratorService {
       goalSequence: result || "0",
       finalScore: `${homeGoals}:${awayGoals}`,
     };
-  };
-
-  getScoreFromScoreRate = (scoreRate: Record<string, number>) => {
-    const score = Object.keys(scoreRate);
-    const rate = Object.values(scoreRate);
-
-    return secureWeightedPick(score, rate);
   };
 
   getVideoInfoFromResult = (firstHalf: string, secondHalf: string, numberOfVideos: Record<string, number>) => {
@@ -268,14 +192,6 @@ export class ResultGeneratorService {
     ignoredVideo = ""
   ) => {
     const currentNumberOfVideos = numberOfVideos[result] || this.gameSettings.numberOfVideos[result];
-    let videoIndex = videoDefault ? 0 : secureRandomRange(0, currentNumberOfVideos - 1);
-    let videoName = crypto.createHash("sha256").update(`${result}-${videoIndex}`).digest("hex");
-
-    if (videoName === ignoredVideo && !videoDefault) {
-      videoIndex = (videoIndex + 1) % currentNumberOfVideos;
-      videoName = crypto.createHash("sha256").update(`${result}-${videoIndex}`).digest("hex");
-    }
-
-    return videoName;
+    return resultHelper.generateVideoName(result, currentNumberOfVideos, videoDefault, ignoredVideo);
   };
 }
