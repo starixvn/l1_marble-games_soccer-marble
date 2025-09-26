@@ -1,10 +1,8 @@
-import crypto from "crypto";
-import { secureShuffle, secureWeightedPick, secureRandomRange } from "sc-core-rng";
+import { secureShuffle } from "sc-core-rng";
 import {
   RoundResultType,
   DataResultType,
   RoundSettlementResultType,
-  HalfConfigType,
   DrawResultType,
   MatchConfigType,
   SettlementStatus,
@@ -12,6 +10,8 @@ import {
   SecondHalfOddsKey,
   AppContainer,
   SettleConfig,
+  RateConfig,
+  ResultType,
 } from "../types";
 import { resultHelper } from "../helpers";
 
@@ -24,8 +24,8 @@ export class ResultGeneratorService {
 
   generateResult = (data: DataResultType): RoundResultType => {
     const numberOfVideos = data.numberOfVideos;
-    const firstHalf = this.generateResultForHalf(data.matchConfig.firstHalf);
-    const secondHalf = this.generateResultForHalf(data.matchConfig.secondHalf);
+    const firstHalf = this.generateResultFromRate(data.matchConfig.firstHalf);
+    const secondHalf = this.generateResultFromRate(data.matchConfig.secondHalf);
     const videoInfo = this.getVideoInfoFromResult(firstHalf.goalSequence, secondHalf.goalSequence, numberOfVideos);
 
     const firstHalfResult: DrawResultType = {
@@ -161,8 +161,8 @@ export class ResultGeneratorService {
     };
   };
 
-  generateResultForHalf = (halfConfig: HalfConfigType) => {
-    const scoreResult = resultHelper.getScoreFromScoreRate(halfConfig.scoreRate);
+  generateResultFromRate = (rateConfig: RateConfig): ResultType => {
+    const scoreResult = resultHelper.getScoreFromScoreRate(rateConfig.scoreRate);
 
     const [homeGoals, awayGoals] = scoreResult.split("-").map(Number);
     const sequence = Array(homeGoals).fill("H").concat(Array(awayGoals).fill("A"));

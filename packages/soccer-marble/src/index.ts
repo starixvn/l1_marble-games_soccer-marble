@@ -15,3 +15,4 @@ export { Configuration } from "./configuration";
 export { ContainerRegistry } from "./container-registry";
 export { App } from "./app";
 export { StartUp } from "./start-up";
+export { oddsHelper, resultHelper } from "./helpers";
