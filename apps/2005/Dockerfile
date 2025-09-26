@@ -21,7 +21,7 @@ COPY --from=deps /app /app
 COPY packages/ packages/
 COPY apps/2005/ apps/2005/
 
-RUN npm i
+RUN npm i --ignore-scripts
 RUN npm run shared:build
 RUN npm run app:2005:build
 RUN npm prune --omit=dev --workspaces
