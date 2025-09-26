@@ -110,7 +110,7 @@ describe("ResultGeneratorService tests", () => {
     });
   });
 
-  describe("generateResultForHalf", () => {
+  describe("generateResultFromRate", () => {
     it("should generate result for half with single score", () => {
       const halfConfig = {
         scoreRate: { "1-0": 1 },
@@ -120,7 +120,7 @@ describe("ResultGeneratorService tests", () => {
         awayOverUnderValue: 0.5,
       };
 
-      const result = resultGeneratorService.generateResultForHalf(halfConfig);
+      const result = resultGeneratorService.generateResultFromRate(halfConfig);
 
       expect(result.goalSequence).toBe("H");
       expect(result.finalScore).toBe("1:0");
@@ -135,7 +135,7 @@ describe("ResultGeneratorService tests", () => {
         awayOverUnderValue: 0.5,
       };
 
-      const result = resultGeneratorService.generateResultForHalf(halfConfig);
+      const result = resultGeneratorService.generateResultFromRate(halfConfig);
 
       expect(result.goalSequence).toMatch(/^[HA]{3}$/);
       expect(result.finalScore).toBe("2:1");
@@ -150,7 +150,7 @@ describe("ResultGeneratorService tests", () => {
         awayOverUnderValue: 0.5,
       };
 
-      const result = resultGeneratorService.generateResultForHalf(halfConfig);
+      const result = resultGeneratorService.generateResultFromRate(halfConfig);
 
       expect(result.goalSequence).toBe("0");
       expect(result.finalScore).toBe("0:0");

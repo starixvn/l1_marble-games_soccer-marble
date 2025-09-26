@@ -93,15 +93,22 @@ describe("ContainerRegistry", () => {
     });
   });
 
-  describe("registerModels", () => {
+  describe("registerOddsFeedEventModels", () => {
     it("should register all models as values", () => {
-      containerRegistry.registerModels();
+      containerRegistry.registerOddsFeedEventModels();
       const container = containerRegistry.container;
 
       expect(container.resolve("eventDetailsRepository")).toBe(EventDetailModel);
       expect(container.resolve("eventRepository")).toBe(EventModel);
-      expect(container.resolve("roundRepository")).toBe(RoundModel);
       expect(container.resolve("gameConfigRepository")).toBe(GameConfigModel);
+    });
+  });
+
+  describe("registerGameModels", () => {
+    it("should register all models as values", () => {
+      containerRegistry.registerGameModels();
+      const container = containerRegistry.container;
+      expect(container.resolve("roundRepository")).toBe(RoundModel);
     });
   });
 

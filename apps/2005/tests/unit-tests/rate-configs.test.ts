@@ -1,6 +1,5 @@
 import { rateConfigs } from "../../src/rate-configs";
-import { OddsGeneratorService } from "@soccer-marble/soccer-marble-base";
-import { MatchConfigType } from "@soccer-marble/soccer-marble-base/dist/types";
+import { OddsGeneratorService, MatchConfigType } from "@soccer-marble/soccer-marble-base";
 
 describe("rateConfigs", () => {
   describe("awayFavorite", () => {
@@ -12,7 +11,9 @@ describe("rateConfigs", () => {
             secondHalf: secondHalfConfig,
           } as unknown as MatchConfigType;
 
-          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
+          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, {
+            drawResults: [{ result: { goalSequence: "0", finalScore: "0-0" } }],
+          });
 
           const firstHalfHandicapValue = result.matchConfig.firstHalf.handicapValue;
           const fulltimeHandicapValue = result.matchConfig.handicapValue;
@@ -33,7 +34,9 @@ describe("rateConfigs", () => {
             secondHalf: secondHalfConfig,
           } as unknown as MatchConfigType;
 
-          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
+          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, {
+            drawResults: [{ result: { goalSequence: "0", finalScore: "0-0" } }],
+          });
 
           const firstHalfHandicapValue = result.matchConfig.firstHalf.handicapValue;
           const fulltimeHandicapValue = result.matchConfig.handicapValue;

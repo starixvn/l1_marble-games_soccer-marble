@@ -11,7 +11,9 @@ describe("rateConfigs", () => {
             secondHalf: secondHalfConfig,
           } as unknown as MatchConfigType;
 
-          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
+          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, {
+            drawResults: [{ result: { goalSequence: "0", finalScore: "0-0" } }],
+          });
 
           const firstHalfHandicapValue = result.matchConfig.firstHalf.handicapValue;
           const fulltimeHandicapValue = result.matchConfig.handicapValue;
@@ -32,7 +34,9 @@ describe("rateConfigs", () => {
             secondHalf: secondHalfConfig,
           } as unknown as MatchConfigType;
 
-          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, "0");
+          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, {
+            drawResults: [{ result: { goalSequence: "0", finalScore: "0-0" } }],
+          });
 
           const firstHalfHandicapValue = result.matchConfig.firstHalf.handicapValue;
           const fulltimeHandicapValue = result.matchConfig.handicapValue;
