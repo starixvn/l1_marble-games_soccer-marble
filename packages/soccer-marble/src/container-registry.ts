@@ -33,7 +33,8 @@ export class ContainerRegistry {
 
   register() {
     this.registerConfigs();
-    this.registerModels();
+    this.registerOddsFeedEventModels();
+    this.registerGameModels();
     this.registerServices();
     this.registerCrons();
 
@@ -49,14 +50,19 @@ export class ContainerRegistry {
     });
   }
 
-  registerModels() {
-    const roundModel = createRoundModel(this.gameSettings);
-
+  registerOddsFeedEventModels() {
     this.container.register({
       eventDetailsRepository: asValue(EventDetailModel),
       eventRepository: asValue(EventModel),
-      roundRepository: asValue(roundModel),
       gameConfigRepository: asValue(GameConfigModel),
+    });
+  }
+
+  registerGameModels() {
+    const roundModel = createRoundModel(this.gameSettings);
+
+    this.container.register({
+      roundRepository: asValue(roundModel),
     });
   }
 

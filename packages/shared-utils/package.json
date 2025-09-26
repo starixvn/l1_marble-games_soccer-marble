@@ -13,9 +13,6 @@
     "test-coverage": "jest --collect-coverage --testPathPatterns=tests/unit-tests/",
     "type-check": "tsc --noEmit"
   },
-  "dependencies": {
-    "sc-core-rng": "1.0.0"
-  },
   "files": [
     "dist"
   ],
