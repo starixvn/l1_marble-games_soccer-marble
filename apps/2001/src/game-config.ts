@@ -1,5 +1,3 @@
-import { RateConfig } from "@soccer-marble/soccer-marble-base/dist/types";
-
 export const appConfigs = {
   hostingPort: 5000,
   database: {
