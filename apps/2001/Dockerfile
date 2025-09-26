@@ -9,7 +9,7 @@ COPY package.json package-lock.json ./
 COPY apps/2001/package.json apps/2001/package.json
 COPY packages/*/package.json packages/
 
-RUN npm set registry http://npm.lumigame.com
+RUN npm run reg
 
 RUN npm ci
 
