@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { GameRunningRound } from "../types";
-import { gameSettings } from "../game-config";
+import { gameSettings } from "../game-settings";
 
 export interface IRound extends GameRunningRound {
   _id: mongoose.Schema.Types.ObjectId;

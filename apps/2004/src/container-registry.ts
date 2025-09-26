@@ -1,68 +1,26 @@
-import { AppContainer } from "./types/index";
-import { createContainer, AwilixContainer, InjectionMode, asValue, asClass } from "awilix";
-import { logger } from "sc-common";
-import { EventDetailModel, EventModel, RoundModel, GameConfigModel } from "./models";
-import { appConfigs, gameSettings, rateConfigs } from "./game-config";
+import { ContainerRegistry as BaseContainerRegistry } from "@soccer-marble/soccer-marble-base";
+import { RoundModel } from "./model";
+import { asValue, asClass } from "awilix";
 import { RoundGeneratorService } from "./services/round-generator-service";
-import { RoundService } from "./services/round-service";
 import { EventService } from "./services/event-service";
-import { GameConfigService } from "./services/game-config-service";
-import { GameHandler } from "./crons/game-handler";
-import { Consumer } from "./crons/consumer";
-import { Scheduler } from "./crons/scheduler";
-import { GameData } from "./crons/game-data";
+import { ResultGeneratorService } from "./services/result-generator-service";
+import { OddsGeneratorService } from "./services/odds-generator-service";
 
-export class ContainerRegistry {
-  container: AwilixContainer<AppContainer>;
-
-  constructor() {
-    this.container = createContainer<AppContainer>({
-      injectionMode: InjectionMode.PROXY,
+export class ContainerRegistry extends BaseContainerRegistry {
+  override registerGameModels() {
+    this.container.register({
+      roundRepository: asValue(RoundModel as any),
     });
   }
 
-  register() {
-    this.registerConfigs();
-    this.registerModels();
-    this.registerServices();
-    this.registerCrons();
+  override registerServices() {
+    super.registerServices();
 
-    return this.container;
-  }
-
-  registerConfigs() {
     this.container.register({
-      appConfigs: asValue(appConfigs),
-      gameSettings: asValue(gameSettings),
-      rateConfigs: asValue(rateConfigs),
-    });
-  }
-
-  registerModels() {
-    this.container.register({
-      eventDetailsRepository: asValue(EventDetailModel),
-      eventRepository: asValue(EventModel),
-      roundRepository: asValue(RoundModel),
-      gameConfigRepository: asValue(GameConfigModel),
-    });
-  }
-
-  registerServices() {
-    this.container.register({
-      logService: asValue(logger),
       roundGeneratorService: asClass(RoundGeneratorService).singleton(),
-      roundService: asClass(RoundService).singleton(),
       eventService: asClass(EventService).singleton(),
-      gameConfigService: asClass(GameConfigService).singleton(),
-    });
-  }
-
-  registerCrons() {
-    this.container.register({
-      gameHandler: asClass(GameHandler).singleton(),
-      scheduler: asClass(Scheduler).singleton(),
-      consumer: asClass(Consumer).singleton(),
-      gameData: asClass(GameData).singleton(),
+      resultGeneratorService: asClass(ResultGeneratorService).singleton(),
+      oddsGeneratorService: asClass(OddsGeneratorService).singleton(),
     });
   }
 }

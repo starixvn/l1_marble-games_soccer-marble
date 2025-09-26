@@ -1,83 +1,25 @@
-import { MatchConfigsDetailType } from "./../types/index";
-import {
-  RoundResultType,
-  MatchConfigType,
-  GameRunningRound,
-  GameSettings,
-  AppContainer,
-  Match,
-  HalfConfigType,
-  RateConfig,
-  Timeline,
-} from "../types";
-import { secureShuffle, secureRandomBool, secureRandomRange, securePickOne } from "sc-core-rng";
-import { calculateOddsForRound, mergeArrayOfRates } from "../helpers/odds-helper";
-import { generateResult, getSettlementResult } from "../helpers/result-helper";
-import { encrypt } from "@soccer-marble/shared-utils";
-import { idHelper } from "../helpers";
-import { rateConfigs } from "../game-config";
-import { GameData } from "../crons/game-data";
+import { RoundGeneratorService as BaseRoundGeneratorService, oddsHelper } from "@soccer-marble/soccer-marble-base";
+import type { RateConfig, Timeline, MatchConfigType } from "@soccer-marble/soccer-marble-base";
+import { secureRandomRange, secureRandomBool, securePickOne } from "sc-core-rng";
+import { GameRunningRound, GameTiming, MatchConfigsDetailType, RoundResultType } from "../types";
+import { ResultGeneratorService } from "./result-generator-service";
+import { idHelper, cryptoHelper } from "@soccer-marble/shared-utils";
+import { OddsGeneratorService } from "./odds-generator-service";
 
 const minBlocks = 2;
 const maxBlocks = 4;
 const minVideoLength = 6;
 
-export class RoundGeneratorService {
-  private readonly gameSettings: GameSettings;
-  private readonly rateConfigs: typeof rateConfigs;
-  private readonly gameData: GameData;
+export class RoundGeneratorService extends BaseRoundGeneratorService {
+  declare resultGeneratorService: ResultGeneratorService;
+  declare oddsGeneratorService: OddsGeneratorService;
 
-  constructor(container: AppContainer) {
-    this.gameSettings = container.gameSettings;
-    this.rateConfigs = container.rateConfigs;
-    this.gameData = container.gameData;
-  }
-
-  createNewMatchFromRandomTeams() {
-    const teams = this.gameData.gameConfig?.config?.teams?.length
-      ? this.gameData.gameConfig?.config?.teams
-      : this.gameSettings.teams;
-    const [homeTeam, awayTeam] = secureShuffle(teams);
-    return { homeTeam, awayTeam, theme: this.gameSettings.theme };
-  }
-
-  createNewMatchFromMatches(roundId: number) {
-    const teams = this.gameData.gameConfig?.config?.teams?.length
-      ? this.gameData.gameConfig?.config?.teams
-      : this.gameSettings.teams;
-    const matches = this.gameData.gameConfig?.config?.matches;
-
-    if (!matches || matches.length === 0) {
-      return this.createNewMatchFromRandomTeams();
-    }
-
-    const match = matches[roundId % matches.length];
-
-    if (!teams.includes(match.homeTeam) || !teams.includes(match.awayTeam)) {
-      return this.createNewMatchFromRandomTeams();
-    }
-
-    match.theme = match.theme ?? this.gameSettings.theme;
-
-    return match;
-  }
-
-  createNewMatch(roundId: number): Match {
-    const teamSelectionMode = this.gameData.gameConfig?.config?.teamSelectionMode ?? 1;
-
-    if (teamSelectionMode === 2) {
-      return this.createNewMatchFromMatches(roundId);
-    }
-
-    return this.createNewMatchFromRandomTeams();
-  }
-
-  createNewMatchConfig(): MatchConfigType {
+  override createNewMatchConfig(): MatchConfigType {
     const firstHalfBlock = secureRandomRange(minBlocks, maxBlocks);
     const secondHalfBlock = secureRandomRange(minBlocks, maxBlocks);
     const isHomeFavorite = secureRandomBool();
     const firstHalfRates: RateConfig[] = [];
-    const gameTiming = this.gameSettings.gameTiming;
+    const gameTiming = this.gameSettings.gameTiming as unknown as GameTiming;
     const firstHalfMaxVideoLength = Math.round(gameTiming.videoLength / firstHalfBlock);
     const secondHalfMaxVideoLength = Math.round(gameTiming.videoLength / secondHalfBlock);
     let lastFirstHalfVideoLength = gameTiming.videoLength;
@@ -152,35 +94,30 @@ export class RoundGeneratorService {
     });
 
     const timelines = [...firstHalfTimelines, ...secondHalfTimelines];
+    gameTiming.timelines = timelines;
 
     return {
-      timelines,
+      gameTiming,
+      numberOfEventDetails: firstHalfBlock + secondHalfBlock,
       firstHalf: {
         numberOfEventDetails: firstHalfBlock,
         eventDetailScoreRates: firstHalfRates,
-        scoreRate: mergeArrayOfRates(firstHalfRates).scoreRate,
-      } as HalfConfigType,
+        scoreRate: oddsHelper.mergeArrayOfRates(firstHalfRates).scoreRate,
+      } as any,
       secondHalf: {
         numberOfEventDetails: secondHalfBlock,
         eventDetailScoreRates: secondHalfRates,
-        scoreRate: mergeArrayOfRates(secondHalfRates).scoreRate,
-      } as HalfConfigType,
-    } as MatchConfigType;
+        scoreRate: oddsHelper.mergeArrayOfRates(secondHalfRates).scoreRate,
+      } as any,
+    } as any;
+  }
+
+  getSettlementResultForUltraLive(result: RoundResultType, matchConfigsDetailType: MatchConfigsDetailType) {
+    return this.resultGeneratorService.getSettlementResultForUltraLive(result, matchConfigsDetailType);
   }
 
   generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, result: RoundResultType) {
-    return calculateOddsForRound(matchConfig, result);
-  }
-
-  generateResult(matchConfig: MatchConfigType, numberOfVideos: Record<string, number>) {
-    return generateResult({
-      numberOfVideos,
-      matchConfig,
-    });
-  }
-
-  getSettlementResult(result: RoundResultType, matchConfigsDetailType: MatchConfigsDetailType) {
-    return getSettlementResult(result, matchConfigsDetailType);
+    return this.oddsGeneratorService.calculateOddsForRound(matchConfig, result);
   }
 
   generateNewRound(roundId: number) {
@@ -200,19 +137,22 @@ export class RoundGeneratorService {
 
     const numberOfVideos = this.gameData.gameConfig?.config?.numberOfVideos ?? this.gameSettings.numberOfVideos;
 
-    const result = this.generateResult(newRound.matchConfig, numberOfVideos);
+    const result = this.resultGeneratorService.generateResult({
+      matchConfig: newRound.matchConfig,
+      numberOfVideos: numberOfVideos,
+    });
 
     const { odds, matchConfigs, selections } = this.generateRoundOddsAndUpdateMatchConfig(newRound.matchConfig, result);
 
     newRound.odds = odds;
     newRound.matchConfigsDetail = matchConfigs;
 
-    const settlementResult = this.getSettlementResult(result, matchConfigs);
+    const settlementResult = this.getSettlementResultForUltraLive(result, matchConfigs);
 
-    newRound.encryptedResult = encrypt(result);
-    newRound.encryptedSettlementResult = encrypt(settlementResult);
-    newRound.encryptedSelections = encrypt(selections);
+    newRound.encryptedResult = cryptoHelper.encrypt(result);
+    newRound.encryptedSettlementResult = cryptoHelper.encrypt(settlementResult);
+    newRound.encryptedSelections = cryptoHelper.encrypt(selections);
 
-    return newRound;
+    return newRound as any;
   }
 }
