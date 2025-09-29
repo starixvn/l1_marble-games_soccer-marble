@@ -35,12 +35,11 @@ export class GameHandler {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  async loadRoundFromRoundId(roundId: number) {
+  async loadRoundFromRoundId(roundId: number): Promise<GameRunningRound> {
     const newRound = await this.roundService.fetchRoundData(roundId);
 
     return {
       ...newRound,
-      roundTime: 1,
       result: decrypt(newRound.encryptedResult),
       settlementResult: decrypt(newRound.encryptedSettlementResult),
       selections: decrypt(newRound.encryptedSelections),
@@ -105,8 +104,8 @@ export class GameHandler {
   ) {
     const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
     const round = await this.loadRoundFromRoundId(roundId);
-    eventDetail.playlist = round.result.drawResults[drawIndex].playlist;
-    eventDetail.goalInfo = round.result.drawResults[drawIndex].goalInfo;
+    eventDetail.playlist = round.result[drawIndex].playlist;
+    eventDetail.goalInfo = round.result[drawIndex].goalInfo;
 
     await this.eventService.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
 
@@ -121,7 +120,7 @@ export class GameHandler {
     const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
     const round = await this.loadRoundFromRoundId(roundId);
     eventDetail.hasResults = true;
-    eventDetail.result = round.result.drawResults[drawIndex].result;
+    eventDetail.result = round.result[drawIndex].result;
 
     await this.eventService.updateEventDetail(eventDetail, ["result", "hasResults"]);
 

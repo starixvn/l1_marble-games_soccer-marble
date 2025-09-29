@@ -1,15 +1,14 @@
 import { secureShuffle } from "sc-core-rng";
 import {
-  RoundResultType,
+  RoundResult,
   DataResultType,
-  RoundSettlementResultType,
-  DrawResultType,
-  MatchConfigType,
+  RoundSettlementResult,
+  EventDetailResult,
+  MatchConfig,
   SettlementStatus,
   FirstHalfOddsKey,
   SecondHalfOddsKey,
   AppContainer,
-  SettleConfig,
   RateConfig,
   ResultType,
 } from "../types";
@@ -22,53 +21,44 @@ export class ResultGeneratorService {
     this.gameSettings = container.gameSettings;
   }
 
-  generateResult = (data: DataResultType): RoundResultType => {
+  generateResult = (data: DataResultType): RoundResult => {
     const numberOfVideos = data.numberOfVideos;
-    const firstHalf = this.generateResultFromRate(data.matchConfig.firstHalf);
-    const secondHalf = this.generateResultFromRate(data.matchConfig.secondHalf);
+    const firstHalf = this.generateResultFromRate(data.matchConfig.eventDetailInfos[0].rateConfig);
+    const secondHalf = this.generateResultFromRate(data.matchConfig.eventDetailInfos[1].rateConfig);
     const videoInfo = this.getVideoInfoFromResult(firstHalf.goalSequence, secondHalf.goalSequence, numberOfVideos);
 
-    const firstHalfResult: DrawResultType = {
+    const firstHalfResult: EventDetailResult = {
       playlist: videoInfo.firstHalfVideo,
       goalInfo: videoInfo.firstHalfVideo,
       result: firstHalf,
+      phase: 0,
     };
 
-    const secondHalfResult: DrawResultType = {
+    const secondHalfResult: EventDetailResult = {
       playlist: videoInfo.secondHalfVideo,
       goalInfo: videoInfo.secondHalfVideo,
       result: secondHalf,
+      phase: 1,
     };
 
-    return {
-      drawResults: [firstHalfResult, secondHalfResult],
-    };
+    return [firstHalfResult, secondHalfResult];
   };
 
-  getSettlementResult = (roundResult: RoundResultType, matchConfig: MatchConfigType): RoundSettlementResultType => {
-    const firstHalf = roundResult.drawResults[0].result;
-    const secondHalf = roundResult.drawResults[1].result;
+  getSettlementResult = (roundResult: RoundResult, matchConfig: MatchConfig): RoundSettlementResult => {
+    const firstHalf = roundResult[0].result;
+    const secondHalf = roundResult[1].result;
 
-    const firstHalfSettlementResult = this.getSettlementResultFromResultString(firstHalf.goalSequence, {
-      overUnderValue: matchConfig.firstHalf.overUnderValue,
-      handicapValue: matchConfig.firstHalf.handicapValue,
-      homeOverUnderValue: matchConfig.firstHalf.homeOverUnderValue,
-      awayOverUnderValue: matchConfig.firstHalf.awayOverUnderValue,
-    });
-    const secondHalfSettlementResult = this.getSettlementResultFromResultString(secondHalf.goalSequence, {
-      overUnderValue: matchConfig.secondHalf.overUnderValue,
-      handicapValue: matchConfig.secondHalf.handicapValue,
-      homeOverUnderValue: matchConfig.secondHalf.homeOverUnderValue,
-      awayOverUnderValue: matchConfig.secondHalf.awayOverUnderValue,
-    });
+    const firstHalfSettlementResult = this.getSettlementResultFromResultString(
+      firstHalf.goalSequence,
+      matchConfig.eventDetailInfos[0].oddsInfo
+    );
+    const secondHalfSettlementResult = this.getSettlementResultFromResultString(
+      secondHalf.goalSequence,
+      matchConfig.eventDetailInfos[1].oddsInfo
+    );
     const fullTimeSettlementResult = this.getSettlementResultFromResultString(
       firstHalf.goalSequence + secondHalf.goalSequence,
-      {
-        overUnderValue: matchConfig.overUnderValue,
-        handicapValue: matchConfig.handicapValue,
-        homeOverUnderValue: matchConfig.homeOverUnderValue,
-        awayOverUnderValue: matchConfig.awayOverUnderValue,
-      }
+      matchConfig.oddsInfo
     );
 
     const finalFirstHalfSettlementResult = {
@@ -129,19 +119,19 @@ export class ResultGeneratorService {
     return [finalFirstHalfSettlementResult, finalSecondHalfSettlementResult];
   };
 
-  getSettlementResultFromResultString = (resultString: string, settleConfig: SettleConfig) => {
+  getSettlementResultFromResultString = (resultString: string, oddsInfo: any) => {
     const homeGoals = resultString.split("H").length - 1;
     const awayGoals = resultString.split("A").length - 1;
     const totalGoals = homeGoals + awayGoals;
-    const hdpResult = resultHelper.getHandicapResult(homeGoals, awayGoals, settleConfig.handicapValue);
+    const hdpResult = resultHelper.getHandicapResult(homeGoals, awayGoals, oddsInfo.handicapValue);
     const o1x2Result = resultHelper.get1X2Result(homeGoals, awayGoals);
-    const ouResult = resultHelper.getOverUnderResult(totalGoals, settleConfig.overUnderValue);
+    const ouResult = resultHelper.getOverUnderResult(totalGoals, oddsInfo.overUnderValue);
     const oeResult = resultHelper.getOddEvenResult(totalGoals);
     const teamOverUnderResult = resultHelper.getTeamOverUnderResult(
       homeGoals,
       awayGoals,
-      settleConfig.homeOverUnderValue,
-      settleConfig.awayOverUnderValue
+      oddsInfo.homeOverUnderValue,
+      oddsInfo.awayOverUnderValue
     );
 
     return {

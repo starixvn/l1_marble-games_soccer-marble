@@ -34,22 +34,18 @@ export type RateConfig = {
   scoreRate: Record<string, number>;
 };
 
-export type HalfConfigType = RateConfig & {
-  overUnderValue: number;
-  handicapValue: number;
-  homeOverUnderValue: number;
-  awayOverUnderValue: number;
+export type EventDetailInfo = {
+  rateConfig: RateConfig;
+  oddsInfo: any;
+  phase: number;
 };
 
-export type MatchConfigType = {
+export type MatchConfig = {
   gameTiming: GameTiming;
   numberOfEventDetails: number;
-  firstHalf: HalfConfigType;
-  secondHalf: HalfConfigType;
-  overUnderValue: number;
-  handicapValue: number;
-  homeOverUnderValue: number;
-  awayOverUnderValue: number;
+  eventDetailInfos: EventDetailInfo[];
+  rateConfig: RateConfig;
+  oddsInfo: any;
 };
 
 export enum SettlementStatus {
@@ -82,21 +78,19 @@ export type EventDetail = {
   phase: number;
 };
 
-export type DrawResultType = {
+export type EventDetailResult = {
   playlist?: string;
   goalInfo?: string;
   result: {
     goalSequence: string;
     finalScore: string;
   };
+  phase: number;
 };
 
-export type RoundResultType = {
-  drawResults: DrawResultType[];
-};
-
-export type DrawSettlementResultType = Record<string, SettlementStatus>;
-export type RoundSettlementResultType = DrawSettlementResultType[];
+export type RoundResult = EventDetailResult[];
+export type DrawSettlementResult = Record<string, SettlementStatus>;
+export type RoundSettlementResult = DrawSettlementResult[];
 
 export type Event = {
   eventID: number;
@@ -157,20 +151,19 @@ export enum Phase {
 
 export type DataResultType = {
   numberOfVideos: Record<string, number>;
-  matchConfig: MatchConfigType;
+  matchConfig: MatchConfig;
 };
 
 export type GameRunningRound = {
   roundId: number;
-  roundTime: number;
   homeTeam: string;
   awayTeam: string;
   theme: string;
-  matchConfig: MatchConfigType;
+  matchConfig: MatchConfig;
   selections: Record<string, Selection>[];
   odds: Record<string, number>[];
-  result: RoundResultType;
-  settlementResult: RoundSettlementResultType;
+  result: RoundResult;
+  settlementResult: RoundSettlementResult;
   eventID: number;
   gameId: number;
   ended: boolean;
@@ -262,21 +255,6 @@ export enum SecondHalfOddsKey {
   FT_AWAY_OVER = "ft_away_over",
   FT_AWAY_UNDER = "ft_away_under",
 }
-
-export type OddsCalculationResult = {
-  odds: Record<string, number>;
-  overUnderValue: number;
-  handicapValue: number;
-  homeOverUnderValue: number;
-  awayOverUnderValue: number;
-};
-
-export type SettleConfig = {
-  overUnderValue: number;
-  handicapValue: number;
-  homeOverUnderValue: number;
-  awayOverUnderValue: number;
-};
 
 export type ResultType = {
   goalSequence: string;

@@ -1,9 +1,10 @@
-import { MatchConfigType, GameRunningRound, GameSettings, AppContainer, Match } from "../types";
+import { MatchConfig, GameRunningRound, GameSettings, AppContainer, Match, RoundResult, RateConfig } from "../types";
 import { secureShuffle, secureRandomBool } from "sc-core-rng";
 import { OddsGeneratorService } from "./odds-generator-service";
 import { ResultGeneratorService } from "./result-generator-service";
 import { encrypt, idHelper } from "@soccer-marble/shared-utils";
 import { GameData } from "../crons/game-data";
+import { oddsHelper } from "../helpers";
 
 export class RoundGeneratorService {
   protected readonly gameSettings: GameSettings;
@@ -59,54 +60,60 @@ export class RoundGeneratorService {
     return this.createNewMatchFromRandomTeams();
   }
 
-  createNewMatchConfig(): MatchConfigType {
+  createNewMatchConfig(): MatchConfig {
     const isHomeFavorite = secureRandomBool();
-    const configs = secureShuffle(isHomeFavorite ? this.rateConfigs.homeFavorite : this.rateConfigs.awayFavorite);
+    const configs = secureShuffle(isHomeFavorite ? this.rateConfigs.homeFavorite : this.rateConfigs.awayFavorite).slice(
+      0,
+      this.gameSettings.gameTiming.timelines.length
+    ) as RateConfig[];
+
+    const eventDetailInfos = configs.map((config, index) => ({
+      rateConfig: config,
+      phase: index,
+      oddsInfo: this.oddsGeneratorService.calculateOddsInfo(config.scoreRate),
+    }));
+
+    const fullTimeScoreRates = oddsHelper.mergeArrayOfRates(configs);
+    const fulltimeOddsInfo = this.oddsGeneratorService.calculateOddsInfo(fullTimeScoreRates.scoreRate);
 
     return {
       gameTiming: this.gameSettings.gameTiming,
       numberOfEventDetails: this.gameSettings.gameTiming.timelines.length,
-      firstHalf: configs[0],
-      secondHalf: configs[1],
-    } as MatchConfigType;
+      eventDetailInfos,
+      rateConfig: fullTimeScoreRates,
+      oddsInfo: fulltimeOddsInfo,
+    };
   }
 
-  generateNewRound(roundId: number) {
-    const newRound = {
-      gameId: this.gameSettings.gameId,
-      eventID: idHelper.createEventId(this.gameSettings.gameId, roundId),
-      roundId,
-      ended: false,
-    } as GameRunningRound;
-
+  generateNewRound(roundId: number): GameRunningRound {
     const { homeTeam, awayTeam, theme } = this.createNewMatch(roundId);
-    newRound.homeTeam = homeTeam;
-    newRound.awayTeam = awayTeam;
-    newRound.theme = theme;
 
-    newRound.matchConfig = this.createNewMatchConfig();
+    const matchConfig = this.createNewMatchConfig();
 
     const numberOfVideos = this.gameData.gameConfig?.config?.numberOfVideos ?? this.gameSettings.numberOfVideos;
 
     const result = this.resultGeneratorService.generateResult({
       numberOfVideos: numberOfVideos,
-      matchConfig: newRound.matchConfig,
+      matchConfig,
     });
 
-    const { odds, matchConfig, selections } = this.oddsGeneratorService.calculateOddsForRound(
-      newRound.matchConfig,
-      result
-    );
+    const odds = this.oddsGeneratorService.calculateOddsForRound(matchConfig, result);
+    const selections = this.oddsGeneratorService.generateSelectionsForRound(odds, matchConfig, result);
+    const settlementResult = this.resultGeneratorService.getSettlementResult(result, matchConfig);
 
-    newRound.odds = odds;
-    newRound.matchConfig = matchConfig;
-
-    const settlementResult = this.resultGeneratorService.getSettlementResult(result, newRound.matchConfig);
-
-    newRound.encryptedResult = encrypt(result);
-    newRound.encryptedSettlementResult = encrypt(settlementResult);
-    newRound.encryptedSelections = encrypt(selections);
-
-    return newRound;
+    return {
+      gameId: this.gameSettings.gameId,
+      eventID: idHelper.createEventId(this.gameSettings.gameId, roundId),
+      roundId,
+      homeTeam,
+      awayTeam,
+      theme,
+      matchConfig,
+      odds,
+      encryptedResult: encrypt(result),
+      encryptedSettlementResult: encrypt(settlementResult),
+      encryptedSelections: encrypt(selections),
+      ended: false,
+    } as GameRunningRound;
   }
 }
