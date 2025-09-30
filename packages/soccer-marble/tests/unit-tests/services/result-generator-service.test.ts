@@ -17,16 +17,30 @@ describe("ResultGeneratorService tests", () => {
     it("should return a valid result based on match config", () => {
       // Arrange
       const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "1-0": 1,
+        gameTiming: {} as any,
+        numberOfEventDetails: 2,
+        eventDetailInfos: [
+          {
+            rateConfig: {
+              scoreRate: {
+                "1-0": 1,
+              },
+            },
+            oddsInfo: {} as any,
+            phase: 0,
           },
-        },
-        secondHalf: {
-          scoreRate: {
-            "0-1": 1,
+          {
+            rateConfig: {
+              scoreRate: {
+                "0-1": 1,
+              },
+            },
+            oddsInfo: {} as any,
+            phase: 1,
           },
-        },
+        ],
+        rateConfig: {} as any,
+        oddsInfo: {} as any,
       };
 
       const firstHalfVideo = crypto.createHash("sha256").update(`H-0`).digest("hex");
@@ -36,12 +50,14 @@ describe("ResultGeneratorService tests", () => {
         playlist: firstHalfVideo,
         goalInfo: firstHalfVideo,
         result: { goalSequence: "H", finalScore: "1:0" },
+        phase: 0,
       };
 
       const expectedSecondHalfResult = {
         playlist: secondHalfVideo,
         goalInfo: secondHalfVideo,
         result: { goalSequence: "A", finalScore: "0:1" },
+        phase: 1,
       };
 
       // Act
@@ -51,10 +67,9 @@ describe("ResultGeneratorService tests", () => {
       });
 
       // Assert
-      const [firstHalf, secondHalf] = result.drawResults;
-
-      expect(firstHalf).toEqual(expectedFirstHalfResult);
-      expect(secondHalf).toEqual(expectedSecondHalfResult);
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual(expectedFirstHalfResult);
+      expect(result[1]).toEqual(expectedSecondHalfResult);
     });
   });
 
@@ -182,45 +197,60 @@ describe("ResultGeneratorService tests", () => {
     const matchConfig = {
       gameTiming: mockContainer.gameSettings.gameTiming,
       numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
-      firstHalf: {
-        overUnderValue: 1.5,
+      eventDetailInfos: [
+        {
+          rateConfig: {
+            scoreRate: { "1-0": 1 },
+          },
+          oddsInfo: {
+            overUnderValue: 1.5,
+            handicapValue: -0.5,
+            homeOverUnderValue: 0.5,
+            awayOverUnderValue: 0.5,
+          },
+          phase: 0,
+        },
+        {
+          rateConfig: {
+            scoreRate: { "0-1": 1 },
+          },
+          oddsInfo: {
+            overUnderValue: 1.5,
+            handicapValue: 0,
+            homeOverUnderValue: 0.5,
+            awayOverUnderValue: 0.5,
+          },
+          phase: 1,
+        },
+      ],
+      rateConfig: {} as any,
+      oddsInfo: {
+        overUnderValue: 2.5,
         handicapValue: -0.5,
-        scoreRate: { "1-0": 1 },
-        homeOverUnderValue: 0.5,
-        awayOverUnderValue: 0.5,
+        homeOverUnderValue: 1.5,
+        awayOverUnderValue: 1.5,
       },
-      secondHalf: {
-        overUnderValue: 1.5,
-        handicapValue: 0,
-        scoreRate: { "0-1": 1 },
-        homeOverUnderValue: 0.5,
-        awayOverUnderValue: 0.5,
-      },
-      overUnderValue: 2.5,
-      handicapValue: -0.5,
-      homeOverUnderValue: 1.5,
-      awayOverUnderValue: 1.5,
     };
     describe("with round result [2:0, 0:1]", () => {
       it("should correctly settle all bets", () => {
         // Arrange
-        const roundResult = {
-          drawResults: [
-            {
-              playlist: "test-video-1",
-              goalInfo: "test-video-1",
-              result: { goalSequence: "HH", finalScore: "2:0" },
-            },
-            {
-              playlist: "test-video-2",
-              goalInfo: "test-video-2",
-              result: { goalSequence: "A", finalScore: "0:1" },
-            },
-          ],
-        };
+        const roundResult = [
+          {
+            playlist: "test-video-1",
+            goalInfo: "test-video-1",
+            result: { goalSequence: "HH", finalScore: "2:0" },
+            phase: 0,
+          },
+          {
+            playlist: "test-video-2",
+            goalInfo: "test-video-2",
+            result: { goalSequence: "A", finalScore: "0:1" },
+            phase: 1,
+          },
+        ];
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, matchConfig);
+        const result = resultGeneratorService.getSettlementResult(roundResult, matchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.WIN);
@@ -272,28 +302,31 @@ describe("ResultGeneratorService tests", () => {
     describe("with round result [0:1, 1:0]", () => {
       it("should correctly settle all bets", () => {
         // Arrange
-        const roundResult = {
-          drawResults: [
-            {
-              playlist: "test-video-2",
-              goalInfo: "test-video-2",
-              result: { goalSequence: "A", finalScore: "0:1" },
-            },
-            {
-              playlist: "test-video-1",
-              goalInfo: "test-video-1",
-              result: { goalSequence: "H", finalScore: "1:0" },
-            },
-          ],
-        };
+        const roundResult = [
+          {
+            playlist: "test-video-2",
+            goalInfo: "test-video-2",
+            result: { goalSequence: "A", finalScore: "0:1" },
+            phase: 0,
+          },
+          {
+            playlist: "test-video-1",
+            goalInfo: "test-video-1",
+            result: { goalSequence: "H", finalScore: "1:0" },
+            phase: 1,
+          },
+        ];
 
         const newMatchConfig = {
           ...matchConfig,
-          handicapValue: 0,
+          oddsInfo: {
+            ...matchConfig.oddsInfo,
+            handicapValue: 0,
+          },
         };
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig);
+        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.LOSE);
@@ -345,31 +378,37 @@ describe("ResultGeneratorService tests", () => {
     describe("with round result [0:1, 0:1]", () => {
       it("should correctly settle all bets", () => {
         // Arrange
-        const roundResult = {
-          drawResults: [
-            {
-              playlist: "test-video-1",
-              goalInfo: "test-video-1",
-              result: { goalSequence: "A", finalScore: "0:1" },
-            },
-            {
-              playlist: "test-video-2",
-              goalInfo: "test-video-2",
-              result: { goalSequence: "A", finalScore: "0:1" },
-            },
-          ],
-        };
+        const roundResult = [
+          {
+            playlist: "test-video-1",
+            goalInfo: "test-video-1",
+            result: { goalSequence: "A", finalScore: "0:1" },
+            phase: 0,
+          },
+          {
+            playlist: "test-video-2",
+            goalInfo: "test-video-2",
+            result: { goalSequence: "A", finalScore: "0:1" },
+            phase: 1,
+          },
+        ];
 
         const newMatchConfig = {
           ...matchConfig,
-          firstHalf: {
-            ...matchConfig.firstHalf,
-            handicapValue: 1,
-          },
+          eventDetailInfos: [
+            {
+              ...matchConfig.eventDetailInfos[0],
+              oddsInfo: {
+                ...matchConfig.eventDetailInfos[0].oddsInfo,
+                handicapValue: 1,
+              },
+            },
+            matchConfig.eventDetailInfos[1],
+          ],
         };
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig);
+        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.DRAW);
@@ -421,32 +460,41 @@ describe("ResultGeneratorService tests", () => {
     describe("with round result [1:1, 1:0]", () => {
       it("should correctly settle all bets for draw", () => {
         // Arrange
-        const roundResult = {
-          drawResults: [
-            {
-              playlist: "test-video-1",
-              goalInfo: "test-video-1",
-              result: { goalSequence: "HA", finalScore: "1:1" },
-            },
-            {
-              playlist: "test-video-2",
-              goalInfo: "test-video-2",
-              result: { goalSequence: "H", finalScore: "1:0" },
-            },
-          ],
-        };
+        const roundResult = [
+          {
+            playlist: "test-video-1",
+            goalInfo: "test-video-1",
+            result: { goalSequence: "HA", finalScore: "1:1" },
+            phase: 0,
+          },
+          {
+            playlist: "test-video-2",
+            goalInfo: "test-video-2",
+            result: { goalSequence: "H", finalScore: "1:0" },
+            phase: 1,
+          },
+        ];
 
         const newMatchConfig = {
           ...matchConfig,
-          firstHalf: {
-            ...matchConfig.firstHalf,
+          eventDetailInfos: [
+            {
+              ...matchConfig.eventDetailInfos[0],
+              oddsInfo: {
+                ...matchConfig.eventDetailInfos[0].oddsInfo,
+                handicapValue: 0,
+              },
+            },
+            matchConfig.eventDetailInfos[1],
+          ],
+          oddsInfo: {
+            ...matchConfig.oddsInfo,
             handicapValue: 0,
           },
-          handicapValue: 0,
         };
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig);
+        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.DRAW);
@@ -498,34 +546,43 @@ describe("ResultGeneratorService tests", () => {
     describe("with round result [3:1, 1:0]", () => {
       it("should correctly settle all bets", () => {
         // Arrange
-        const roundResult = {
-          drawResults: [
-            {
-              playlist: "test-video-1",
-              goalInfo: "test-video-1",
-              result: { goalSequence: "HHAH", finalScore: "3:1" },
-            },
-            {
-              playlist: "test-video-2",
-              goalInfo: "test-video-2",
-              result: { goalSequence: "H", finalScore: "1:0" },
-            },
-          ],
-        };
+        const roundResult = [
+          {
+            playlist: "test-video-1",
+            goalInfo: "test-video-1",
+            result: { goalSequence: "HHAH", finalScore: "3:1" },
+            phase: 0,
+          },
+          {
+            playlist: "test-video-2",
+            goalInfo: "test-video-2",
+            result: { goalSequence: "H", finalScore: "1:0" },
+            phase: 1,
+          },
+        ];
 
         const newMatchConfig = {
           ...matchConfig,
-          firstHalf: {
-            ...matchConfig.firstHalf,
-            overUnderValue: 2.5,
+          eventDetailInfos: [
+            {
+              ...matchConfig.eventDetailInfos[0],
+              oddsInfo: {
+                ...matchConfig.eventDetailInfos[0].oddsInfo,
+                overUnderValue: 2.5,
+                handicapValue: 0,
+              },
+            },
+            matchConfig.eventDetailInfos[1],
+          ],
+          oddsInfo: {
+            ...matchConfig.oddsInfo,
+            overUnderValue: 3.5,
             handicapValue: 0,
           },
-          overUnderValue: 3.5,
-          handicapValue: 0,
         };
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig);
+        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.WIN);

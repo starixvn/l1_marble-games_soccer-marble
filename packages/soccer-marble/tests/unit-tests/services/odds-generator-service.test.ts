@@ -1,5 +1,5 @@
 import { OddsGeneratorService } from "../../../src/services/odds-generator-service";
-import { FirstHalfOddsKey, SecondHalfOddsKey, SettlementStatus } from "../../../src/types";
+import { SettlementStatus, FirstHalfOddsKey, SecondHalfOddsKey } from "../../../src/types";
 
 describe("OddsGeneratorService Tests", () => {
   const oddsGeneratorService = new OddsGeneratorService();
@@ -14,7 +14,7 @@ describe("OddsGeneratorService Tests", () => {
 
       const result = oddsGeneratorService.calculateProbabilitiesForBetChoices(scoreRates);
 
-      expect(result.probabilities).toEqual({
+      expect(result).toEqual({
         hdpHome: expect.any(Number),
         hdpAway: expect.any(Number),
         home: 0.4,
@@ -29,10 +29,6 @@ describe("OddsGeneratorService Tests", () => {
         homeUnder: expect.any(Number),
         awayUnder: expect.any(Number),
       });
-      expect(result.overUnderValue).toBeDefined();
-      expect(result.handicapValue).toBeDefined();
-      expect(result.homeOverUnderValue).toBeDefined();
-      expect(result.awayOverUnderValue).toBeDefined();
     });
 
     it("should handle adding score parameter", () => {
@@ -44,9 +40,9 @@ describe("OddsGeneratorService Tests", () => {
       const result = oddsGeneratorService.calculateProbabilitiesForBetChoices(scoreRates, "1-0");
 
       // With adding score 1-0, 1-0 becomes 2-0 (home win), 0-1 becomes 1-1 (draw)
-      expect(result.probabilities.home).toBe(0.5);
-      expect(result.probabilities.draw).toBe(0.5);
-      expect(result.probabilities.away).toBe(0);
+      expect(result.home).toBe(0.5);
+      expect(result.draw).toBe(0.5);
+      expect(result.away).toBe(0);
     });
 
     it("should handle even/odd calculations", () => {
@@ -59,8 +55,8 @@ describe("OddsGeneratorService Tests", () => {
 
       const result = oddsGeneratorService.calculateProbabilitiesForBetChoices(scoreRates);
 
-      expect(result.probabilities.even).toBe(0.5); // 0-0 and 2-0
-      expect(result.probabilities.odd).toBe(0.5); // 1-0 and 3-0
+      expect(result.even).toBe(0.5); // 0-0 and 2-0
+      expect(result.odd).toBe(0.5); // 1-0 and 3-0
     });
   });
 
@@ -507,42 +503,138 @@ describe("OddsGeneratorService Tests", () => {
     });
   });
 
+  describe("calculateOddsInfo", () => {
+    it("should calculate odds info from score rates", () => {
+      const scoreRates = {
+        "1-0": 0.1118,
+        "0-1": 0.1074,
+        "1-1": 0.1688,
+        "2-0": 0.1502,
+        "0-2": 0.0496,
+        "2-1": 0.097,
+        "1-2": 0.075,
+        "3-0": 0.0632,
+        "0-3": 0.0194,
+        "2-2": 0.0389,
+        "3-1": 0.0638,
+        "1-3": 0.0254,
+        "4-0": 0.0202,
+        "0-4": 0.0093,
+      };
+
+      const result = oddsGeneratorService.calculateOddsInfo(scoreRates);
+
+      expect(result).toEqual({
+        handicapValue: -0.5,
+        overUnderValue: 2.5,
+        homeOverUnderValue: 1.5,
+        awayOverUnderValue: 0.5,
+      });
+    });
+
+    it("should handle different score combinations", () => {
+      const scoreRates = {
+        "1-0": 0.0857,
+        "0-1": 0.1193,
+        "1-1": 0.1363,
+        "2-0": 0.0424,
+        "0-2": 0.1218,
+        "2-1": 0.0766,
+        "1-2": 0.1253,
+        "3-0": 0.0114,
+        "0-3": 0.0715,
+        "2-2": 0.0663,
+        "3-1": 0.0336,
+        "1-3": 0.0755,
+        "4-0": 0.0115,
+        "0-4": 0.0228,
+      };
+
+      const result = oddsGeneratorService.calculateOddsInfo(scoreRates);
+
+      expect(result.handicapValue).toBe(0.5);
+      expect(result.overUnderValue).toBe(2.5);
+      expect(result.homeOverUnderValue).toBe(0.5);
+      expect(result.awayOverUnderValue).toBe(1.5);
+    });
+  });
+
   describe("calculateOddsFromRate", () => {
-    it("should calculate half odds from half config", () => {
-      const halfConfig = {
+    it("should calculate odds from rate config", () => {
+      const rateConfig = {
         scoreRate: {
-          "1-0": 0.5,
-          "0-1": 0.5,
+          "1-0": 0.1189,
+          "0-1": 0.0853,
+          "1-1": 0.1353,
+          "2-0": 0.1213,
+          "0-2": 0.0403,
+          "2-1": 0.1258,
+          "1-2": 0.0773,
+          "3-0": 0.0714,
+          "0-3": 0.0112,
+          "2-2": 0.0669,
+          "3-1": 0.0786,
+          "1-3": 0.0338,
+          "4-0": 0.0223,
+          "0-4": 0.0116,
         },
       };
 
-      const result = oddsGeneratorService.calculateOddsFromRate(halfConfig);
+      const result = oddsGeneratorService.calculateOddsFromRate(rateConfig, "0-1");
 
       expect(result).toEqual({
-        odds: expect.any(Object),
-        overUnderValue: expect.any(Number),
-        handicapValue: expect.any(Number),
-        homeOverUnderValue: expect.any(Number),
-        awayOverUnderValue: expect.any(Number),
+        home: 3.4,
+        away: 2.16,
+        draw: 4.08,
+        hdpHome: 1.85,
+        hdpAway: 2.16,
+        over: 2,
+        under: 1.99,
+        odd: 1.96,
+        even: 2.04,
+        homeOver: 2.05,
+        homeUnder: 1.94,
+        awayOver: 1.5,
+        awayUnder: 2.99,
       });
     });
 
     it("should handle adding score parameter", () => {
-      const halfConfig = {
+      const rateConfig = {
         scoreRate: {
-          "1-0": 0.5,
-          "0-1": 0.5,
+          "1-0": 0.1189,
+          "0-1": 0.0853,
+          "1-1": 0.1353,
+          "2-0": 0.1213,
+          "0-2": 0.0403,
+          "2-1": 0.1258,
+          "1-2": 0.0773,
+          "3-0": 0.0714,
+          "0-3": 0.0112,
+          "2-2": 0.0669,
+          "3-1": 0.0786,
+          "1-3": 0.0338,
+          "4-0": 0.0223,
+          "0-4": 0.0116,
         },
       };
 
-      const result = oddsGeneratorService.calculateOddsFromRate(halfConfig, "1-0");
+      const result = oddsGeneratorService.calculateOddsFromRate(rateConfig, "2-0");
 
       expect(result).toEqual({
-        odds: expect.any(Object),
-        overUnderValue: expect.any(Number),
-        handicapValue: expect.any(Number),
-        homeOverUnderValue: expect.any(Number),
-        awayOverUnderValue: expect.any(Number),
+        home: 1.1,
+        away: 43.85,
+        draw: 13.49,
+        hdpHome: 1.85,
+        hdpAway: 2.16,
+        over: 2,
+        under: 1.99,
+        odd: 2.04,
+        even: 1.96,
+        homeOver: 2.05,
+        homeUnder: 1.94,
+        awayOver: 1.5,
+        awayUnder: 2.99,
       });
     });
   });
@@ -550,709 +642,427 @@ describe("OddsGeneratorService Tests", () => {
   describe("calculateOddsForRound", () => {
     it("should calculate odds for round with HH result", () => {
       const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "2-1": 0.1294,
-            "1-0": 0.1176,
-            "2-0": 0.1176,
-            "3-1": 0.0824,
-            "3-0": 0.0706,
-            "4-0": 0.0235,
-            "1-1": 0.1293,
-            "2-2": 0.0706,
-            "0-1": 0.0824,
-            "1-2": 0.0824,
-            "0-2": 0.0353,
-            "1-3": 0.0353,
-            "0-3": 0.0118,
-            "0-4": 0.0118,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "2-1": 0.1294,
-            "1-0": 0.1176,
-            "2-0": 0.1176,
-            "3-1": 0.0824,
-            "3-0": 0.0706,
-            "4-0": 0.0235,
-            "1-1": 0.1293,
-            "2-2": 0.0706,
-            "0-1": 0.0824,
-            "1-2": 0.0824,
-            "0-2": 0.0353,
-            "1-3": 0.0353,
-            "0-3": 0.0118,
-            "0-4": 0.0118,
-          },
-        },
-      } as any;
-
-      const roundResult = {
-        drawResults: [
+        gameTiming: {} as any,
+        numberOfEventDetails: 2,
+        eventDetailInfos: [
           {
-            result: {
-              goalSequence: "HH",
+            rateConfig: {
+              scoreRate: {
+                "2-1": 0.1294,
+                "1-0": 0.1176,
+                "2-0": 0.1176,
+                "3-1": 0.0824,
+                "3-0": 0.0706,
+                "4-0": 0.0235,
+                "1-1": 0.1293,
+                "2-2": 0.0706,
+                "0-1": 0.0824,
+                "1-2": 0.0824,
+                "0-2": 0.0353,
+                "1-3": 0.0353,
+                "0-3": 0.0118,
+                "0-4": 0.0118,
+              },
             },
+            oddsInfo: {} as any,
+            phase: 0,
+          },
+          {
+            rateConfig: {
+              scoreRate: {
+                "2-1": 0.1294,
+                "1-0": 0.1176,
+                "2-0": 0.1176,
+                "3-1": 0.0824,
+                "3-0": 0.0706,
+                "4-0": 0.0235,
+                "1-1": 0.1293,
+                "2-2": 0.0706,
+                "0-1": 0.0824,
+                "1-2": 0.0824,
+                "0-2": 0.0353,
+                "1-3": 0.0353,
+                "0-3": 0.0118,
+                "0-4": 0.0118,
+              },
+            },
+            oddsInfo: {} as any,
+            phase: 1,
           },
         ],
-      };
+        rateConfig: {} as any,
+        oddsInfo: {} as any,
+      } as any;
+
+      const roundResult = [
+        {
+          result: {
+            goalSequence: "HH",
+          },
+        },
+      ];
 
       const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
-      expect(result).toHaveProperty("odds");
-      expect(result).toHaveProperty("matchConfig");
-      expect(result).toHaveProperty("selections");
-      expect(result.odds).toHaveLength(2);
-      expect(result.selections).toHaveLength(2);
+      expect(result).toHaveLength(2);
     });
 
     it("should calculate odds for round with HA result", () => {
       const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-      } as any;
-
-      const roundResult = {
-        drawResults: [
+        gameTiming: {} as any,
+        numberOfEventDetails: 2,
+        eventDetailInfos: [
           {
-            result: {
-              goalSequence: "HA",
+            rateConfig: {
+              scoreRate: {
+                "1-0": 0.5,
+                "0-1": 0.5,
+              },
             },
+            oddsInfo: {} as any,
+            phase: 0,
+          },
+          {
+            rateConfig: {
+              scoreRate: {
+                "1-0": 0.5,
+                "0-1": 0.5,
+              },
+            },
+            oddsInfo: {} as any,
+            phase: 1,
           },
         ],
-      };
+        rateConfig: {} as any,
+        oddsInfo: {} as any,
+      } as any;
+
+      const roundResult = [
+        {
+          result: {
+            goalSequence: "HA",
+          },
+        },
+      ];
 
       const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
-      expect(result.odds).toHaveLength(2);
-      expect(result.selections).toHaveLength(2);
-
-      // Check that selections have correct structure
-      const firstHalfSelections = result.selections[0];
-      expect(firstHalfSelections[FirstHalfOddsKey.H1_1X2_HOME]).toBeDefined();
-      expect(firstHalfSelections[FirstHalfOddsKey.H1_1X2_HOME].settlementStatus).toBe(SettlementStatus.PLAY);
+      expect(result).toHaveLength(2);
     });
 
     it("should calculate odds for round with AA result", () => {
       const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "0-1": 0.6,
-            "0-2": 0.4,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "0-1": 0.6,
-            "0-2": 0.4,
-          },
-        },
-      } as any;
-
-      const roundResult = {
-        drawResults: [
+        gameTiming: {} as any,
+        numberOfEventDetails: 2,
+        eventDetailInfos: [
           {
-            result: {
-              goalSequence: "AA",
+            rateConfig: {
+              scoreRate: {
+                "0-1": 0.6,
+                "0-2": 0.4,
+              },
             },
+            oddsInfo: {} as any,
+            phase: 0,
+          },
+          {
+            rateConfig: {
+              scoreRate: {
+                "0-1": 0.6,
+                "0-2": 0.4,
+              },
+            },
+            oddsInfo: {} as any,
+            phase: 1,
           },
         ],
-      };
+        rateConfig: {} as any,
+        oddsInfo: {} as any,
+      } as any;
+
+      const roundResult = [
+        {
+          result: {
+            goalSequence: "AA",
+          },
+        },
+      ];
 
       const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
-      expect(result.odds).toHaveLength(2);
-      expect(result.selections).toHaveLength(2);
+      expect(result).toHaveLength(2);
     });
 
     it("should handle complex first half results", () => {
       const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-      } as any;
-
-      const roundResult = {
-        drawResults: [
+        gameTiming: {} as any,
+        numberOfEventDetails: 2,
+        eventDetailInfos: [
           {
-            result: {
-              goalSequence: "HHHAA",
+            rateConfig: {
+              scoreRate: {
+                "1-0": 0.5,
+                "0-1": 0.5,
+              },
             },
+            oddsInfo: {} as any,
+            phase: 0,
+          },
+          {
+            rateConfig: {
+              scoreRate: {
+                "1-0": 0.5,
+                "0-1": 0.5,
+              },
+            },
+            oddsInfo: {} as any,
+            phase: 1,
           },
         ],
-      };
+        rateConfig: {} as any,
+        oddsInfo: {} as any,
+      } as any;
+
+      const roundResult = [
+        {
+          result: {
+            goalSequence: "HHHAA",
+          },
+        },
+      ];
 
       const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
 
-      expect(result.odds).toHaveLength(2);
-      expect(result.selections).toHaveLength(2);
+      expect(result).toHaveLength(2);
     });
+  });
 
-    it("should set correct points for handicap selections", () => {
-      const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-      } as any;
-
-      const roundResult = {
-        drawResults: [
-          {
-            result: {
-              goalSequence: "H",
-            },
-          },
-        ],
+  describe("generateFirstHalfSelections", () => {
+    it("should generate first half selections with correct structure", () => {
+      const allFirstHalfOdds = {
+        [FirstHalfOddsKey.H1_HDP_HOME]: 1.5,
+        [FirstHalfOddsKey.H1_HDP_AWAY]: 2.5,
+        [FirstHalfOddsKey.H1_1X2_HOME]: 2.0,
+        [FirstHalfOddsKey.H1_1X2_AWAY]: 3.0,
+        [FirstHalfOddsKey.H1_1X2_DRAW]: 3.5,
+        [FirstHalfOddsKey.H1_OU_OVER]: 1.8,
+        [FirstHalfOddsKey.H1_OU_UNDER]: 2.0,
+        [FirstHalfOddsKey.H1_OE_ODD]: 1.9,
+        [FirstHalfOddsKey.H1_OE_EVEN]: 1.9,
+        [FirstHalfOddsKey.H1_HOME_OVER]: 2.2,
+        [FirstHalfOddsKey.H1_HOME_UNDER]: 1.7,
+        [FirstHalfOddsKey.H1_AWAY_OVER]: 2.1,
+        [FirstHalfOddsKey.H1_AWAY_UNDER]: 1.8,
+        [FirstHalfOddsKey.FT_HDP_HOME]: 1.6,
+        [FirstHalfOddsKey.FT_HDP_AWAY]: 2.4,
+        [FirstHalfOddsKey.FT_1X2_HOME]: 2.1,
+        [FirstHalfOddsKey.FT_1X2_AWAY]: 2.9,
+        [FirstHalfOddsKey.FT_1X2_DRAW]: 3.4,
+        [FirstHalfOddsKey.FT_OU_OVER]: 1.7,
+        [FirstHalfOddsKey.FT_OU_UNDER]: 2.1,
+        [FirstHalfOddsKey.FT_OE_ODD]: 1.8,
+        [FirstHalfOddsKey.FT_OE_EVEN]: 2.0,
+        [FirstHalfOddsKey.FT_HOME_OVER]: 2.0,
+        [FirstHalfOddsKey.FT_HOME_UNDER]: 1.8,
+        [FirstHalfOddsKey.FT_AWAY_OVER]: 2.3,
+        [FirstHalfOddsKey.FT_AWAY_UNDER]: 1.7,
       };
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
-
-      const firstHalfSelections = result.selections[0];
-      expect(firstHalfSelections[FirstHalfOddsKey.FT_HDP_HOME].point).toBeDefined();
-      expect(firstHalfSelections[FirstHalfOddsKey.FT_HDP_AWAY].point).toBeDefined();
-      expect(firstHalfSelections[FirstHalfOddsKey.H1_HDP_HOME].point).toBeDefined();
-      expect(firstHalfSelections[FirstHalfOddsKey.H1_HDP_AWAY].point).toBeDefined();
-    });
-
-    it("should set correct points for over/under selections", () => {
       const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-      } as any;
-
-      const roundResult = {
-        drawResults: [
+        eventDetailInfos: [
           {
-            result: {
-              goalSequence: "HH",
+            oddsInfo: {
+              handicapValue: 0.5,
+              overUnderValue: 2.5,
+              homeOverUnderValue: 1.5,
+              awayOverUnderValue: 1.0,
             },
           },
         ],
-      };
-
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
-
-      const firstHalfSelections = result.selections[0];
-      const secondHalfSelections = result.selections[1];
-
-      expect(firstHalfSelections[FirstHalfOddsKey.FT_OU_OVER].point).toBeDefined();
-      expect(firstHalfSelections[FirstHalfOddsKey.FT_OU_UNDER].point).toBeDefined();
-      expect(secondHalfSelections[SecondHalfOddsKey.FT_OU_OVER].point).toBeDefined();
-      expect(secondHalfSelections[SecondHalfOddsKey.FT_OU_UNDER].point).toBeDefined();
-    });
-
-    it("should handle even/odd calculations correctly for second half", () => {
-      const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-      } as any;
-
-      // Test with odd number of goals in first half
-      const oddFirstHalfScore = {
-        drawResults: [
-          {
-            result: {
-              goalSequence: "H",
-            },
-          },
-        ],
-      };
-      const oddResult = oddsGeneratorService.calculateOddsForRound(matchConfig, oddFirstHalfScore as any);
-
-      // Test with even number of goals in first half
-      const evenFirstHalfScore = {
-        drawResults: [
-          {
-            result: {
-              goalSequence: "HH",
-            },
-          },
-        ],
-      };
-      const evenResult = oddsGeneratorService.calculateOddsForRound(matchConfig, evenFirstHalfScore as any);
-
-      expect(oddResult.odds[1][SecondHalfOddsKey.FT_OE_ODD]).toBeDefined();
-      expect(oddResult.odds[1][SecondHalfOddsKey.FT_OE_EVEN]).toBeDefined();
-      expect(evenResult.odds[1][SecondHalfOddsKey.FT_OE_ODD]).toBeDefined();
-      expect(evenResult.odds[1][SecondHalfOddsKey.FT_OE_EVEN]).toBeDefined();
-    });
-
-    it("should update match config with calculated values", () => {
-      const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "1-0": 0.5,
-            "0-1": 0.5,
-          },
-        },
-      } as any;
-
-      const roundResult = {
-        drawResults: [
-          {
-            result: {
-              goalSequence: "H",
-            },
-          },
-        ],
-      };
-
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
-
-      expect(result.matchConfig.overUnderValue).toBeDefined();
-      expect(result.matchConfig.handicapValue).toBeDefined();
-      expect(result.matchConfig.homeOverUnderValue).toBeDefined();
-      expect(result.matchConfig.awayOverUnderValue).toBeDefined();
-      expect(result.matchConfig.firstHalf.overUnderValue).toBeDefined();
-      expect(result.matchConfig.secondHalf.overUnderValue).toBeDefined();
-    });
-
-    it("should calculate odds as old data", () => {
-      const matchConfig = {
-        firstHalf: {
-          scoreRate: {
-            "1-0": 0.1118,
-            "0-1": 0.1074,
-            "1-1": 0.1688,
-            "2-0": 0.1502,
-            "0-2": 0.0496,
-            "2-1": 0.097,
-            "1-2": 0.075,
-            "3-0": 0.0632,
-            "0-3": 0.0194,
-            "2-2": 0.0389,
-            "3-1": 0.0638,
-            "1-3": 0.0254,
-            "4-0": 0.0202,
-            "0-4": 0.0093,
-          },
-        },
-        secondHalf: {
-          scoreRate: {
-            "1-0": 0.1118,
-            "0-1": 0.1074,
-            "1-1": 0.1688,
-            "2-0": 0.1502,
-            "0-2": 0.0496,
-            "2-1": 0.097,
-            "1-2": 0.075,
-            "3-0": 0.0632,
-            "0-3": 0.0194,
-            "2-2": 0.0389,
-            "3-1": 0.0638,
-            "1-3": 0.0254,
-            "4-0": 0.0202,
-            "0-4": 0.0093,
-          },
-        },
-      } as any;
-
-      const expectedData = {
-        odds: [
-          {
-            h1_hdp_home: 1.97,
-            h1_hdp_away: 2.02,
-            h1_1x2_home: 1.97,
-            h1_1x2_away: 3.49,
-            h1_1x2_draw: 4.81,
-            h1_ou_over: 2.42,
-            h1_ou_under: 1.7,
-            h1_oe_odd: 2.11,
-            h1_oe_even: 1.9,
-            h1_home_over: 2.3,
-            h1_home_under: 1.76,
-            h1_away_over: 1.52,
-            h1_away_under: 2.89,
-            ft_hdp_home: 1.69,
-            ft_hdp_away: 2.42,
-            ft_1x2_home: 1.69,
-            ft_1x2_away: 3.88,
-            ft_1x2_draw: 6.48,
-            ft_ou_over: 1.84,
-            ft_ou_under: 2.18,
-            ft_oe_odd: 2,
-            ft_oe_even: 1.99,
-            ft_home_over: 1.74,
-            ft_home_under: 2.33,
-            ft_away_over: 1.72,
-            ft_away_under: 2.37,
-          },
-          {
-            ft_1x2_home: 1.97,
-            ft_1x2_away: 3.49,
-            ft_1x2_draw: 4.81,
-            ft_hdp_home: 1.97,
-            ft_hdp_away: 2.02,
-            ft_ou_over: 2.42,
-            ft_ou_under: 1.7,
-            ft_oe_odd: 2.11,
-            ft_oe_even: 1.9,
-            ft_home_over: 2.3,
-            ft_home_under: 1.76,
-            ft_away_over: 1.52,
-            ft_away_under: 2.89,
-          },
-        ],
-        matchConfig: {
-          firstHalf: {
-            scoreRate: {
-              "1-0": 0.1118,
-              "0-1": 0.1074,
-              "1-1": 0.1688,
-              "2-0": 0.1502,
-              "0-2": 0.0496,
-              "2-1": 0.097,
-              "1-2": 0.075,
-              "3-0": 0.0632,
-              "0-3": 0.0194,
-              "2-2": 0.0389,
-              "3-1": 0.0638,
-              "1-3": 0.0254,
-              "4-0": 0.0202,
-              "0-4": 0.0093,
-            },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-            homeOverUnderValue: 1.5,
-            awayOverUnderValue: 0.5,
-          },
-          secondHalf: {
-            scoreRate: {
-              "1-0": 0.1118,
-              "0-1": 0.1074,
-              "1-1": 0.1688,
-              "2-0": 0.1502,
-              "0-2": 0.0496,
-              "2-1": 0.097,
-              "1-2": 0.075,
-              "3-0": 0.0632,
-              "0-3": 0.0194,
-              "2-2": 0.0389,
-              "3-1": 0.0638,
-              "1-3": 0.0254,
-              "4-0": 0.0202,
-              "0-4": 0.0093,
-            },
-            overUnderValue: 2.5,
-            handicapValue: -0.5,
-            homeOverUnderValue: 1.5,
-            awayOverUnderValue: 0.5,
-          },
-          overUnderValue: 4.5,
+        oddsInfo: {
           handicapValue: -0.5,
-          homeOverUnderValue: 2.5,
+          overUnderValue: 3.5,
+          homeOverUnderValue: 2.0,
           awayOverUnderValue: 1.5,
         },
-        selections: [
+      } as any;
+
+      const result = oddsGeneratorService.generateFirstHalfSelections(allFirstHalfOdds, matchConfig);
+
+      expect(result).toBeDefined();
+      expect(Object.keys(result)).toHaveLength(26);
+
+      // Check that all selections have the correct structure
+      Object.values(result).forEach((selection) => {
+        expect(selection).toHaveProperty("name");
+        expect(selection).toHaveProperty("price");
+        expect(selection).toHaveProperty("point");
+        expect(selection).toHaveProperty("settlementStatus");
+        expect(selection.settlementStatus).toBe(SettlementStatus.PLAY);
+      });
+
+      // Check specific point values
+      expect(result[FirstHalfOddsKey.FT_HDP_HOME].point).toBe(-0.5);
+      expect(result[FirstHalfOddsKey.FT_HDP_AWAY].point).toBe(0.5);
+      expect(result[FirstHalfOddsKey.H1_HDP_HOME].point).toBe(0.5);
+      expect(result[FirstHalfOddsKey.H1_HDP_AWAY].point).toBe(-0.5);
+    });
+  });
+
+  describe("generateSecondHalfSelections", () => {
+    it("should generate second half selections with correct structure", () => {
+      const allSecondHalfOdds = {
+        [SecondHalfOddsKey.FT_1X2_HOME]: 2.0,
+        [SecondHalfOddsKey.FT_1X2_AWAY]: 3.0,
+        [SecondHalfOddsKey.FT_1X2_DRAW]: 3.5,
+        [SecondHalfOddsKey.FT_HDP_HOME]: 1.5,
+        [SecondHalfOddsKey.FT_HDP_AWAY]: 2.5,
+        [SecondHalfOddsKey.FT_OU_OVER]: 1.8,
+        [SecondHalfOddsKey.FT_OU_UNDER]: 2.0,
+        [SecondHalfOddsKey.FT_OE_ODD]: 1.9,
+        [SecondHalfOddsKey.FT_OE_EVEN]: 1.9,
+        [SecondHalfOddsKey.FT_HOME_OVER]: 2.2,
+        [SecondHalfOddsKey.FT_HOME_UNDER]: 1.7,
+        [SecondHalfOddsKey.FT_AWAY_OVER]: 2.1,
+        [SecondHalfOddsKey.FT_AWAY_UNDER]: 1.8,
+      };
+
+      const matchConfig = {
+        eventDetailInfos: [
+          {},
           {
-            h1_hdp_home: {
-              name: "h1_hdp_home",
-              price: 1.97,
-              point: -0.5,
-              settlementStatus: "P",
-            },
-            h1_hdp_away: {
-              name: "h1_hdp_away",
-              price: 2.02,
-              point: 0.5,
-              settlementStatus: "P",
-            },
-            h1_1x2_home: {
-              name: "h1_1x2_home",
-              price: 1.97,
-              point: 0,
-              settlementStatus: "P",
-            },
-            h1_1x2_away: {
-              name: "h1_1x2_away",
-              price: 3.49,
-              point: 0,
-              settlementStatus: "P",
-            },
-            h1_1x2_draw: {
-              name: "h1_1x2_draw",
-              price: 4.81,
-              point: 0,
-              settlementStatus: "P",
-            },
-            h1_ou_over: {
-              name: "h1_ou_over",
-              price: 2.42,
-              point: 2.5,
-              settlementStatus: "P",
-            },
-            h1_ou_under: {
-              name: "h1_ou_under",
-              price: 1.7,
-              point: 2.5,
-              settlementStatus: "P",
-            },
-            h1_oe_odd: {
-              name: "h1_oe_odd",
-              price: 2.11,
-              point: 0,
-              settlementStatus: "P",
-            },
-            h1_oe_even: {
-              name: "h1_oe_even",
-              price: 1.9,
-              point: 0,
-              settlementStatus: "P",
-            },
-            h1_home_over: {
-              name: "h1_home_over",
-              price: 2.3,
-              point: 1.5,
-              settlementStatus: "P",
-            },
-            h1_home_under: {
-              name: "h1_home_under",
-              price: 1.76,
-              point: 1.5,
-              settlementStatus: "P",
-            },
-            h1_away_over: {
-              name: "h1_away_over",
-              price: 1.52,
-              point: 0.5,
-              settlementStatus: "P",
-            },
-            h1_away_under: {
-              name: "h1_away_under",
-              price: 2.89,
-              point: 0.5,
-              settlementStatus: "P",
-            },
-            ft_hdp_home: {
-              name: "ft_hdp_home",
-              price: 1.69,
-              point: -0.5,
-              settlementStatus: "P",
-            },
-            ft_hdp_away: {
-              name: "ft_hdp_away",
-              price: 2.42,
-              point: 0.5,
-              settlementStatus: "P",
-            },
-            ft_1x2_home: {
-              name: "ft_1x2_home",
-              price: 1.69,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_1x2_away: {
-              name: "ft_1x2_away",
-              price: 3.88,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_1x2_draw: {
-              name: "ft_1x2_draw",
-              price: 6.48,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_ou_over: {
-              name: "ft_ou_over",
-              price: 1.84,
-              point: 4.5,
-              settlementStatus: "P",
-            },
-            ft_ou_under: {
-              name: "ft_ou_under",
-              price: 2.18,
-              point: 4.5,
-              settlementStatus: "P",
-            },
-            ft_oe_odd: {
-              name: "ft_oe_odd",
-              price: 2,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_oe_even: {
-              name: "ft_oe_even",
-              price: 1.99,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_home_over: {
-              name: "ft_home_over",
-              price: 1.74,
-              point: 2.5,
-              settlementStatus: "P",
-            },
-            ft_home_under: {
-              name: "ft_home_under",
-              price: 2.33,
-              point: 2.5,
-              settlementStatus: "P",
-            },
-            ft_away_over: {
-              name: "ft_away_over",
-              price: 1.72,
-              point: 1.5,
-              settlementStatus: "P",
-            },
-            ft_away_under: {
-              name: "ft_away_under",
-              price: 2.37,
-              point: 1.5,
-              settlementStatus: "P",
-            },
-          },
-          {
-            ft_1x2_home: {
-              name: "ft_1x2_home",
-              price: 1.97,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_1x2_away: {
-              name: "ft_1x2_away",
-              price: 3.49,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_1x2_draw: {
-              name: "ft_1x2_draw",
-              price: 4.81,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_hdp_home: {
-              name: "ft_hdp_home",
-              price: 1.97,
-              point: -0.5,
-              settlementStatus: "P",
-            },
-            ft_hdp_away: {
-              name: "ft_hdp_away",
-              price: 2.02,
-              point: 0.5,
-              settlementStatus: "P",
-            },
-            ft_ou_over: {
-              name: "ft_ou_over",
-              price: 2.42,
-              point: 2.5,
-              settlementStatus: "P",
-            },
-            ft_ou_under: {
-              name: "ft_ou_under",
-              price: 1.7,
-              point: 2.5,
-              settlementStatus: "P",
-            },
-            ft_oe_odd: {
-              name: "ft_oe_odd",
-              price: 2.11,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_oe_even: {
-              name: "ft_oe_even",
-              price: 1.9,
-              point: 0,
-              settlementStatus: "P",
-            },
-            ft_home_over: {
-              name: "ft_home_over",
-              price: 2.3,
-              point: 1.5,
-              settlementStatus: "P",
-            },
-            ft_home_under: {
-              name: "ft_home_under",
-              price: 1.76,
-              point: 1.5,
-              settlementStatus: "P",
-            },
-            ft_away_over: {
-              name: "ft_away_over",
-              price: 1.52,
-              point: 0.5,
-              settlementStatus: "P",
-            },
-            ft_away_under: {
-              name: "ft_away_under",
-              price: 2.89,
-              point: 0.5,
-              settlementStatus: "P",
+            oddsInfo: {
+              handicapValue: 0.5,
+              overUnderValue: 2.5,
+              homeOverUnderValue: 1.5,
+              awayOverUnderValue: 1.0,
             },
           },
         ],
-      };
+      } as any;
 
-      const roundResult = {
-        drawResults: [
+      const result = [
+        {
+          result: {
+            goalSequence: "HH",
+          },
+        },
+      ] as any;
+
+      const selections = oddsGeneratorService.generateSecondHalfSelections(allSecondHalfOdds, matchConfig, result);
+
+      expect(selections).toBeDefined();
+      expect(Object.keys(selections)).toHaveLength(13);
+
+      // Check that all selections have the correct structure
+      Object.values(selections).forEach((selection) => {
+        expect(selection).toHaveProperty("name");
+        expect(selection).toHaveProperty("price");
+        expect(selection).toHaveProperty("point");
+        expect(selection).toHaveProperty("settlementStatus");
+        expect(selection.settlementStatus).toBe(SettlementStatus.PLAY);
+      });
+
+      // Check specific point values (HH = 2 home goals, 0 away goals)
+      expect(selections[SecondHalfOddsKey.FT_HDP_HOME].point).toBe(0.5);
+      expect(selections[SecondHalfOddsKey.FT_HDP_AWAY].point).toBe(-0.5);
+      expect(selections[SecondHalfOddsKey.FT_OU_OVER].point).toBe(4.5); // 2.5 + 2
+      expect(selections[SecondHalfOddsKey.FT_OU_UNDER].point).toBe(4.5); // 2.5 + 2
+      expect(selections[SecondHalfOddsKey.FT_HOME_OVER].point).toBe(3.5); // 1.5 + 2
+      expect(selections[SecondHalfOddsKey.FT_HOME_UNDER].point).toBe(3.5); // 1.5 + 2
+      expect(selections[SecondHalfOddsKey.FT_AWAY_OVER].point).toBe(1.0); // 1.0 + 0
+      expect(selections[SecondHalfOddsKey.FT_AWAY_UNDER].point).toBe(1.0); // 1.0 + 0
+    });
+  });
+
+  describe("generateSelectionsForRound", () => {
+    it("should generate selections for both halves", () => {
+      const odds: Record<string, number>[] = [
+        {
+          [FirstHalfOddsKey.H1_HDP_HOME]: 1.5,
+          [FirstHalfOddsKey.H1_HDP_AWAY]: 2.5,
+          [FirstHalfOddsKey.H1_1X2_HOME]: 2.0,
+          [FirstHalfOddsKey.H1_1X2_AWAY]: 3.0,
+          [FirstHalfOddsKey.H1_1X2_DRAW]: 3.5,
+          [FirstHalfOddsKey.H1_OU_OVER]: 1.8,
+          [FirstHalfOddsKey.H1_OU_UNDER]: 2.0,
+          [FirstHalfOddsKey.H1_OE_ODD]: 1.9,
+          [FirstHalfOddsKey.H1_OE_EVEN]: 1.9,
+          [FirstHalfOddsKey.H1_HOME_OVER]: 2.2,
+          [FirstHalfOddsKey.H1_HOME_UNDER]: 1.7,
+          [FirstHalfOddsKey.H1_AWAY_OVER]: 2.1,
+          [FirstHalfOddsKey.H1_AWAY_UNDER]: 1.8,
+          [FirstHalfOddsKey.FT_HDP_HOME]: 1.6,
+          [FirstHalfOddsKey.FT_HDP_AWAY]: 2.4,
+          [FirstHalfOddsKey.FT_1X2_HOME]: 2.1,
+          [FirstHalfOddsKey.FT_1X2_AWAY]: 2.9,
+          [FirstHalfOddsKey.FT_1X2_DRAW]: 3.4,
+          [FirstHalfOddsKey.FT_OU_OVER]: 1.7,
+          [FirstHalfOddsKey.FT_OU_UNDER]: 2.1,
+          [FirstHalfOddsKey.FT_OE_ODD]: 1.8,
+          [FirstHalfOddsKey.FT_OE_EVEN]: 2.0,
+          [FirstHalfOddsKey.FT_HOME_OVER]: 2.0,
+          [FirstHalfOddsKey.FT_HOME_UNDER]: 1.8,
+          [FirstHalfOddsKey.FT_AWAY_OVER]: 2.3,
+          [FirstHalfOddsKey.FT_AWAY_UNDER]: 1.7,
+        } as Record<string, number>,
+        {
+          [SecondHalfOddsKey.FT_1X2_HOME]: 2.0,
+          [SecondHalfOddsKey.FT_1X2_AWAY]: 3.0,
+          [SecondHalfOddsKey.FT_1X2_DRAW]: 3.5,
+          [SecondHalfOddsKey.FT_HDP_HOME]: 1.5,
+          [SecondHalfOddsKey.FT_HDP_AWAY]: 2.5,
+          [SecondHalfOddsKey.FT_OU_OVER]: 1.8,
+          [SecondHalfOddsKey.FT_OU_UNDER]: 2.0,
+          [SecondHalfOddsKey.FT_OE_ODD]: 1.9,
+          [SecondHalfOddsKey.FT_OE_EVEN]: 1.9,
+          [SecondHalfOddsKey.FT_HOME_OVER]: 2.2,
+          [SecondHalfOddsKey.FT_HOME_UNDER]: 1.7,
+          [SecondHalfOddsKey.FT_AWAY_OVER]: 2.1,
+          [SecondHalfOddsKey.FT_AWAY_UNDER]: 1.8,
+        } as Record<string, number>,
+      ];
+
+      const oddsInfo = {
+        eventDetailInfos: [
           {
-            result: {
-              goalSequence: "0",
+            oddsInfo: {
+              handicapValue: 0.5,
+              overUnderValue: 2.5,
+              homeOverUnderValue: 1.5,
+              awayOverUnderValue: 1.0,
+            },
+          },
+          {
+            oddsInfo: {
+              handicapValue: 0.5,
+              overUnderValue: 2.5,
+              homeOverUnderValue: 1.5,
+              awayOverUnderValue: 1.0,
             },
           },
         ],
-      };
+        oddsInfo: {
+          handicapValue: -0.5,
+          overUnderValue: 3.5,
+          homeOverUnderValue: 2.0,
+          awayOverUnderValue: 1.5,
+        },
+      } as any;
 
-      const result = oddsGeneratorService.calculateOddsForRound(matchConfig, roundResult as any);
+      const result = [
+        {
+          result: {
+            goalSequence: "HH",
+          },
+        },
+      ] as any;
 
-      expect(result).toEqual(expectedData);
+      const selections = oddsGeneratorService.generateSelectionsForRound(odds, oddsInfo, result);
+
+      expect(selections).toHaveLength(2);
+      expect(selections[0]).toBeDefined();
+      expect(selections[1]).toBeDefined();
     });
   });
 });

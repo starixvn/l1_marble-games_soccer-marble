@@ -52,7 +52,7 @@ describe("GameHandler", () => {
         encryptedSettlementResult: "encrypted_settlement",
         encryptedSelections: "encrypted_selections",
       };
-      const decryptedResult = { drawResults: [{ playlist: "video1" }] };
+      const decryptedResult = [{ playlist: "video1" }];
       const decryptedSettlement = [{ ft_hdp_home: SettlementStatus.WIN }];
       const decryptedSelections = [{ ft_hdp_home: { name: "ft_hdp_home", price: 1.8 } }];
 
@@ -72,7 +72,6 @@ describe("GameHandler", () => {
       expect(decrypt).toHaveBeenCalledWith("encrypted_selections");
       expect(result).toEqual({
         ...mockRound,
-        roundTime: 1,
         result: decryptedResult,
         settlementResult: decryptedSettlement,
         selections: decryptedSelections,
@@ -382,9 +381,7 @@ describe("GameHandler", () => {
         gameId: 2001,
         ended: false,
         matchConfig: {} as any,
-        result: {
-          drawResults: [{ playlist: "video1", goalInfo: "Goal scored at 15:30" }],
-        },
+        result: [{ playlist: "video1", goalInfo: "Goal scored at 15:30" }],
       } as any;
 
       mockEventService.fetchEventDetail.mockResolvedValue(mockEventDetail);
@@ -421,9 +418,7 @@ describe("GameHandler", () => {
         gameId: 2001,
         ended: false,
         matchConfig: {} as any,
-        result: {
-          drawResults: [{ playlist: "video1", goalInfo: "Goal scored" }],
-        },
+        result: [{ playlist: "video1", goalInfo: "Goal scored" }],
       } as any;
 
       mockEventService.fetchEventDetail.mockResolvedValue(mockEventDetail);
@@ -464,12 +459,10 @@ describe("GameHandler", () => {
         matchConfig: {
           numberOfEventDetails: 2,
         } as any,
-        result: {
-          drawResults: [
-            { result: { goalSequence: "H", finalScore: "1:0" } },
-            { result: { goalSequence: "A", finalScore: "1:1" } },
-          ],
-        },
+        result: [
+          { result: { goalSequence: "H", finalScore: "1:0" } },
+          { result: { goalSequence: "A", finalScore: "1:1" } },
+        ],
       } as any;
 
       mockGameSettings.gameTiming.timelines = [{}, {}]; // 2 timelines
@@ -513,9 +506,7 @@ describe("GameHandler", () => {
         matchConfig: {
           numberOfEventDetails: 2,
         } as any,
-        result: {
-          drawResults: [{ result: { goalSequence: "H", finalScore: "1:0" } }],
-        },
+        result: [{ result: { goalSequence: "H", finalScore: "1:0" } }],
       } as any;
 
       mockEventService.fetchEventDetail.mockResolvedValue(mockEventDetail);
@@ -638,7 +629,7 @@ describe("GameHandler", () => {
         encryptedSettlementResult: "encrypted_settlement",
       } as any;
       const decryptedSelections = [{ ft_hdp_home: { name: "ft_hdp_home" } }];
-      const decryptedResult = { drawResults: [{ playlist: "video1" }] };
+      const decryptedResult = [{ playlist: "video1" }];
       const decryptedSettlement = [{ ft_hdp_home: SettlementStatus.WIN }];
 
       mockRoundService.fetchRoundData.mockResolvedValue(mockRound);

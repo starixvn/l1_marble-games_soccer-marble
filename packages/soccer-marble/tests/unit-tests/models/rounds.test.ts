@@ -1,6 +1,6 @@
 import { createRoundModel } from "../../../src/models/rounds";
 
-describe("Round Model", () => {
+describe("Round Model tests", () => {
   const RoundModel = createRoundModel({
     modelPrefix: "2001",
   } as any);
@@ -25,8 +25,28 @@ describe("Round Model", () => {
       ],
       ended: false,
       matchConfig: {
-        firstHalf: { scoreRate: { "1": 0.5 } },
-        secondHalf: { scoreRate: { "1": 0.5 } },
+        gameTiming: {
+          wholeRound: 300000,
+          timelines: [
+            { OddsAvailable: 0, ScheduleStart: 60000, ResultAvailable: 120000 },
+            { OddsAvailable: 0, ScheduleStart: 180000, ResultAvailable: 240000 },
+          ],
+        },
+        numberOfEventDetails: 2,
+        eventDetailInfos: [
+          {
+            rateConfig: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } },
+            oddsInfo: { handicapValue: 0.5, overUnderValue: 1.5, homeOverUnderValue: 0.5, awayOverUnderValue: 0.5 },
+            phase: 0,
+          },
+          {
+            rateConfig: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } },
+            oddsInfo: { handicapValue: 0, overUnderValue: 0.5, homeOverUnderValue: 0.5, awayOverUnderValue: 0.5 },
+            phase: 1,
+          },
+        ],
+        rateConfig: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } },
+        oddsInfo: { handicapValue: 0.5, overUnderValue: 2.5, homeOverUnderValue: 1.5, awayOverUnderValue: 1.5 },
       },
     });
 
@@ -43,8 +63,13 @@ describe("Round Model", () => {
     expect(round.odds[0].value).toBe(1.5);
     expect(round.ended).toBe(false);
     expect(round.matchConfig).toBeDefined();
-    expect(round.matchConfig.firstHalf.scoreRate["1"]).toBe(0.5);
-    expect(round.matchConfig.secondHalf.scoreRate["1"]).toBe(0.5);
+    expect(round.matchConfig.gameTiming).toBeDefined();
+    expect(round.matchConfig.numberOfEventDetails).toBe(2);
+    expect(round.matchConfig.eventDetailInfos).toHaveLength(2);
+    expect(round.matchConfig.eventDetailInfos[0].rateConfig.scoreRate["1-0"]).toBe(0.5);
+    expect(round.matchConfig.eventDetailInfos[1].rateConfig.scoreRate["1-0"]).toBe(0.5);
+    expect(round.matchConfig.eventDetailInfos[0].phase).toBe(0);
+    expect(round.matchConfig.eventDetailInfos[1].phase).toBe(1);
   });
 
   it("should verify required properties", () => {

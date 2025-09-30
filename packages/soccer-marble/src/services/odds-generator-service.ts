@@ -120,6 +120,7 @@ export class OddsGeneratorService {
       const totalGoals = homeGoals + awayGoals;
       const addedHome = homeGoals + addingHome;
       const addedAway = awayGoals + addingAway;
+      const totalGoalsWithAdding = totalGoals + addingHome + addingAway;
 
       this.update1X2(counters, addedHome, addedAway, rate);
 
@@ -127,7 +128,7 @@ export class OddsGeneratorService {
 
       this.updateOverUnder(counters, totalGoals, overUnderValue, rate);
 
-      this.updateEvenOdd(counters, totalGoals, rate);
+      this.updateEvenOdd(counters, totalGoalsWithAdding, rate);
 
       this.updateTeamOverUnder(counters, homeGoals, awayGoals, homeOverUnderValue, awayOverUnderValue, rate);
     }
@@ -203,8 +204,6 @@ export class OddsGeneratorService {
     const firstHalfResult = result[0].result.goalSequence;
     const fhHomeGoals = firstHalfResult.split("H").length - 1;
     const fhAwayGoals = firstHalfResult.split("A").length - 1;
-    const fhTotalGoals = fhHomeGoals + fhAwayGoals;
-
     const addingScore = `${fhHomeGoals}-${fhAwayGoals}`;
     const secondHalfOdds = this.calculateOddsFromRate(matchConfig.eventDetailInfos[1].rateConfig, addingScore);
 
@@ -216,8 +215,8 @@ export class OddsGeneratorService {
       [SecondHalfOddsKey.FT_HDP_AWAY]: secondHalfOdds.hdpAway,
       [SecondHalfOddsKey.FT_OU_OVER]: secondHalfOdds.over,
       [SecondHalfOddsKey.FT_OU_UNDER]: secondHalfOdds.under,
-      [SecondHalfOddsKey.FT_OE_ODD]: fhTotalGoals % 2 === 0 ? secondHalfOdds.odd : secondHalfOdds.even,
-      [SecondHalfOddsKey.FT_OE_EVEN]: fhTotalGoals % 2 === 0 ? secondHalfOdds.even : secondHalfOdds.odd,
+      [SecondHalfOddsKey.FT_OE_ODD]: secondHalfOdds.odd,
+      [SecondHalfOddsKey.FT_OE_EVEN]: secondHalfOdds.even,
       [SecondHalfOddsKey.FT_HOME_OVER]: secondHalfOdds.homeOver,
       [SecondHalfOddsKey.FT_HOME_UNDER]: secondHalfOdds.homeUnder,
       [SecondHalfOddsKey.FT_AWAY_OVER]: secondHalfOdds.awayOver,

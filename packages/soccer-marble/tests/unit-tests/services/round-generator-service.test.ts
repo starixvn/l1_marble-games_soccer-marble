@@ -1,5 +1,5 @@
 import * as rngModule from "sc-core-rng";
-import { MatchConfigType, SettlementStatus } from "../../../src/types";
+import { MatchConfig, SettlementStatus } from "../../../src/types";
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { mockContainer } from "../global-stubs";
 import { idHelper, cryptoHelper } from "@soccer-marble/shared-utils";
@@ -339,12 +339,20 @@ describe("RoundGeneratorService", () => {
   });
 
   describe("createNewMatchConfig", () => {
-    it("should create match config with shuffled first and second half when home is favorite", () => {
+    it("should create match config with eventDetailInfos when home is favorite", () => {
       // Arrange
       const secureRandomBoolMock = jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
       const shuffleMock = jest
         .spyOn(rngModule, "secureShuffle")
         .mockReturnValue([mockContainer.rateConfigs.homeFavorite[1], mockContainer.rateConfigs.homeFavorite[0]]);
+
+      const mockOddsInfo = {
+        handicapValue: 0.5,
+        overUnderValue: 2.5,
+        homeOverUnderValue: 1.5,
+        awayOverUnderValue: 1.0,
+      };
+      jest.spyOn(oddsGeneratorService, "calculateOddsInfo").mockReturnValue(mockOddsInfo);
 
       // Act
       const result = service.createNewMatchConfig();
@@ -355,17 +363,37 @@ describe("RoundGeneratorService", () => {
       expect(result).toEqual({
         gameTiming: mockContainer.gameSettings.gameTiming,
         numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
-        firstHalf: mockContainer.rateConfigs.homeFavorite[1],
-        secondHalf: mockContainer.rateConfigs.homeFavorite[0],
+        eventDetailInfos: [
+          {
+            rateConfig: mockContainer.rateConfigs.homeFavorite[1],
+            phase: 0,
+            oddsInfo: mockOddsInfo,
+          },
+          {
+            rateConfig: mockContainer.rateConfigs.homeFavorite[0],
+            phase: 1,
+            oddsInfo: mockOddsInfo,
+          },
+        ],
+        rateConfig: expect.any(Object),
+        oddsInfo: mockOddsInfo,
       });
     });
 
-    it("should create match config with shuffled first and second half when away is favorite", () => {
+    it("should create match config with eventDetailInfos when away is favorite", () => {
       // Arrange
       const secureRandomBoolMock = jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(false);
       const shuffleMock = jest
         .spyOn(rngModule, "secureShuffle")
         .mockReturnValue([mockContainer.rateConfigs.awayFavorite[1], mockContainer.rateConfigs.awayFavorite[0]]);
+
+      const mockOddsInfo = {
+        handicapValue: -0.5,
+        overUnderValue: 2.5,
+        homeOverUnderValue: 1.0,
+        awayOverUnderValue: 1.5,
+      };
+      jest.spyOn(oddsGeneratorService, "calculateOddsInfo").mockReturnValue(mockOddsInfo);
 
       // Act
       const result = service.createNewMatchConfig();
@@ -376,8 +404,20 @@ describe("RoundGeneratorService", () => {
       expect(result).toEqual({
         gameTiming: mockContainer.gameSettings.gameTiming,
         numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
-        firstHalf: mockContainer.rateConfigs.awayFavorite[1],
-        secondHalf: mockContainer.rateConfigs.awayFavorite[0],
+        eventDetailInfos: [
+          {
+            rateConfig: mockContainer.rateConfigs.awayFavorite[1],
+            phase: 0,
+            oddsInfo: mockOddsInfo,
+          },
+          {
+            rateConfig: mockContainer.rateConfigs.awayFavorite[0],
+            phase: 1,
+            oddsInfo: mockOddsInfo,
+          },
+        ],
+        rateConfig: expect.any(Object),
+        oddsInfo: mockOddsInfo,
       });
     });
   });
@@ -389,72 +429,100 @@ describe("RoundGeneratorService", () => {
       const roundId = 1;
       const mockMatch = { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" };
       const mockConfig = {
-        firstHalf: mockContainer.rateConfigs.homeFavorite[0],
-        secondHalf: mockContainer.rateConfigs.homeFavorite[1],
-      };
-      const mockResult = {
-        drawResults: [
+        gameTiming: mockContainer.gameSettings.gameTiming,
+        numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
+        eventDetailInfos: [
           {
-            playlist: "video1",
-            result: {
-              goalSequence: "H",
-              finalScore: "1:0",
-            },
+            rateConfig: mockContainer.rateConfigs.homeFavorite[0],
+            phase: 0,
+            oddsInfo: { handicapValue: 0.5, overUnderValue: 1.5, homeOverUnderValue: 0.5, awayOverUnderValue: 0.5 },
+          },
+          {
+            rateConfig: mockContainer.rateConfigs.homeFavorite[1],
+            phase: 1,
+            oddsInfo: { handicapValue: 0, overUnderValue: 0.5, homeOverUnderValue: 0.5, awayOverUnderValue: 0.5 },
           },
         ],
+        rateConfig: {} as any,
+        oddsInfo: { handicapValue: 0.5, overUnderValue: 2.5, homeOverUnderValue: 1.5, awayOverUnderValue: 1.5 },
       };
-      const mockOddsResult = {
-        odds: [
-          {
-            ft_hdp_home: 1.8,
-            ft_hdp_away: 2.2,
-            ft_1x2_home: 1.9,
-            ft_1x2_away: 2.1,
-            ft_1x2_draw: 2.0,
-            ft_ou_over: 1.9,
-            ft_ou_under: 2.1,
-            ft_oe_odd: 1.9,
-            ft_oe_even: 2.1,
-            h1_hdp_home: 1.8,
-            h1_hdp_away: 2.2,
-            h1_1x2_home: 1.9,
-            h1_1x2_away: 2.1,
-            h1_1x2_draw: 2.0,
-            h1_ou_over: 1.9,
-            h1_ou_under: 2.1,
-            h1_oe_odd: 1.9,
-            h1_oe_even: 2.1,
+      const mockResult = [
+        {
+          playlist: "video1",
+          goalInfo: "video1",
+          result: {
+            goalSequence: "H",
+            finalScore: "1:0",
           },
-        ],
-        matchConfig: {
-          ...mockConfig,
-          overUnderValue: 2.5,
-          handicapValue: 0.5,
-          firstHalf: {
-            ...mockConfig.firstHalf,
-            overUnderValue: 1.5,
-            handicapValue: 0.5,
-          },
-          secondHalf: {
-            ...mockConfig.secondHalf,
-            overUnderValue: 0.5,
-            handicapValue: 0,
-          },
+          phase: 0,
         },
-        selections: [
-          {
-            ft_hdp_home: { name: "ft_hdp_home", price: 1.8, point: 0.5, settlementStatus: SettlementStatus.PLAY },
-            ft_hdp_away: { name: "ft_hdp_away", price: 2.2, point: -0.5, settlementStatus: SettlementStatus.PLAY },
-            ft_1x2_home: { name: "ft_1x2_home", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
-            ft_1x2_away: { name: "ft_1x2_away", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
-            ft_1x2_draw: { name: "ft_1x2_draw", price: 2.0, point: 0, settlementStatus: SettlementStatus.PLAY },
-            ft_ou_over: { name: "ft_ou_over", price: 1.9, point: 2.5, settlementStatus: SettlementStatus.PLAY },
-            ft_ou_under: { name: "ft_ou_under", price: 2.1, point: 2.5, settlementStatus: SettlementStatus.PLAY },
-            ft_oe_odd: { name: "ft_oe_odd", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
-            ft_oe_even: { name: "ft_oe_even", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
+        {
+          playlist: "video2",
+          goalInfo: "video2",
+          result: {
+            goalSequence: "A",
+            finalScore: "0:1",
           },
-        ],
-      };
+          phase: 1,
+        },
+      ];
+      const mockOddsResult = [
+        {
+          ft_hdp_home: 1.8,
+          ft_hdp_away: 2.2,
+          ft_1x2_home: 1.9,
+          ft_1x2_away: 2.1,
+          ft_1x2_draw: 2.0,
+          ft_ou_over: 1.9,
+          ft_ou_under: 2.1,
+          ft_oe_odd: 1.9,
+          ft_oe_even: 2.1,
+          h1_hdp_home: 1.8,
+          h1_hdp_away: 2.2,
+          h1_1x2_home: 1.9,
+          h1_1x2_away: 2.1,
+          h1_1x2_draw: 2.0,
+          h1_ou_over: 1.9,
+          h1_ou_under: 2.1,
+          h1_oe_odd: 1.9,
+          h1_oe_even: 2.1,
+        },
+        {
+          ft_hdp_home: 1.7,
+          ft_hdp_away: 2.3,
+          ft_1x2_home: 1.8,
+          ft_1x2_away: 2.2,
+          ft_1x2_draw: 2.1,
+          ft_ou_over: 1.8,
+          ft_ou_under: 2.2,
+          ft_oe_odd: 1.8,
+          ft_oe_even: 2.2,
+        },
+      ];
+      const mockSelections = [
+        {
+          ft_hdp_home: { name: "ft_hdp_home", price: 1.8, point: 0.5, settlementStatus: SettlementStatus.PLAY },
+          ft_hdp_away: { name: "ft_hdp_away", price: 2.2, point: -0.5, settlementStatus: SettlementStatus.PLAY },
+          ft_1x2_home: { name: "ft_1x2_home", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
+          ft_1x2_away: { name: "ft_1x2_away", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
+          ft_1x2_draw: { name: "ft_1x2_draw", price: 2.0, point: 0, settlementStatus: SettlementStatus.PLAY },
+          ft_ou_over: { name: "ft_ou_over", price: 1.9, point: 2.5, settlementStatus: SettlementStatus.PLAY },
+          ft_ou_under: { name: "ft_ou_under", price: 2.1, point: 2.5, settlementStatus: SettlementStatus.PLAY },
+          ft_oe_odd: { name: "ft_oe_odd", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
+          ft_oe_even: { name: "ft_oe_even", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
+        },
+        {
+          ft_hdp_home: { name: "ft_hdp_home", price: 1.7, point: 0.5, settlementStatus: SettlementStatus.PLAY },
+          ft_hdp_away: { name: "ft_hdp_away", price: 2.3, point: -0.5, settlementStatus: SettlementStatus.PLAY },
+          ft_1x2_home: { name: "ft_1x2_home", price: 1.8, point: 0, settlementStatus: SettlementStatus.PLAY },
+          ft_1x2_away: { name: "ft_1x2_away", price: 2.2, point: 0, settlementStatus: SettlementStatus.PLAY },
+          ft_1x2_draw: { name: "ft_1x2_draw", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
+          ft_ou_over: { name: "ft_ou_over", price: 1.8, point: 2.5, settlementStatus: SettlementStatus.PLAY },
+          ft_ou_under: { name: "ft_ou_under", price: 2.2, point: 2.5, settlementStatus: SettlementStatus.PLAY },
+          ft_oe_odd: { name: "ft_oe_odd", price: 1.8, point: 0, settlementStatus: SettlementStatus.PLAY },
+          ft_oe_even: { name: "ft_oe_even", price: 2.2, point: 0, settlementStatus: SettlementStatus.PLAY },
+        },
+      ];
       const mockSettlementResult = [
         {
           ft_hdp_home: SettlementStatus.WIN,
@@ -479,9 +547,10 @@ describe("RoundGeneratorService", () => {
       ];
 
       jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
-      jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
-      jest.spyOn(resultGeneratorService, "generateResult").mockReturnValue(mockResult);
+      jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfig);
+      jest.spyOn(resultGeneratorService, "generateResult").mockReturnValue(mockResult as any);
       jest.spyOn(oddsGeneratorService, "calculateOddsForRound").mockReturnValue(mockOddsResult as any);
+      jest.spyOn(oddsGeneratorService, "generateSelectionsForRound").mockReturnValue(mockSelections as any);
       jest.spyOn(resultGeneratorService, "getSettlementResult").mockReturnValue(mockSettlementResult);
       jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
       jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
@@ -497,8 +566,8 @@ describe("RoundGeneratorService", () => {
         homeTeam: mockMatch.homeTeam,
         awayTeam: mockMatch.awayTeam,
         theme: mockMatch.theme,
-        matchConfig: mockOddsResult.matchConfig,
-        odds: mockOddsResult.odds,
+        matchConfig: mockConfig,
+        odds: mockOddsResult,
         encryptedResult: "encrypted_data",
         encryptedSettlementResult: "encrypted_data",
         encryptedSelections: "encrypted_data",
@@ -510,7 +579,12 @@ describe("RoundGeneratorService", () => {
         numberOfVideos: mockContainer.gameSettings.numberOfVideos,
       });
       expect(oddsGeneratorService.calculateOddsForRound).toHaveBeenCalledWith(mockConfig, mockResult as any);
-      expect(resultGeneratorService.getSettlementResult).toHaveBeenCalledWith(mockResult, mockOddsResult.matchConfig);
+      expect(oddsGeneratorService.generateSelectionsForRound).toHaveBeenCalledWith(
+        mockOddsResult,
+        mockConfig,
+        mockResult as any
+      );
+      expect(resultGeneratorService.getSettlementResult).toHaveBeenCalledWith(mockResult, mockConfig);
       expect(cryptoHelper.encrypt).toHaveBeenCalledTimes(3);
     });
 
@@ -531,45 +605,68 @@ describe("RoundGeneratorService", () => {
 
       const mockMatch = { homeTeam: "Team A", awayTeam: "Team B", theme: "2001" };
       const mockConfig = {
-        firstHalf: mockContainer.rateConfigs.homeFavorite[0],
-        secondHalf: mockContainer.rateConfigs.homeFavorite[1],
-      };
-      const mockResult = {
-        drawResults: [
+        gameTiming: mockContainer.gameSettings.gameTiming,
+        numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
+        eventDetailInfos: [
           {
-            playlist: "video1",
-            result: {
-              goalSequence: "H",
-              finalScore: "1:0",
-            },
+            rateConfig: mockContainer.rateConfigs.homeFavorite[0],
+            phase: 0,
+            oddsInfo: { handicapValue: 0.5, overUnderValue: 1.5, homeOverUnderValue: 0.5, awayOverUnderValue: 0.5 },
+          },
+          {
+            rateConfig: mockContainer.rateConfigs.homeFavorite[1],
+            phase: 1,
+            oddsInfo: { handicapValue: 0, overUnderValue: 0.5, homeOverUnderValue: 0.5, awayOverUnderValue: 0.5 },
           },
         ],
+        rateConfig: {} as any,
+        oddsInfo: { handicapValue: 0.5, overUnderValue: 2.5, homeOverUnderValue: 1.5, awayOverUnderValue: 1.5 },
       };
-      const mockOddsResult = {
-        odds: [],
-        matchConfig: {
-          ...mockConfig,
-          overUnderValue: 2.5,
-          handicapValue: 0.5,
-          firstHalf: {
-            ...mockConfig.firstHalf,
-            overUnderValue: 1.5,
-            handicapValue: 0.5,
+      const mockResult = [
+        {
+          playlist: "video1",
+          goalInfo: "video1",
+          result: {
+            goalSequence: "H",
+            finalScore: "1:0",
           },
-          secondHalf: {
-            ...mockConfig.secondHalf,
-            overUnderValue: 0.5,
-            handicapValue: 0,
-          },
+          phase: 0,
         },
-        selections: [],
-      };
+        {
+          playlist: "video2",
+          goalInfo: "video2",
+          result: {
+            goalSequence: "A",
+            finalScore: "0:1",
+          },
+          phase: 1,
+        },
+      ];
+      const mockOddsResult = [
+        {
+          ft_hdp_home: 1.8,
+          ft_hdp_away: 2.2,
+        },
+        {
+          ft_hdp_home: 1.7,
+          ft_hdp_away: 2.3,
+        },
+      ];
+      const mockSelections = [
+        {
+          ft_hdp_home: { name: "ft_hdp_home", price: 1.8, point: 0.5, settlementStatus: SettlementStatus.PLAY },
+        },
+        {
+          ft_hdp_home: { name: "ft_hdp_home", price: 1.7, point: 0.5, settlementStatus: SettlementStatus.PLAY },
+        },
+      ];
       const mockSettlementResult = [] as any;
 
       jest.spyOn(service, "createNewMatch").mockReturnValue(mockMatch);
-      jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfigType);
-      jest.spyOn(resultGeneratorService, "generateResult").mockReturnValue(mockResult);
+      jest.spyOn(service, "createNewMatchConfig").mockReturnValue(mockConfig as MatchConfig);
+      jest.spyOn(resultGeneratorService, "generateResult").mockReturnValue(mockResult as any);
       jest.spyOn(oddsGeneratorService, "calculateOddsForRound").mockReturnValue(mockOddsResult as any);
+      jest.spyOn(oddsGeneratorService, "generateSelectionsForRound").mockReturnValue(mockSelections as any);
       jest.spyOn(resultGeneratorService, "getSettlementResult").mockReturnValue(mockSettlementResult);
       jest.spyOn(idHelper, "createEventId").mockReturnValue(123);
       jest.spyOn(cryptoHelper, "encrypt").mockReturnValue("encrypted_data");
@@ -589,38 +686,62 @@ describe("RoundGeneratorService", () => {
     it("should call calculateOddsForRound with correct parameters", () => {
       // Arrange
       const matchConfig = {
-        firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
-        secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
-      } as MatchConfigType;
-      const roundResult = {
-        drawResults: [
+        gameTiming: mockContainer.gameSettings.gameTiming,
+        numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
+        eventDetailInfos: [
           {
-            result: {
-              goalSequence: "1-0",
-            },
+            rateConfig: { scoreRate: { "1-0": 0.5, "0-1": 0.5 } } as any,
+            phase: 0,
+            oddsInfo: { handicapValue: 0.5, overUnderValue: 1.5, homeOverUnderValue: 0.5, awayOverUnderValue: 0.5 },
+          },
+          {
+            rateConfig: { scoreRate: { "0-0": 0.5, "1-1": 0.5 } } as any,
+            phase: 1,
+            oddsInfo: { handicapValue: 0, overUnderValue: 0.5, homeOverUnderValue: 0.5, awayOverUnderValue: 0.5 },
           },
         ],
-      };
-
-      const expectedResult = {
-        odds: [
-          {
-            ft_hdp_home: 1.8,
-            ft_hdp_away: 2.2,
-            ft_ou_over: 1.9,
-            ft_ou_under: 2.1,
-            ft_oe_odd: 1.9,
-            ft_oe_even: 2.1,
+        rateConfig: {} as any,
+        oddsInfo: { handicapValue: 0.5, overUnderValue: 2.5, homeOverUnderValue: 1.5, awayOverUnderValue: 1.5 },
+      } as MatchConfig;
+      const roundResult = [
+        {
+          playlist: "video1",
+          goalInfo: "video1",
+          result: {
+            goalSequence: "H",
+            finalScore: "1:0",
           },
-        ],
-        matchConfig: {
-          overUnderValue: 2.5,
-          handicapValue: 0.5,
-          firstHalf: { scoreRate: { "1-0": 0.5, "0-1": 0.5 }, overUnderValue: 1.5, handicapValue: 0.5 },
-          secondHalf: { scoreRate: { "0-0": 0.5, "1-1": 0.5 }, overUnderValue: 0.5, handicapValue: 0 },
+          phase: 0,
         },
-        selections: [{}],
-      };
+        {
+          playlist: "video2",
+          goalInfo: "video2",
+          result: {
+            goalSequence: "A",
+            finalScore: "0:1",
+          },
+          phase: 1,
+        },
+      ];
+
+      const expectedResult = [
+        {
+          ft_hdp_home: 1.8,
+          ft_hdp_away: 2.2,
+          ft_ou_over: 1.9,
+          ft_ou_under: 2.1,
+          ft_oe_odd: 1.9,
+          ft_oe_even: 2.1,
+        },
+        {
+          ft_hdp_home: 1.7,
+          ft_hdp_away: 2.3,
+          ft_ou_over: 1.8,
+          ft_ou_under: 2.2,
+          ft_oe_odd: 1.8,
+          ft_oe_even: 2.2,
+        },
+      ];
 
       jest.spyOn(oddsGeneratorService, "calculateOddsForRound").mockReturnValue(expectedResult as any);
 
