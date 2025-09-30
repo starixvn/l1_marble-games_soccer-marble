@@ -162,11 +162,7 @@ export class OddsGeneratorService {
   };
 
   calculateOddsForFirstHalf = (matchConfig: MatchConfig) => {
-    const allRateConfigs = matchConfig.eventDetailInfos.map((eventDetailInfo) => eventDetailInfo.rateConfig);
-    const fullTimeScoreRates = oddsHelper.mergeArrayOfRates(allRateConfigs);
-
-    const fulltimeOdds = this.calculateOddsFromRate(fullTimeScoreRates);
-
+    const fulltimeOdds = this.calculateOddsFromRate(matchConfig.rateConfig);
     const firstHalfOdds = this.calculateOddsFromRate(matchConfig.eventDetailInfos[0].rateConfig);
 
     return {
@@ -312,9 +308,9 @@ export class OddsGeneratorService {
     return [allFirstHalfOdds, allSecondHalfOdds];
   };
 
-  generateSelectionsForRound = (odds: Record<string, number>[], oddsInfo: any, result: RoundResult) => {
-    const firstHalfSelections = this.generateFirstHalfSelections(odds[0], oddsInfo);
-    const secondHalfSelections = this.generateSecondHalfSelections(odds[1], oddsInfo, result);
+  generateSelectionsForRound = (odds: Record<string, number>[], matchConfig: MatchConfig, result: RoundResult) => {
+    const firstHalfSelections = this.generateFirstHalfSelections(odds[0], matchConfig);
+    const secondHalfSelections = this.generateSecondHalfSelections(odds[1], matchConfig, result);
 
     return [firstHalfSelections, secondHalfSelections];
   };

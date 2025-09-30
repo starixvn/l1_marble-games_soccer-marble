@@ -49,7 +49,7 @@ export class EventService {
           scheduleStartTs: new Date(startTime.getTime() + timeline.ScheduleStart * 1000),
           resultsAvailableTs: new Date(startTime.getTime() + timeline.ResultAvailable * 1000),
           hasResults: false,
-          phase: index,
+          phase: roundData.matchConfig.eventDetailInfos[index].phase,
         };
 
         return this.eventDetailsRepository.create(eventDetail);

@@ -1,4 +1,4 @@
-import { MatchConfig, GameRunningRound, GameSettings, AppContainer, Match, RoundResult, RateConfig } from "../types";
+import { MatchConfig, GameRunningRound, GameSettings, AppContainer, Match, RateConfig } from "../types";
 import { secureShuffle, secureRandomBool } from "sc-core-rng";
 import { OddsGeneratorService } from "./odds-generator-service";
 import { ResultGeneratorService } from "./result-generator-service";

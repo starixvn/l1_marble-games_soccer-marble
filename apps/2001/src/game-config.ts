@@ -10,7 +10,7 @@ export const appConfigs = {
     url: process.env.NODE_ENV === "production" ? "mongodb://host.docker.internal:27017" : "mongodb://localhost:27017",
     authSource: "",
     dbName: "marble-football",
-    collectionName: "soccer_marble_2001_jobs",
+    collectionName: "soccer_marble_jobs",
     replicaSet: "",
   },
   sentry: {

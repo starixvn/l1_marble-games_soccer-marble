@@ -137,6 +137,7 @@ export type GameSettings = {
 export type GameTiming = {
   wholeRound: number;
   timelines: Array<Timeline>;
+  extraInfo?: any;
 };
 
 export type Timeline = {
