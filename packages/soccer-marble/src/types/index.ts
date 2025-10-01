@@ -217,27 +217,9 @@ export enum FirstHalfOddsKey {
   H1_HOME_UNDER = "h1_home_under",
   H1_AWAY_OVER = "h1_away_over",
   H1_AWAY_UNDER = "h1_away_under",
-
-  FT_HDP_HOME = "ft_hdp_home",
-  FT_HDP_AWAY = "ft_hdp_away",
-
-  FT_1X2_HOME = "ft_1x2_home",
-  FT_1X2_AWAY = "ft_1x2_away",
-  FT_1X2_DRAW = "ft_1x2_draw",
-
-  FT_OU_OVER = "ft_ou_over",
-  FT_OU_UNDER = "ft_ou_under",
-
-  FT_OE_ODD = "ft_oe_odd",
-  FT_OE_EVEN = "ft_oe_even",
-
-  FT_HOME_OVER = "ft_home_over",
-  FT_HOME_UNDER = "ft_home_under",
-  FT_AWAY_OVER = "ft_away_over",
-  FT_AWAY_UNDER = "ft_away_under",
 }
 
-export enum SecondHalfOddsKey {
+export enum FullTimeOddsKey {
   FT_1X2_HOME = "ft_1x2_home",
   FT_1X2_AWAY = "ft_1x2_away",
   FT_1X2_DRAW = "ft_1x2_draw",

@@ -2,7 +2,7 @@ import {
   OddsGeneratorService as BaseOddsGeneratorService,
   oddsHelper,
   resultHelper,
-  SecondHalfOddsKey,
+  FullTimeOddsKey,
   FirstHalfOddsKey,
   SettlementStatus,
 } from "@soccer-marble/soccer-marble-base";
@@ -79,15 +79,15 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
       [FirstHalfOddsKey.H1_OE_ODD]: firstHalf.odd,
       [FirstHalfOddsKey.H1_OE_EVEN]: firstHalf.even,
 
-      [FirstHalfOddsKey.FT_HDP_HOME]: fulltime.hdpHome,
-      [FirstHalfOddsKey.FT_HDP_AWAY]: fulltime.hdpAway,
-      [FirstHalfOddsKey.FT_1X2_HOME]: fulltime.home,
-      [FirstHalfOddsKey.FT_1X2_AWAY]: fulltime.away,
-      [FirstHalfOddsKey.FT_1X2_DRAW]: fulltime.draw,
-      [FirstHalfOddsKey.FT_OU_OVER]: fulltime.over,
-      [FirstHalfOddsKey.FT_OU_UNDER]: fulltime.under,
-      [FirstHalfOddsKey.FT_OE_ODD]: fulltime.odd,
-      [FirstHalfOddsKey.FT_OE_EVEN]: fulltime.even,
+      [FullTimeOddsKey.FT_HDP_HOME]: fulltime.hdpHome,
+      [FullTimeOddsKey.FT_HDP_AWAY]: fulltime.hdpAway,
+      [FullTimeOddsKey.FT_1X2_HOME]: fulltime.home,
+      [FullTimeOddsKey.FT_1X2_AWAY]: fulltime.away,
+      [FullTimeOddsKey.FT_1X2_DRAW]: fulltime.draw,
+      [FullTimeOddsKey.FT_OU_OVER]: fulltime.over,
+      [FullTimeOddsKey.FT_OU_UNDER]: fulltime.under,
+      [FullTimeOddsKey.FT_OE_ODD]: fulltime.odd,
+      [FullTimeOddsKey.FT_OE_EVEN]: fulltime.even,
     };
 
     return firstHalfOdds;
@@ -141,14 +141,14 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
       firstHalfSelections[key] = selection;
     });
 
-    firstHalfSelections[FirstHalfOddsKey.FT_HDP_HOME].point = fulltimeOddsInfo.handicapValue;
-    firstHalfSelections[FirstHalfOddsKey.FT_HDP_AWAY].point = -fulltimeOddsInfo.handicapValue;
+    firstHalfSelections[FullTimeOddsKey.FT_HDP_HOME].point = fulltimeOddsInfo.handicapValue;
+    firstHalfSelections[FullTimeOddsKey.FT_HDP_AWAY].point = -fulltimeOddsInfo.handicapValue;
 
     firstHalfSelections[FirstHalfOddsKey.H1_HDP_HOME].point = firstHalfOddsInfo.handicapValue;
     firstHalfSelections[FirstHalfOddsKey.H1_HDP_AWAY].point = -firstHalfOddsInfo.handicapValue;
 
-    firstHalfSelections[FirstHalfOddsKey.FT_OU_OVER].point = fulltimeOddsInfo.overUnderValue + addingTotalGoals;
-    firstHalfSelections[FirstHalfOddsKey.FT_OU_UNDER].point = fulltimeOddsInfo.overUnderValue + addingTotalGoals;
+    firstHalfSelections[FullTimeOddsKey.FT_OU_OVER].point = fulltimeOddsInfo.overUnderValue + addingTotalGoals;
+    firstHalfSelections[FullTimeOddsKey.FT_OU_UNDER].point = fulltimeOddsInfo.overUnderValue + addingTotalGoals;
 
     firstHalfSelections[FirstHalfOddsKey.H1_OU_OVER].point = firstHalfOddsInfo.overUnderValue + addingTotalGoals;
     firstHalfSelections[FirstHalfOddsKey.H1_OU_UNDER].point = firstHalfOddsInfo.overUnderValue + addingTotalGoals;
@@ -176,15 +176,15 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
     const secondHalf = this.calculateOddsFromRate(currentSecondHalfScoreRates, addingScore);
 
     const secondHalfOdds = {
-      [SecondHalfOddsKey.FT_HDP_HOME]: secondHalf.hdpHome,
-      [SecondHalfOddsKey.FT_HDP_AWAY]: secondHalf.hdpAway,
-      [SecondHalfOddsKey.FT_1X2_HOME]: secondHalf.home,
-      [SecondHalfOddsKey.FT_1X2_AWAY]: secondHalf.away,
-      [SecondHalfOddsKey.FT_1X2_DRAW]: secondHalf.draw,
-      [SecondHalfOddsKey.FT_OU_OVER]: secondHalf.over,
-      [SecondHalfOddsKey.FT_OU_UNDER]: secondHalf.under,
-      [SecondHalfOddsKey.FT_OE_ODD]: secondHalf.odd,
-      [SecondHalfOddsKey.FT_OE_EVEN]: secondHalf.even,
+      [FullTimeOddsKey.FT_HDP_HOME]: secondHalf.hdpHome,
+      [FullTimeOddsKey.FT_HDP_AWAY]: secondHalf.hdpAway,
+      [FullTimeOddsKey.FT_1X2_HOME]: secondHalf.home,
+      [FullTimeOddsKey.FT_1X2_AWAY]: secondHalf.away,
+      [FullTimeOddsKey.FT_1X2_DRAW]: secondHalf.draw,
+      [FullTimeOddsKey.FT_OU_OVER]: secondHalf.over,
+      [FullTimeOddsKey.FT_OU_UNDER]: secondHalf.under,
+      [FullTimeOddsKey.FT_OE_ODD]: secondHalf.odd,
+      [FullTimeOddsKey.FT_OE_EVEN]: secondHalf.even,
     };
 
     return secondHalfOdds;
@@ -235,11 +235,11 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
       secondHalfSelections[key] = selection;
     });
 
-    secondHalfSelections[SecondHalfOddsKey.FT_HDP_HOME].point = secondHalfOddsInfo.handicapValue;
-    secondHalfSelections[SecondHalfOddsKey.FT_HDP_AWAY].point = -secondHalfOddsInfo.handicapValue;
+    secondHalfSelections[FullTimeOddsKey.FT_HDP_HOME].point = secondHalfOddsInfo.handicapValue;
+    secondHalfSelections[FullTimeOddsKey.FT_HDP_AWAY].point = -secondHalfOddsInfo.handicapValue;
 
-    secondHalfSelections[SecondHalfOddsKey.FT_OU_OVER].point = secondHalfOddsInfo.overUnderValue + addingTotalGoals;
-    secondHalfSelections[SecondHalfOddsKey.FT_OU_UNDER].point = secondHalfOddsInfo.overUnderValue + addingTotalGoals;
+    secondHalfSelections[FullTimeOddsKey.FT_OU_OVER].point = secondHalfOddsInfo.overUnderValue + addingTotalGoals;
+    secondHalfSelections[FullTimeOddsKey.FT_OU_UNDER].point = secondHalfOddsInfo.overUnderValue + addingTotalGoals;
 
     return secondHalfSelections;
   };

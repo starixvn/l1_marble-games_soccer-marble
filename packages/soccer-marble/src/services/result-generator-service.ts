@@ -6,7 +6,7 @@ import {
   EventDetailResult,
   MatchConfig,
   FirstHalfOddsKey,
-  SecondHalfOddsKey,
+  FullTimeOddsKey,
   AppContainer,
   RateConfig,
   ResultType,
@@ -62,20 +62,20 @@ export class ResultGeneratorService {
     );
 
     const finalFirstHalfSettlementResult = {
-      [FirstHalfOddsKey.FT_HDP_HOME]: fullTimeSettlementResult.handicapHome,
-      [FirstHalfOddsKey.FT_HDP_AWAY]: fullTimeSettlementResult.handicapAway,
-      [FirstHalfOddsKey.FT_1X2_HOME]: fullTimeSettlementResult.home,
-      [FirstHalfOddsKey.FT_1X2_AWAY]: fullTimeSettlementResult.away,
-      [FirstHalfOddsKey.FT_1X2_DRAW]: fullTimeSettlementResult.draw,
-      [FirstHalfOddsKey.FT_OU_OVER]: fullTimeSettlementResult.over,
-      [FirstHalfOddsKey.FT_OU_UNDER]: fullTimeSettlementResult.under,
-      [FirstHalfOddsKey.FT_OE_ODD]: fullTimeSettlementResult.odd,
-      [FirstHalfOddsKey.FT_OE_EVEN]: fullTimeSettlementResult.even,
+      [FullTimeOddsKey.FT_HDP_HOME]: fullTimeSettlementResult.handicapHome,
+      [FullTimeOddsKey.FT_HDP_AWAY]: fullTimeSettlementResult.handicapAway,
+      [FullTimeOddsKey.FT_1X2_HOME]: fullTimeSettlementResult.home,
+      [FullTimeOddsKey.FT_1X2_AWAY]: fullTimeSettlementResult.away,
+      [FullTimeOddsKey.FT_1X2_DRAW]: fullTimeSettlementResult.draw,
+      [FullTimeOddsKey.FT_OU_OVER]: fullTimeSettlementResult.over,
+      [FullTimeOddsKey.FT_OU_UNDER]: fullTimeSettlementResult.under,
+      [FullTimeOddsKey.FT_OE_ODD]: fullTimeSettlementResult.odd,
+      [FullTimeOddsKey.FT_OE_EVEN]: fullTimeSettlementResult.even,
 
-      [FirstHalfOddsKey.FT_HOME_OVER]: fullTimeSettlementResult.homeOver,
-      [FirstHalfOddsKey.FT_HOME_UNDER]: fullTimeSettlementResult.homeUnder,
-      [FirstHalfOddsKey.FT_AWAY_OVER]: fullTimeSettlementResult.awayOver,
-      [FirstHalfOddsKey.FT_AWAY_UNDER]: fullTimeSettlementResult.awayUnder,
+      [FullTimeOddsKey.FT_HOME_OVER]: fullTimeSettlementResult.homeOver,
+      [FullTimeOddsKey.FT_HOME_UNDER]: fullTimeSettlementResult.homeUnder,
+      [FullTimeOddsKey.FT_AWAY_OVER]: fullTimeSettlementResult.awayOver,
+      [FullTimeOddsKey.FT_AWAY_UNDER]: fullTimeSettlementResult.awayUnder,
 
       [FirstHalfOddsKey.H1_HDP_HOME]: firstHalfSettlementResult.handicapHome,
       [FirstHalfOddsKey.H1_HDP_AWAY]: firstHalfSettlementResult.handicapAway,
@@ -94,20 +94,20 @@ export class ResultGeneratorService {
     };
 
     const finalSecondHalfSettlementResult = {
-      [SecondHalfOddsKey.FT_1X2_HOME]: fullTimeSettlementResult.home,
-      [SecondHalfOddsKey.FT_1X2_AWAY]: fullTimeSettlementResult.away,
-      [SecondHalfOddsKey.FT_1X2_DRAW]: fullTimeSettlementResult.draw,
-      [SecondHalfOddsKey.FT_HDP_HOME]: secondHalfSettlementResult.handicapHome,
-      [SecondHalfOddsKey.FT_HDP_AWAY]: secondHalfSettlementResult.handicapAway,
-      [SecondHalfOddsKey.FT_OU_OVER]: secondHalfSettlementResult.over,
-      [SecondHalfOddsKey.FT_OU_UNDER]: secondHalfSettlementResult.under,
-      [SecondHalfOddsKey.FT_OE_ODD]: fullTimeSettlementResult.odd,
-      [SecondHalfOddsKey.FT_OE_EVEN]: fullTimeSettlementResult.even,
+      [FullTimeOddsKey.FT_1X2_HOME]: fullTimeSettlementResult.home,
+      [FullTimeOddsKey.FT_1X2_AWAY]: fullTimeSettlementResult.away,
+      [FullTimeOddsKey.FT_1X2_DRAW]: fullTimeSettlementResult.draw,
+      [FullTimeOddsKey.FT_HDP_HOME]: secondHalfSettlementResult.handicapHome,
+      [FullTimeOddsKey.FT_HDP_AWAY]: secondHalfSettlementResult.handicapAway,
+      [FullTimeOddsKey.FT_OU_OVER]: secondHalfSettlementResult.over,
+      [FullTimeOddsKey.FT_OU_UNDER]: secondHalfSettlementResult.under,
+      [FullTimeOddsKey.FT_OE_ODD]: fullTimeSettlementResult.odd,
+      [FullTimeOddsKey.FT_OE_EVEN]: fullTimeSettlementResult.even,
 
-      [SecondHalfOddsKey.FT_HOME_OVER]: secondHalfSettlementResult.homeOver,
-      [SecondHalfOddsKey.FT_HOME_UNDER]: secondHalfSettlementResult.homeUnder,
-      [SecondHalfOddsKey.FT_AWAY_OVER]: secondHalfSettlementResult.awayOver,
-      [SecondHalfOddsKey.FT_AWAY_UNDER]: secondHalfSettlementResult.awayUnder,
+      [FullTimeOddsKey.FT_HOME_OVER]: secondHalfSettlementResult.homeOver,
+      [FullTimeOddsKey.FT_HOME_UNDER]: secondHalfSettlementResult.homeUnder,
+      [FullTimeOddsKey.FT_AWAY_OVER]: secondHalfSettlementResult.awayOver,
+      [FullTimeOddsKey.FT_AWAY_UNDER]: secondHalfSettlementResult.awayUnder,
     };
 
     return [finalFirstHalfSettlementResult, finalSecondHalfSettlementResult];

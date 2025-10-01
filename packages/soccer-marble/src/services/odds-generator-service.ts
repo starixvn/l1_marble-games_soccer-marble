@@ -4,7 +4,7 @@ import {
   SettlementStatus,
   Selection,
   FirstHalfOddsKey,
-  SecondHalfOddsKey,
+  FullTimeOddsKey,
   BetChoices,
   RoundResult,
 } from "../types";
@@ -180,19 +180,19 @@ export class OddsGeneratorService {
       [FirstHalfOddsKey.H1_AWAY_OVER]: firstHalfOdds.awayOver,
       [FirstHalfOddsKey.H1_AWAY_UNDER]: firstHalfOdds.awayUnder,
 
-      [FirstHalfOddsKey.FT_HDP_HOME]: fulltimeOdds.hdpHome,
-      [FirstHalfOddsKey.FT_HDP_AWAY]: fulltimeOdds.hdpAway,
-      [FirstHalfOddsKey.FT_1X2_HOME]: fulltimeOdds.home,
-      [FirstHalfOddsKey.FT_1X2_AWAY]: fulltimeOdds.away,
-      [FirstHalfOddsKey.FT_1X2_DRAW]: fulltimeOdds.draw,
-      [FirstHalfOddsKey.FT_OU_OVER]: fulltimeOdds.over,
-      [FirstHalfOddsKey.FT_OU_UNDER]: fulltimeOdds.under,
-      [FirstHalfOddsKey.FT_OE_ODD]: fulltimeOdds.odd,
-      [FirstHalfOddsKey.FT_OE_EVEN]: fulltimeOdds.even,
-      [FirstHalfOddsKey.FT_HOME_OVER]: fulltimeOdds.homeOver,
-      [FirstHalfOddsKey.FT_HOME_UNDER]: fulltimeOdds.homeUnder,
-      [FirstHalfOddsKey.FT_AWAY_OVER]: fulltimeOdds.awayOver,
-      [FirstHalfOddsKey.FT_AWAY_UNDER]: fulltimeOdds.awayUnder,
+      [FullTimeOddsKey.FT_HDP_HOME]: fulltimeOdds.hdpHome,
+      [FullTimeOddsKey.FT_HDP_AWAY]: fulltimeOdds.hdpAway,
+      [FullTimeOddsKey.FT_1X2_HOME]: fulltimeOdds.home,
+      [FullTimeOddsKey.FT_1X2_AWAY]: fulltimeOdds.away,
+      [FullTimeOddsKey.FT_1X2_DRAW]: fulltimeOdds.draw,
+      [FullTimeOddsKey.FT_OU_OVER]: fulltimeOdds.over,
+      [FullTimeOddsKey.FT_OU_UNDER]: fulltimeOdds.under,
+      [FullTimeOddsKey.FT_OE_ODD]: fulltimeOdds.odd,
+      [FullTimeOddsKey.FT_OE_EVEN]: fulltimeOdds.even,
+      [FullTimeOddsKey.FT_HOME_OVER]: fulltimeOdds.homeOver,
+      [FullTimeOddsKey.FT_HOME_UNDER]: fulltimeOdds.homeUnder,
+      [FullTimeOddsKey.FT_AWAY_OVER]: fulltimeOdds.awayOver,
+      [FullTimeOddsKey.FT_AWAY_UNDER]: fulltimeOdds.awayUnder,
     };
   };
 
@@ -204,19 +204,19 @@ export class OddsGeneratorService {
     const secondHalfOdds = this.calculateOddsFromRate(matchConfig.eventDetailInfos[1].rateConfig, addingScore);
 
     return {
-      [SecondHalfOddsKey.FT_1X2_HOME]: secondHalfOdds.home,
-      [SecondHalfOddsKey.FT_1X2_AWAY]: secondHalfOdds.away,
-      [SecondHalfOddsKey.FT_1X2_DRAW]: secondHalfOdds.draw,
-      [SecondHalfOddsKey.FT_HDP_HOME]: secondHalfOdds.hdpHome,
-      [SecondHalfOddsKey.FT_HDP_AWAY]: secondHalfOdds.hdpAway,
-      [SecondHalfOddsKey.FT_OU_OVER]: secondHalfOdds.over,
-      [SecondHalfOddsKey.FT_OU_UNDER]: secondHalfOdds.under,
-      [SecondHalfOddsKey.FT_OE_ODD]: secondHalfOdds.odd,
-      [SecondHalfOddsKey.FT_OE_EVEN]: secondHalfOdds.even,
-      [SecondHalfOddsKey.FT_HOME_OVER]: secondHalfOdds.homeOver,
-      [SecondHalfOddsKey.FT_HOME_UNDER]: secondHalfOdds.homeUnder,
-      [SecondHalfOddsKey.FT_AWAY_OVER]: secondHalfOdds.awayOver,
-      [SecondHalfOddsKey.FT_AWAY_UNDER]: secondHalfOdds.awayUnder,
+      [FullTimeOddsKey.FT_1X2_HOME]: secondHalfOdds.home,
+      [FullTimeOddsKey.FT_1X2_AWAY]: secondHalfOdds.away,
+      [FullTimeOddsKey.FT_1X2_DRAW]: secondHalfOdds.draw,
+      [FullTimeOddsKey.FT_HDP_HOME]: secondHalfOdds.hdpHome,
+      [FullTimeOddsKey.FT_HDP_AWAY]: secondHalfOdds.hdpAway,
+      [FullTimeOddsKey.FT_OU_OVER]: secondHalfOdds.over,
+      [FullTimeOddsKey.FT_OU_UNDER]: secondHalfOdds.under,
+      [FullTimeOddsKey.FT_OE_ODD]: secondHalfOdds.odd,
+      [FullTimeOddsKey.FT_OE_EVEN]: secondHalfOdds.even,
+      [FullTimeOddsKey.FT_HOME_OVER]: secondHalfOdds.homeOver,
+      [FullTimeOddsKey.FT_HOME_UNDER]: secondHalfOdds.homeUnder,
+      [FullTimeOddsKey.FT_AWAY_OVER]: secondHalfOdds.awayOver,
+      [FullTimeOddsKey.FT_AWAY_UNDER]: secondHalfOdds.awayUnder,
     };
   };
 
@@ -236,23 +236,23 @@ export class OddsGeneratorService {
       firstHalfSelections[key] = selection;
     });
 
-    firstHalfSelections[FirstHalfOddsKey.FT_HDP_HOME].point = fulltimeOddsInfo.handicapValue;
-    firstHalfSelections[FirstHalfOddsKey.FT_HDP_AWAY].point = -fulltimeOddsInfo.handicapValue;
+    firstHalfSelections[FullTimeOddsKey.FT_HDP_HOME].point = fulltimeOddsInfo.handicapValue;
+    firstHalfSelections[FullTimeOddsKey.FT_HDP_AWAY].point = -fulltimeOddsInfo.handicapValue;
 
     firstHalfSelections[FirstHalfOddsKey.H1_HDP_HOME].point = firstHalfOddsInfo.handicapValue;
     firstHalfSelections[FirstHalfOddsKey.H1_HDP_AWAY].point = -firstHalfOddsInfo.handicapValue;
 
-    firstHalfSelections[FirstHalfOddsKey.FT_OU_OVER].point = fulltimeOddsInfo.overUnderValue;
-    firstHalfSelections[FirstHalfOddsKey.FT_OU_UNDER].point = fulltimeOddsInfo.overUnderValue;
+    firstHalfSelections[FullTimeOddsKey.FT_OU_OVER].point = fulltimeOddsInfo.overUnderValue;
+    firstHalfSelections[FullTimeOddsKey.FT_OU_UNDER].point = fulltimeOddsInfo.overUnderValue;
 
     firstHalfSelections[FirstHalfOddsKey.H1_OU_OVER].point = firstHalfOddsInfo.overUnderValue;
     firstHalfSelections[FirstHalfOddsKey.H1_OU_UNDER].point = firstHalfOddsInfo.overUnderValue;
 
-    firstHalfSelections[FirstHalfOddsKey.FT_HOME_OVER].point = fulltimeOddsInfo.homeOverUnderValue;
-    firstHalfSelections[FirstHalfOddsKey.FT_HOME_UNDER].point = fulltimeOddsInfo.homeOverUnderValue;
+    firstHalfSelections[FullTimeOddsKey.FT_HOME_OVER].point = fulltimeOddsInfo.homeOverUnderValue;
+    firstHalfSelections[FullTimeOddsKey.FT_HOME_UNDER].point = fulltimeOddsInfo.homeOverUnderValue;
 
-    firstHalfSelections[FirstHalfOddsKey.FT_AWAY_OVER].point = fulltimeOddsInfo.awayOverUnderValue;
-    firstHalfSelections[FirstHalfOddsKey.FT_AWAY_UNDER].point = fulltimeOddsInfo.awayOverUnderValue;
+    firstHalfSelections[FullTimeOddsKey.FT_AWAY_OVER].point = fulltimeOddsInfo.awayOverUnderValue;
+    firstHalfSelections[FullTimeOddsKey.FT_AWAY_UNDER].point = fulltimeOddsInfo.awayOverUnderValue;
 
     firstHalfSelections[FirstHalfOddsKey.H1_HOME_OVER].point = firstHalfOddsInfo.homeOverUnderValue;
     firstHalfSelections[FirstHalfOddsKey.H1_HOME_UNDER].point = firstHalfOddsInfo.homeOverUnderValue;
@@ -286,17 +286,17 @@ export class OddsGeneratorService {
       secondHalfSelections[key] = selection;
     });
 
-    secondHalfSelections[SecondHalfOddsKey.FT_HDP_HOME].point = secondHalfOddsInfo.handicapValue;
-    secondHalfSelections[SecondHalfOddsKey.FT_HDP_AWAY].point = -secondHalfOddsInfo.handicapValue;
+    secondHalfSelections[FullTimeOddsKey.FT_HDP_HOME].point = secondHalfOddsInfo.handicapValue;
+    secondHalfSelections[FullTimeOddsKey.FT_HDP_AWAY].point = -secondHalfOddsInfo.handicapValue;
 
-    secondHalfSelections[SecondHalfOddsKey.FT_OU_OVER].point = secondHalfOddsInfo.overUnderValue + fhTotalGoals;
-    secondHalfSelections[SecondHalfOddsKey.FT_OU_UNDER].point = secondHalfOddsInfo.overUnderValue + fhTotalGoals;
+    secondHalfSelections[FullTimeOddsKey.FT_OU_OVER].point = secondHalfOddsInfo.overUnderValue + fhTotalGoals;
+    secondHalfSelections[FullTimeOddsKey.FT_OU_UNDER].point = secondHalfOddsInfo.overUnderValue + fhTotalGoals;
 
-    secondHalfSelections[SecondHalfOddsKey.FT_HOME_OVER].point = secondHalfOddsInfo.homeOverUnderValue + fhHomeGoals;
-    secondHalfSelections[SecondHalfOddsKey.FT_HOME_UNDER].point = secondHalfOddsInfo.homeOverUnderValue + fhHomeGoals;
+    secondHalfSelections[FullTimeOddsKey.FT_HOME_OVER].point = secondHalfOddsInfo.homeOverUnderValue + fhHomeGoals;
+    secondHalfSelections[FullTimeOddsKey.FT_HOME_UNDER].point = secondHalfOddsInfo.homeOverUnderValue + fhHomeGoals;
 
-    secondHalfSelections[SecondHalfOddsKey.FT_AWAY_OVER].point = secondHalfOddsInfo.awayOverUnderValue + fhAwayGoals;
-    secondHalfSelections[SecondHalfOddsKey.FT_AWAY_UNDER].point = secondHalfOddsInfo.awayOverUnderValue + fhAwayGoals;
+    secondHalfSelections[FullTimeOddsKey.FT_AWAY_OVER].point = secondHalfOddsInfo.awayOverUnderValue + fhAwayGoals;
+    secondHalfSelections[FullTimeOddsKey.FT_AWAY_UNDER].point = secondHalfOddsInfo.awayOverUnderValue + fhAwayGoals;
 
     return secondHalfSelections;
   };
