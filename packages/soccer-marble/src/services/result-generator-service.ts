@@ -5,12 +5,12 @@ import {
   RoundSettlementResult,
   EventDetailResult,
   MatchConfig,
-  SettlementStatus,
   FirstHalfOddsKey,
   SecondHalfOddsKey,
   AppContainer,
   RateConfig,
   ResultType,
+  DrawSettlementResult,
 } from "../types";
 import { resultHelper } from "../helpers";
 
@@ -101,14 +101,8 @@ export class ResultGeneratorService {
       [SecondHalfOddsKey.FT_HDP_AWAY]: secondHalfSettlementResult.handicapAway,
       [SecondHalfOddsKey.FT_OU_OVER]: secondHalfSettlementResult.over,
       [SecondHalfOddsKey.FT_OU_UNDER]: secondHalfSettlementResult.under,
-      [SecondHalfOddsKey.FT_OE_ODD]:
-        firstHalfSettlementResult.even === SettlementStatus.WIN
-          ? secondHalfSettlementResult.odd
-          : secondHalfSettlementResult.even,
-      [SecondHalfOddsKey.FT_OE_EVEN]:
-        firstHalfSettlementResult.even === SettlementStatus.WIN
-          ? secondHalfSettlementResult.even
-          : secondHalfSettlementResult.odd,
+      [SecondHalfOddsKey.FT_OE_ODD]: fullTimeSettlementResult.odd,
+      [SecondHalfOddsKey.FT_OE_EVEN]: fullTimeSettlementResult.even,
 
       [SecondHalfOddsKey.FT_HOME_OVER]: secondHalfSettlementResult.homeOver,
       [SecondHalfOddsKey.FT_HOME_UNDER]: secondHalfSettlementResult.homeUnder,
@@ -119,7 +113,7 @@ export class ResultGeneratorService {
     return [finalFirstHalfSettlementResult, finalSecondHalfSettlementResult];
   };
 
-  getSettlementResultFromResultString = (resultString: string, oddsInfo: any) => {
+  getSettlementResultFromResultString = (resultString: string, oddsInfo: any): DrawSettlementResult => {
     const homeGoals = resultString.split("H").length - 1;
     const awayGoals = resultString.split("A").length - 1;
     const totalGoals = homeGoals + awayGoals;

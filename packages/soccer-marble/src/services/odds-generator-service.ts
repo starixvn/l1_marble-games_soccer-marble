@@ -78,7 +78,7 @@ export class OddsGeneratorService {
     }
   };
 
-  calculateOddsInfo = (scoreRates: Record<string, number>) => {
+  calculateOddsInfo = (scoreRates: Record<string, number>): Record<string, number> => {
     const { homeScore, awayScore } = oddsHelper.calculateAverageScore(scoreRates);
     const handicapValue = this.calculateHandicapValue(homeScore, awayScore);
     const overUnderValue = this.calculateOverUnderValue(homeScore, awayScore);

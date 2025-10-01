@@ -1,158 +1,179 @@
 import { RoundGeneratorService as BaseRoundGeneratorService, oddsHelper } from "@soccer-marble/soccer-marble-base";
-import type { RateConfig, Timeline, MatchConfigType } from "@soccer-marble/soccer-marble-base";
+import type { RateConfig, Timeline, MatchConfig, GameRunningRound } from "@soccer-marble/soccer-marble-base";
 import { secureRandomRange, secureRandomBool, securePickOne } from "sc-core-rng";
-import { GameRunningRound, GameTiming, MatchConfigsDetailType, RoundResultType } from "../types";
+import { GameTiming } from "../types";
 import { ResultGeneratorService } from "./result-generator-service";
-import { idHelper, cryptoHelper } from "@soccer-marble/shared-utils";
+import { idHelper, encrypt } from "@soccer-marble/shared-utils";
 import { OddsGeneratorService } from "./odds-generator-service";
-
-const minBlocks = 2;
-const maxBlocks = 4;
-const minVideoLength = 6;
-
+import { MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS, MIN_VIDEO_LENGTH } from "../constant";
 export class RoundGeneratorService extends BaseRoundGeneratorService {
   declare resultGeneratorService: ResultGeneratorService;
   declare oddsGeneratorService: OddsGeneratorService;
 
-  override createNewMatchConfig(): MatchConfigType {
-    const firstHalfBlock = secureRandomRange(minBlocks, maxBlocks);
-    const secondHalfBlock = secureRandomRange(minBlocks, maxBlocks);
-    const isHomeFavorite = secureRandomBool();
-    const firstHalfRates: RateConfig[] = [];
-    const gameTiming = this.gameSettings.gameTiming as unknown as GameTiming;
-    const firstHalfMaxVideoLength = Math.round(gameTiming.videoLength / firstHalfBlock);
-    const secondHalfMaxVideoLength = Math.round(gameTiming.videoLength / secondHalfBlock);
-    let lastFirstHalfVideoLength = gameTiming.videoLength;
-    let lastSecondHalfVideoLength = gameTiming.videoLength;
-    const firstHalfVideosLength = [];
-    const secondHalfVideosLength = [];
-    const firstHalfTimelines: Timeline[] = [];
-    const secondHalfTimelines: Timeline[] = [];
+  generateRateConfigsForPhase(isHomeFavorite: boolean, size: number): RateConfig[] {
+    const rateConfigs = Array.from({ length: size - 1 }, () =>
+      isHomeFavorite ? securePickOne(this.rateConfigs.homeFavorite) : securePickOne(this.rateConfigs.awayFavorite)
+    );
 
-    for (let i = 1; i < firstHalfBlock; i++) {
-      firstHalfRates.push(
-        isHomeFavorite ? securePickOne(this.rateConfigs.homeFavorite) : securePickOne(this.rateConfigs.awayFavorite)
-      );
+    rateConfigs.push(
+      securePickOne(isHomeFavorite ? this.rateConfigs.homeFavoriteDraw : this.rateConfigs.awayFavoriteDraw)
+    );
 
-      const videoLength = secureRandomRange(minVideoLength, firstHalfMaxVideoLength);
-      firstHalfVideosLength.push(videoLength);
-      lastFirstHalfVideoLength -= videoLength;
-    }
+    return rateConfigs as RateConfig[];
+  }
 
-    firstHalfRates.push(isHomeFavorite ? this.rateConfigs.homeFavoriteDraw[0] : this.rateConfigs.awayFavoriteDraw[0]);
-    firstHalfVideosLength.push(lastFirstHalfVideoLength);
+  generateVideoLengthForPhase(size: number) {
+    const gameTiming = this.gameSettings.gameTiming as GameTiming;
+    const maxLength = Math.round(gameTiming.extraInfo.videoLength / size);
 
-    const secondHalfRates: RateConfig[] = [];
-    for (let i = 1; i < secondHalfBlock; i++) {
-      secondHalfRates.push(
-        isHomeFavorite ? securePickOne(this.rateConfigs.homeFavorite) : securePickOne(this.rateConfigs.awayFavorite)
-      );
+    const videoLengths = Array.from({ length: size - 1 }, () => secureRandomRange(MIN_VIDEO_LENGTH, maxLength));
 
-      const videoLength = secureRandomRange(minVideoLength, secondHalfMaxVideoLength);
-      secondHalfVideosLength.push(videoLength);
-      lastSecondHalfVideoLength -= videoLength;
-    }
+    const totalCurrentLength = videoLengths.reduce((acc, curr) => acc + curr, 0);
 
-    secondHalfRates.push(isHomeFavorite ? this.rateConfigs.homeFavoriteDraw[0] : this.rateConfigs.awayFavoriteDraw[0]);
-    secondHalfVideosLength.push(lastSecondHalfVideoLength);
+    const remainLength = gameTiming.extraInfo.videoLength - totalCurrentLength;
 
-    firstHalfVideosLength.forEach((videoLength, index) => {
-      const oddsAvailable = index === 0 ? 0 : firstHalfTimelines[index - 1].ScheduleStart;
+    videoLengths.push(remainLength);
+
+    return videoLengths;
+  }
+
+  generateTimelineForFirstHalf(videoLengths: number[]): Timeline[] {
+    const gameTiming: GameTiming = this.gameSettings.gameTiming as GameTiming;
+
+    const timelines: Timeline[] = [];
+
+    for (let index = 0; index < videoLengths.length; index++) {
+      const currentVideoLength = videoLengths[index];
+
+      const oddsAvailable = index === 0 ? 0 : timelines[index - 1].ScheduleStart;
+
       const scheduleStart =
-        index === 0 ? gameTiming.oddsLength : firstHalfTimelines[index - 1].ResultAvailable + gameTiming.breakTime;
-      const resultAvailable = scheduleStart + videoLength;
+        index === 0
+          ? gameTiming.extraInfo.oddsDuration
+          : timelines[index - 1].ResultAvailable + gameTiming.extraInfo.breakDuration;
 
-      const timeline = {
+      const resultAvailable = scheduleStart + currentVideoLength;
+
+      const timeline: Timeline = {
         OddsAvailable: oddsAvailable,
         ScheduleStart: scheduleStart,
         ResultAvailable: resultAvailable,
       };
 
-      firstHalfTimelines.push(timeline);
-    });
+      timelines.push(timeline);
+    }
 
-    secondHalfVideosLength.forEach((videoLength, index) => {
+    return timelines;
+  }
+
+  generateTimelineForSecondHalf(videoLengths: number[], fhTimelines: Timeline[]): Timeline[] {
+    const gameTiming = this.gameSettings.gameTiming as GameTiming;
+
+    const timelines: Timeline[] = [];
+
+    for (let index = 0; index < videoLengths.length; index++) {
+      const currentVideoLength = videoLengths[index];
+
       const oddsAvailable =
-        index === 0
-          ? firstHalfTimelines[firstHalfTimelines.length - 1].ResultAvailable
-          : secondHalfTimelines[index - 1].ScheduleStart;
+        index === 0 ? fhTimelines[fhTimelines.length - 1].ResultAvailable : timelines[index - 1].ScheduleStart;
 
       const scheduleStart =
         index === 0
-          ? oddsAvailable + gameTiming.halfTime
-          : secondHalfTimelines[index - 1].ResultAvailable + gameTiming.breakTime;
+          ? oddsAvailable + gameTiming.extraInfo.halfTimeDuration
+          : timelines[index - 1].ResultAvailable + gameTiming.extraInfo.breakDuration;
 
-      const resultAvailable = scheduleStart + videoLength;
+      const resultAvailable = scheduleStart + currentVideoLength;
 
-      const timeline = {
+      const timeline: Timeline = {
         OddsAvailable: oddsAvailable,
         ScheduleStart: scheduleStart,
         ResultAvailable: resultAvailable,
       };
 
-      secondHalfTimelines.push(timeline);
+      timelines.push(timeline);
+    }
+
+    return timelines;
+  }
+
+  override createNewMatchConfig(): MatchConfig {
+    const isHomeFavorite = secureRandomBool();
+    const fhBlocks = secureRandomRange(MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS);
+    const shBlocks = secureRandomRange(MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS);
+
+    const fhRateConfigs = this.generateRateConfigsForPhase(isHomeFavorite, fhBlocks);
+    const shRateConfigs = this.generateRateConfigsForPhase(isHomeFavorite, shBlocks);
+
+    const fhVideoLengths = this.generateVideoLengthForPhase(fhBlocks);
+    const shVideoLengths = this.generateVideoLengthForPhase(shBlocks);
+
+    const fhTimelines = this.generateTimelineForFirstHalf(fhVideoLengths);
+    const shTimelines = this.generateTimelineForSecondHalf(shVideoLengths, fhTimelines);
+
+    const fhEventDetailInfos = fhRateConfigs.map((config, index) => {
+      const currentFhTotalScoreRates = oddsHelper.mergeArrayOfRates(fhRateConfigs.slice(index));
+
+      return {
+        rateConfig: config,
+        phase: 0,
+        oddsInfo: this.oddsGeneratorService.calculateOddsInfo(currentFhTotalScoreRates.scoreRate),
+      };
     });
 
-    const timelines = [...firstHalfTimelines, ...secondHalfTimelines];
-    gameTiming.timelines = timelines;
+    const shEventDetailInfos = shRateConfigs.map((config, index) => {
+      const currentShTotalScoreRates = oddsHelper.mergeArrayOfRates(shRateConfigs.slice(index));
+
+      return {
+        rateConfig: config,
+        phase: 1,
+        oddsInfo: this.oddsGeneratorService.calculateOddsInfo(currentShTotalScoreRates.scoreRate),
+      };
+    });
+
+    const ftOddsInfo = fhRateConfigs.map((_, index) => {
+      const currentFtTotalScoreRates = oddsHelper.mergeArrayOfRates(fhRateConfigs.slice(index).concat(shRateConfigs));
+
+      return this.oddsGeneratorService.calculateOddsInfo(currentFtTotalScoreRates.scoreRate);
+    });
 
     return {
-      gameTiming,
-      numberOfEventDetails: firstHalfBlock + secondHalfBlock,
-      firstHalf: {
-        numberOfEventDetails: firstHalfBlock,
-        eventDetailScoreRates: firstHalfRates,
-        scoreRate: oddsHelper.mergeArrayOfRates(firstHalfRates).scoreRate,
-      } as any,
-      secondHalf: {
-        numberOfEventDetails: secondHalfBlock,
-        eventDetailScoreRates: secondHalfRates,
-        scoreRate: oddsHelper.mergeArrayOfRates(secondHalfRates).scoreRate,
-      } as any,
-    } as any;
+      gameTiming: { ...this.gameSettings.gameTiming, timelines: [...fhTimelines, ...shTimelines] },
+      numberOfEventDetails: fhBlocks + shBlocks,
+      eventDetailInfos: [...fhEventDetailInfos, ...shEventDetailInfos],
+      rateConfig: oddsHelper.mergeArrayOfRates(fhRateConfigs.concat(shRateConfigs)),
+      oddsInfo: ftOddsInfo,
+    };
   }
 
-  getSettlementResultForUltraLive(result: RoundResultType, matchConfigsDetailType: MatchConfigsDetailType) {
-    return this.resultGeneratorService.getSettlementResultForUltraLive(result, matchConfigsDetailType);
-  }
-
-  generateRoundOddsAndUpdateMatchConfig(matchConfig: MatchConfigType, result: RoundResultType) {
-    return this.oddsGeneratorService.calculateOddsForRound(matchConfig, result);
-  }
-
-  generateNewRound(roundId: number) {
-    const newRound = {
-      gameId: this.gameSettings.gameId,
-      eventID: idHelper.createEventId(this.gameSettings.gameId, roundId),
-      roundId,
-      ended: false,
-    } as GameRunningRound;
-
+  override generateNewRound(roundId: number) {
     const { homeTeam, awayTeam, theme } = this.createNewMatch(roundId);
-    newRound.homeTeam = homeTeam;
-    newRound.awayTeam = awayTeam;
-    newRound.theme = theme;
 
-    newRound.matchConfig = this.createNewMatchConfig();
+    const matchConfig = this.createNewMatchConfig();
 
     const numberOfVideos = this.gameData.gameConfig?.config?.numberOfVideos ?? this.gameSettings.numberOfVideos;
 
     const result = this.resultGeneratorService.generateResult({
-      matchConfig: newRound.matchConfig,
       numberOfVideos: numberOfVideos,
+      matchConfig,
     });
 
-    const { odds, matchConfigs, selections } = this.generateRoundOddsAndUpdateMatchConfig(newRound.matchConfig, result);
+    const odds = this.oddsGeneratorService.calculateOddsForUltraLive(matchConfig, result);
+    const selections = this.oddsGeneratorService.generateSelectionsForUltraLive(odds, matchConfig, result);
+    const settlementResult = this.resultGeneratorService.getSettlementResult(result, matchConfig);
 
-    newRound.odds = odds;
-    newRound.matchConfigsDetail = matchConfigs;
-
-    const settlementResult = this.getSettlementResultForUltraLive(result, matchConfigs);
-
-    newRound.encryptedResult = cryptoHelper.encrypt(result);
-    newRound.encryptedSettlementResult = cryptoHelper.encrypt(settlementResult);
-    newRound.encryptedSelections = cryptoHelper.encrypt(selections);
-
-    return newRound as any;
+    return {
+      gameId: this.gameSettings.gameId,
+      eventID: idHelper.createEventId(this.gameSettings.gameId, roundId),
+      roundId,
+      homeTeam,
+      awayTeam,
+      theme,
+      matchConfig,
+      odds,
+      encryptedResult: encrypt(result),
+      encryptedSettlementResult: encrypt(settlementResult),
+      encryptedSelections: encrypt(selections),
+      ended: false,
+    } as GameRunningRound;
   }
 }

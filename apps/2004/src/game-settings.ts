@@ -6,11 +6,13 @@ export const gameSettings = {
   gameTiming: {
     wholeRound: 100,
     timelines: [],
-    videoLength: 32,
-    oddsLength: 10,
-    resultLength: 10,
-    halfTime: 20,
-    breakTime: 3,
+    extraInfo: {
+      videoLength: 32,
+      oddsDuration: 10,
+      resultDuration: 10,
+      halfTimeDuration: 20,
+      breakDuration: 3,
+    },
   },
   teams: [
     "nt_arg",
