@@ -1,6 +1,8 @@
-import { GameTiming as BaseGameTiming } from "@soccer-marble/soccer-marble-base";
+import { Timeline } from "@soccer-marble/soccer-marble-base";
 
-export type GameTiming = BaseGameTiming & {
+export type GameTiming = {
+  wholeRound: number;
+  timelines: Array<Timeline>;
   extraInfo: {
     videoLength: number;
     oddsDuration: number;

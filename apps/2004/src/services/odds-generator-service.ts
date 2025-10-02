@@ -44,20 +44,14 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
     const shScoreRates = shEventDetailInfos.map((info) => info.rateConfig);
     const fhResults = result.filter((result) => result.phase === 0).map((result) => result.result);
 
-    const allFirstHalfOdds = fhEventDetailInfos.map((_, index) => {
+    return fhEventDetailInfos.map((_, index) => {
       const fhScoreRates = fhEventDetailInfos.map((info) => info.rateConfig).slice(index);
       const totalFhScoreRates = oddsHelper.mergeArrayOfRates(fhScoreRates);
       const totalFtScoreRates = oddsHelper.mergeArrayOfRates(fhScoreRates.concat(shScoreRates));
       const liveResult = resultHelper.combineResults(fhResults.slice(0, index));
-      const fhOdds = this.calculateOddsForEventDetailFirstHalf(
-        liveResult.finalScore,
-        totalFhScoreRates,
-        totalFtScoreRates
-      );
-      return fhOdds;
-    });
 
-    return allFirstHalfOdds;
+      return this.calculateOddsForEventDetailFirstHalf(liveResult.finalScore, totalFhScoreRates, totalFtScoreRates);
+    });
   };
 
   calculateOddsForEventDetailFirstHalf = (
@@ -68,7 +62,7 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
     const fulltime = this.calculateOddsFromRate(currentFulltimeScoreRates, addingScore);
     const firstHalf = this.calculateOddsFromRate(currentFirstHalfScoreRates, addingScore);
 
-    const firstHalfOdds = {
+    return {
       [FirstHalfOddsKey.H1_HDP_HOME]: firstHalf.hdpHome,
       [FirstHalfOddsKey.H1_HDP_AWAY]: firstHalf.hdpAway,
       [FirstHalfOddsKey.H1_1X2_HOME]: firstHalf.home,
@@ -89,8 +83,6 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
       [FullTimeOddsKey.FT_OE_ODD]: fulltime.odd,
       [FullTimeOddsKey.FT_OE_EVEN]: fulltime.even,
     };
-
-    return firstHalfOdds;
   };
 
   generateFirstHalfSelectionsForUltraLive = (
@@ -101,22 +93,19 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
     const firstHalfInfos = matchConfig.eventDetailInfos.filter((info) => info.phase === 0);
     const fhResults = result.filter((result) => result.phase === 0).map((result) => result.result);
 
-    const firstHalfSelections = allFirstHalfOdds.map((firstHalfOdds, index) => {
+    return allFirstHalfOdds.map((firstHalfOdds, index) => {
       const currentFirstHalfOddsInfo = firstHalfInfos[index].oddsInfo;
       const currentFulltimeOddsInfo = matchConfig.oddsInfo[index];
 
       const liveResult = resultHelper.combineResults(fhResults.slice(0, index));
 
-      const fhSelections = this.generateFirstHalfSelectionsForEventDetailFirstHalf(
+      return this.generateFirstHalfSelectionsForEventDetailFirstHalf(
         firstHalfOdds,
         liveResult.finalScore,
         currentFirstHalfOddsInfo,
         currentFulltimeOddsInfo
       );
-      return fhSelections;
     });
-
-    return firstHalfSelections;
   };
 
   generateFirstHalfSelectionsForEventDetailFirstHalf = (
@@ -161,21 +150,19 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
     const fhResults = result.filter((result) => result.phase === 0).map((result) => result.result);
     const shResults = result.filter((result) => result.phase === 1).map((result) => result.result);
 
-    const allSecondHalfOdds = shEventDetailInfos.map((_, index) => {
+    return shEventDetailInfos.map((_, index) => {
       const shScoreRates = shEventDetailInfos.map((info) => info.rateConfig).slice(index);
       const totalFhScoreRates = oddsHelper.mergeArrayOfRates(shScoreRates);
       const liveResult = resultHelper.combineResults(shResults.slice(0, index).concat(fhResults));
-      const fhOdds = this.calculateOddsForEventDetailSecondHalf(liveResult.finalScore, totalFhScoreRates);
-      return fhOdds;
-    });
 
-    return allSecondHalfOdds;
+      return this.calculateOddsForEventDetailSecondHalf(liveResult.finalScore, totalFhScoreRates);
+    });
   };
 
   calculateOddsForEventDetailSecondHalf = (addingScore: string, currentSecondHalfScoreRates: RateConfig) => {
     const secondHalf = this.calculateOddsFromRate(currentSecondHalfScoreRates, addingScore);
 
-    const secondHalfOdds = {
+    return {
       [FullTimeOddsKey.FT_HDP_HOME]: secondHalf.hdpHome,
       [FullTimeOddsKey.FT_HDP_AWAY]: secondHalf.hdpAway,
       [FullTimeOddsKey.FT_1X2_HOME]: secondHalf.home,
@@ -186,8 +173,6 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
       [FullTimeOddsKey.FT_OE_ODD]: secondHalf.odd,
       [FullTimeOddsKey.FT_OE_EVEN]: secondHalf.even,
     };
-
-    return secondHalfOdds;
   };
 
   generateSecondHalfSelectionsForUltraLive = (
@@ -199,20 +184,16 @@ export class OddsGeneratorService extends BaseOddsGeneratorService {
     const fhResults = result.filter((result) => result.phase === 0).map((result) => result.result);
     const shResults = result.filter((result) => result.phase === 1).map((result) => result.result);
 
-    const secondHalfSelections = allSecondHalfOdds.map((secondHalfOdds, index) => {
+    return allSecondHalfOdds.map((secondHalfOdds, index) => {
       const currentSecondHalfOddsInfo = secondHalfInfos[index].oddsInfo;
       const liveResult = resultHelper.combineResults(shResults.slice(0, index).concat(fhResults));
 
-      const shSelections = this.generateSecondHalfSelectionsForEventDetailSecondHalf(
+      return this.generateSecondHalfSelectionsForEventDetailSecondHalf(
         secondHalfOdds,
         liveResult.finalScore,
         currentSecondHalfOddsInfo
       );
-
-      return shSelections;
     });
-
-    return secondHalfSelections;
   };
 
   generateSecondHalfSelectionsForEventDetailSecondHalf = (

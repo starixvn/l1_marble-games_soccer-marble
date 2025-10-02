@@ -38,7 +38,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
   }
 
   generateTimelineForFirstHalf(videoLengths: number[]): Timeline[] {
-    const gameTiming: GameTiming = this.gameSettings.gameTiming as GameTiming;
+    const gameTiming = this.gameSettings.gameTiming as GameTiming;
 
     const timelines: Timeline[] = [];
 
