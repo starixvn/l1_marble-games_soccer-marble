@@ -97,6 +97,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
   }
 
   override createNewMatchConfig(): MatchConfig {
+    const gameTiming = this.gameSettings.gameTiming as GameTiming;
     const isHomeFavorite = secureRandomBool();
     const fhBlocks = secureRandomRange(MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS);
     const shBlocks = secureRandomRange(MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS);
@@ -109,6 +110,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
 
     const fhTimelines = this.generateTimelineForFirstHalf(fhVideoLengths);
     const shTimelines = this.generateTimelineForSecondHalf(shVideoLengths, fhTimelines);
+    const wholeRound = shTimelines[shTimelines.length - 1].ResultAvailable + gameTiming.extraInfo.resultDuration;
 
     const fhEventDetailInfos = fhRateConfigs.map((config, index) => {
       const currentFhTotalScoreRates = oddsHelper.mergeArrayOfRates(fhRateConfigs.slice(index));
@@ -137,7 +139,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
     });
 
     return {
-      gameTiming: { ...this.gameSettings.gameTiming, timelines: [...fhTimelines, ...shTimelines] },
+      gameTiming: { ...this.gameSettings.gameTiming, timelines: [...fhTimelines, ...shTimelines], wholeRound },
       numberOfEventDetails: fhBlocks + shBlocks,
       eventDetailInfos: [...fhEventDetailInfos, ...shEventDetailInfos],
       rateConfig: oddsHelper.mergeArrayOfRates(fhRateConfigs.concat(shRateConfigs)),
