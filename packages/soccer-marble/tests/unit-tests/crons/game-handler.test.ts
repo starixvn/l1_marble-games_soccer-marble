@@ -140,7 +140,6 @@ describe("GameHandler", () => {
       const scheduleStartTs = new Date("2023-01-01T10:00:00Z");
       const mockRound = {
         roundId: 123,
-        roundTime: 1,
         homeTeam: "Team A",
         awayTeam: "Team B",
         eventID: 12345,
@@ -243,7 +242,7 @@ describe("GameHandler", () => {
       } as unknown as IEventDetail;
       const mockRound = {
         roundId: 123,
-        roundTime: 1,
+
         homeTeam: "Team A",
         awayTeam: "Team B",
         eventID: 12345,
@@ -291,7 +290,7 @@ describe("GameHandler", () => {
       } as unknown as IEventDetail;
       const mockRound = {
         roundId: 123,
-        roundTime: 1,
+
         homeTeam: "Team A",
         awayTeam: "Team B",
         eventID: 12345,
@@ -332,7 +331,7 @@ describe("GameHandler", () => {
       } as unknown as IEventDetail;
       const mockRound = {
         roundId: 123,
-        roundTime: 1,
+
         homeTeam: "Team A",
         awayTeam: "Team B",
         eventID: 12345,
@@ -374,7 +373,7 @@ describe("GameHandler", () => {
       } as unknown as IEventDetail;
       const mockRound = {
         roundId: 123,
-        roundTime: 1,
+
         homeTeam: "Team A",
         awayTeam: "Team B",
         eventID: 12345,
@@ -411,7 +410,7 @@ describe("GameHandler", () => {
       } as unknown as IEventDetail;
       const mockRound = {
         roundId: 123,
-        roundTime: 1,
+
         homeTeam: "Team A",
         awayTeam: "Team B",
         eventID: 12345,
@@ -450,7 +449,7 @@ describe("GameHandler", () => {
       } as unknown as IEventDetail;
       const mockRound = {
         roundId: 123,
-        roundTime: 1,
+
         homeTeam: "Team A",
         awayTeam: "Team B",
         eventID: 12345,
@@ -497,7 +496,7 @@ describe("GameHandler", () => {
       } as unknown as IEventDetail;
       const mockRound = {
         roundId: 123,
-        roundTime: 1,
+
         homeTeam: "Team A",
         awayTeam: "Team B",
         eventID: 12345,

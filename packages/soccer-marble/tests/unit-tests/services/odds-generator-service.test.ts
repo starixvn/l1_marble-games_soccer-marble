@@ -1,5 +1,5 @@
 import { OddsGeneratorService } from "../../../src/services/odds-generator-service";
-import { SettlementStatus, FirstHalfOddsKey, SecondHalfOddsKey } from "../../../src/types";
+import { SettlementStatus, FirstHalfOddsKey, FullTimeOddsKey } from "../../../src/types";
 
 describe("OddsGeneratorService Tests", () => {
   const oddsGeneratorService = new OddsGeneratorService();
@@ -690,7 +690,24 @@ describe("OddsGeneratorService Tests", () => {
             phase: 1,
           },
         ],
-        rateConfig: {} as any,
+        rateConfig: {
+          scoreRate: {
+            "2-1": 0.1294,
+            "1-0": 0.1176,
+            "2-0": 0.1176,
+            "3-1": 0.0824,
+            "3-0": 0.0706,
+            "4-0": 0.0235,
+            "1-1": 0.1293,
+            "2-2": 0.0706,
+            "0-1": 0.0824,
+            "1-2": 0.0824,
+            "0-2": 0.0353,
+            "1-3": 0.0353,
+            "0-3": 0.0118,
+            "0-4": 0.0118,
+          },
+        },
         oddsInfo: {} as any,
       } as any;
 
@@ -733,7 +750,12 @@ describe("OddsGeneratorService Tests", () => {
             phase: 1,
           },
         ],
-        rateConfig: {} as any,
+        rateConfig: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
         oddsInfo: {} as any,
       } as any;
 
@@ -776,7 +798,12 @@ describe("OddsGeneratorService Tests", () => {
             phase: 1,
           },
         ],
-        rateConfig: {} as any,
+        rateConfig: {
+          scoreRate: {
+            "0-1": 0.6,
+            "0-2": 0.4,
+          },
+        },
         oddsInfo: {} as any,
       } as any;
 
@@ -819,7 +846,12 @@ describe("OddsGeneratorService Tests", () => {
             phase: 1,
           },
         ],
-        rateConfig: {} as any,
+        rateConfig: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
         oddsInfo: {} as any,
       } as any;
 
@@ -853,19 +885,19 @@ describe("OddsGeneratorService Tests", () => {
         [FirstHalfOddsKey.H1_HOME_UNDER]: 1.7,
         [FirstHalfOddsKey.H1_AWAY_OVER]: 2.1,
         [FirstHalfOddsKey.H1_AWAY_UNDER]: 1.8,
-        [FirstHalfOddsKey.FT_HDP_HOME]: 1.6,
-        [FirstHalfOddsKey.FT_HDP_AWAY]: 2.4,
-        [FirstHalfOddsKey.FT_1X2_HOME]: 2.1,
-        [FirstHalfOddsKey.FT_1X2_AWAY]: 2.9,
-        [FirstHalfOddsKey.FT_1X2_DRAW]: 3.4,
-        [FirstHalfOddsKey.FT_OU_OVER]: 1.7,
-        [FirstHalfOddsKey.FT_OU_UNDER]: 2.1,
-        [FirstHalfOddsKey.FT_OE_ODD]: 1.8,
-        [FirstHalfOddsKey.FT_OE_EVEN]: 2.0,
-        [FirstHalfOddsKey.FT_HOME_OVER]: 2.0,
-        [FirstHalfOddsKey.FT_HOME_UNDER]: 1.8,
-        [FirstHalfOddsKey.FT_AWAY_OVER]: 2.3,
-        [FirstHalfOddsKey.FT_AWAY_UNDER]: 1.7,
+        [FullTimeOddsKey.FT_HDP_HOME]: 1.6,
+        [FullTimeOddsKey.FT_HDP_AWAY]: 2.4,
+        [FullTimeOddsKey.FT_1X2_HOME]: 2.1,
+        [FullTimeOddsKey.FT_1X2_AWAY]: 2.9,
+        [FullTimeOddsKey.FT_1X2_DRAW]: 3.4,
+        [FullTimeOddsKey.FT_OU_OVER]: 1.7,
+        [FullTimeOddsKey.FT_OU_UNDER]: 2.1,
+        [FullTimeOddsKey.FT_OE_ODD]: 1.8,
+        [FullTimeOddsKey.FT_OE_EVEN]: 2.0,
+        [FullTimeOddsKey.FT_HOME_OVER]: 2.0,
+        [FullTimeOddsKey.FT_HOME_UNDER]: 1.8,
+        [FullTimeOddsKey.FT_AWAY_OVER]: 2.3,
+        [FullTimeOddsKey.FT_AWAY_UNDER]: 1.7,
       };
 
       const matchConfig = {
@@ -902,8 +934,8 @@ describe("OddsGeneratorService Tests", () => {
       });
 
       // Check specific point values
-      expect(result[FirstHalfOddsKey.FT_HDP_HOME].point).toBe(-0.5);
-      expect(result[FirstHalfOddsKey.FT_HDP_AWAY].point).toBe(0.5);
+      expect(result[FullTimeOddsKey.FT_HDP_HOME].point).toBe(-0.5);
+      expect(result[FullTimeOddsKey.FT_HDP_AWAY].point).toBe(0.5);
       expect(result[FirstHalfOddsKey.H1_HDP_HOME].point).toBe(0.5);
       expect(result[FirstHalfOddsKey.H1_HDP_AWAY].point).toBe(-0.5);
     });
@@ -912,19 +944,19 @@ describe("OddsGeneratorService Tests", () => {
   describe("generateSecondHalfSelections", () => {
     it("should generate second half selections with correct structure", () => {
       const allSecondHalfOdds = {
-        [SecondHalfOddsKey.FT_1X2_HOME]: 2.0,
-        [SecondHalfOddsKey.FT_1X2_AWAY]: 3.0,
-        [SecondHalfOddsKey.FT_1X2_DRAW]: 3.5,
-        [SecondHalfOddsKey.FT_HDP_HOME]: 1.5,
-        [SecondHalfOddsKey.FT_HDP_AWAY]: 2.5,
-        [SecondHalfOddsKey.FT_OU_OVER]: 1.8,
-        [SecondHalfOddsKey.FT_OU_UNDER]: 2.0,
-        [SecondHalfOddsKey.FT_OE_ODD]: 1.9,
-        [SecondHalfOddsKey.FT_OE_EVEN]: 1.9,
-        [SecondHalfOddsKey.FT_HOME_OVER]: 2.2,
-        [SecondHalfOddsKey.FT_HOME_UNDER]: 1.7,
-        [SecondHalfOddsKey.FT_AWAY_OVER]: 2.1,
-        [SecondHalfOddsKey.FT_AWAY_UNDER]: 1.8,
+        [FullTimeOddsKey.FT_1X2_HOME]: 2.0,
+        [FullTimeOddsKey.FT_1X2_AWAY]: 3.0,
+        [FullTimeOddsKey.FT_1X2_DRAW]: 3.5,
+        [FullTimeOddsKey.FT_HDP_HOME]: 1.5,
+        [FullTimeOddsKey.FT_HDP_AWAY]: 2.5,
+        [FullTimeOddsKey.FT_OU_OVER]: 1.8,
+        [FullTimeOddsKey.FT_OU_UNDER]: 2.0,
+        [FullTimeOddsKey.FT_OE_ODD]: 1.9,
+        [FullTimeOddsKey.FT_OE_EVEN]: 1.9,
+        [FullTimeOddsKey.FT_HOME_OVER]: 2.2,
+        [FullTimeOddsKey.FT_HOME_UNDER]: 1.7,
+        [FullTimeOddsKey.FT_AWAY_OVER]: 2.1,
+        [FullTimeOddsKey.FT_AWAY_UNDER]: 1.8,
       };
 
       const matchConfig = {
@@ -964,14 +996,14 @@ describe("OddsGeneratorService Tests", () => {
       });
 
       // Check specific point values (HH = 2 home goals, 0 away goals)
-      expect(selections[SecondHalfOddsKey.FT_HDP_HOME].point).toBe(0.5);
-      expect(selections[SecondHalfOddsKey.FT_HDP_AWAY].point).toBe(-0.5);
-      expect(selections[SecondHalfOddsKey.FT_OU_OVER].point).toBe(4.5); // 2.5 + 2
-      expect(selections[SecondHalfOddsKey.FT_OU_UNDER].point).toBe(4.5); // 2.5 + 2
-      expect(selections[SecondHalfOddsKey.FT_HOME_OVER].point).toBe(3.5); // 1.5 + 2
-      expect(selections[SecondHalfOddsKey.FT_HOME_UNDER].point).toBe(3.5); // 1.5 + 2
-      expect(selections[SecondHalfOddsKey.FT_AWAY_OVER].point).toBe(1.0); // 1.0 + 0
-      expect(selections[SecondHalfOddsKey.FT_AWAY_UNDER].point).toBe(1.0); // 1.0 + 0
+      expect(selections[FullTimeOddsKey.FT_HDP_HOME].point).toBe(0.5);
+      expect(selections[FullTimeOddsKey.FT_HDP_AWAY].point).toBe(-0.5);
+      expect(selections[FullTimeOddsKey.FT_OU_OVER].point).toBe(4.5); // 2.5 + 2
+      expect(selections[FullTimeOddsKey.FT_OU_UNDER].point).toBe(4.5); // 2.5 + 2
+      expect(selections[FullTimeOddsKey.FT_HOME_OVER].point).toBe(3.5); // 1.5 + 2
+      expect(selections[FullTimeOddsKey.FT_HOME_UNDER].point).toBe(3.5); // 1.5 + 2
+      expect(selections[FullTimeOddsKey.FT_AWAY_OVER].point).toBe(1.0); // 1.0 + 0
+      expect(selections[FullTimeOddsKey.FT_AWAY_UNDER].point).toBe(1.0); // 1.0 + 0
     });
   });
 
@@ -992,34 +1024,34 @@ describe("OddsGeneratorService Tests", () => {
           [FirstHalfOddsKey.H1_HOME_UNDER]: 1.7,
           [FirstHalfOddsKey.H1_AWAY_OVER]: 2.1,
           [FirstHalfOddsKey.H1_AWAY_UNDER]: 1.8,
-          [FirstHalfOddsKey.FT_HDP_HOME]: 1.6,
-          [FirstHalfOddsKey.FT_HDP_AWAY]: 2.4,
-          [FirstHalfOddsKey.FT_1X2_HOME]: 2.1,
-          [FirstHalfOddsKey.FT_1X2_AWAY]: 2.9,
-          [FirstHalfOddsKey.FT_1X2_DRAW]: 3.4,
-          [FirstHalfOddsKey.FT_OU_OVER]: 1.7,
-          [FirstHalfOddsKey.FT_OU_UNDER]: 2.1,
-          [FirstHalfOddsKey.FT_OE_ODD]: 1.8,
-          [FirstHalfOddsKey.FT_OE_EVEN]: 2.0,
-          [FirstHalfOddsKey.FT_HOME_OVER]: 2.0,
-          [FirstHalfOddsKey.FT_HOME_UNDER]: 1.8,
-          [FirstHalfOddsKey.FT_AWAY_OVER]: 2.3,
-          [FirstHalfOddsKey.FT_AWAY_UNDER]: 1.7,
+          [FullTimeOddsKey.FT_HDP_HOME]: 1.6,
+          [FullTimeOddsKey.FT_HDP_AWAY]: 2.4,
+          [FullTimeOddsKey.FT_1X2_HOME]: 2.1,
+          [FullTimeOddsKey.FT_1X2_AWAY]: 2.9,
+          [FullTimeOddsKey.FT_1X2_DRAW]: 3.4,
+          [FullTimeOddsKey.FT_OU_OVER]: 1.7,
+          [FullTimeOddsKey.FT_OU_UNDER]: 2.1,
+          [FullTimeOddsKey.FT_OE_ODD]: 1.8,
+          [FullTimeOddsKey.FT_OE_EVEN]: 2.0,
+          [FullTimeOddsKey.FT_HOME_OVER]: 2.0,
+          [FullTimeOddsKey.FT_HOME_UNDER]: 1.8,
+          [FullTimeOddsKey.FT_AWAY_OVER]: 2.3,
+          [FullTimeOddsKey.FT_AWAY_UNDER]: 1.7,
         } as Record<string, number>,
         {
-          [SecondHalfOddsKey.FT_1X2_HOME]: 2.0,
-          [SecondHalfOddsKey.FT_1X2_AWAY]: 3.0,
-          [SecondHalfOddsKey.FT_1X2_DRAW]: 3.5,
-          [SecondHalfOddsKey.FT_HDP_HOME]: 1.5,
-          [SecondHalfOddsKey.FT_HDP_AWAY]: 2.5,
-          [SecondHalfOddsKey.FT_OU_OVER]: 1.8,
-          [SecondHalfOddsKey.FT_OU_UNDER]: 2.0,
-          [SecondHalfOddsKey.FT_OE_ODD]: 1.9,
-          [SecondHalfOddsKey.FT_OE_EVEN]: 1.9,
-          [SecondHalfOddsKey.FT_HOME_OVER]: 2.2,
-          [SecondHalfOddsKey.FT_HOME_UNDER]: 1.7,
-          [SecondHalfOddsKey.FT_AWAY_OVER]: 2.1,
-          [SecondHalfOddsKey.FT_AWAY_UNDER]: 1.8,
+          [FullTimeOddsKey.FT_1X2_HOME]: 2.0,
+          [FullTimeOddsKey.FT_1X2_AWAY]: 3.0,
+          [FullTimeOddsKey.FT_1X2_DRAW]: 3.5,
+          [FullTimeOddsKey.FT_HDP_HOME]: 1.5,
+          [FullTimeOddsKey.FT_HDP_AWAY]: 2.5,
+          [FullTimeOddsKey.FT_OU_OVER]: 1.8,
+          [FullTimeOddsKey.FT_OU_UNDER]: 2.0,
+          [FullTimeOddsKey.FT_OE_ODD]: 1.9,
+          [FullTimeOddsKey.FT_OE_EVEN]: 1.9,
+          [FullTimeOddsKey.FT_HOME_OVER]: 2.2,
+          [FullTimeOddsKey.FT_HOME_UNDER]: 1.7,
+          [FullTimeOddsKey.FT_AWAY_OVER]: 2.1,
+          [FullTimeOddsKey.FT_AWAY_UNDER]: 1.8,
         } as Record<string, number>,
       ];
 
@@ -1063,6 +1095,206 @@ describe("OddsGeneratorService Tests", () => {
       expect(selections).toHaveLength(2);
       expect(selections[0]).toBeDefined();
       expect(selections[1]).toBeDefined();
+    });
+  });
+
+  describe("calculateOddsForFirstHalf", () => {
+    it("should calculate odds for first half with correct structure", () => {
+      const matchConfig = {
+        rateConfig: {
+          scoreRate: {
+            "1-0": 0.5,
+            "0-1": 0.5,
+          },
+        },
+        eventDetailInfos: [
+          {
+            rateConfig: {
+              scoreRate: {
+                "1-0": 0.6,
+                "0-1": 0.4,
+              },
+            },
+          },
+        ],
+      } as any;
+
+      const result = oddsGeneratorService.calculateOddsForFirstHalf(matchConfig);
+
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_HDP_HOME);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_HDP_AWAY);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_1X2_HOME);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_1X2_AWAY);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_1X2_DRAW);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_OU_OVER);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_OU_UNDER);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_OE_ODD);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_OE_EVEN);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_HOME_OVER);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_HOME_UNDER);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_AWAY_OVER);
+      expect(result).toHaveProperty(FirstHalfOddsKey.H1_AWAY_UNDER);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_HDP_HOME);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_HDP_AWAY);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_1X2_HOME);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_1X2_AWAY);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_1X2_DRAW);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_OU_OVER);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_OU_UNDER);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_OE_ODD);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_OE_EVEN);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_HOME_OVER);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_HOME_UNDER);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_AWAY_OVER);
+      expect(result).toHaveProperty(FullTimeOddsKey.FT_AWAY_UNDER);
+    });
+  });
+
+  describe("calculateOddsForSecondHalf", () => {
+    it("should calculate odds for second half with correct structure", () => {
+      const matchConfig = {
+        eventDetailInfos: [
+          {},
+          {
+            rateConfig: {
+              scoreRate: {
+                "1-0": 0.5,
+                "0-1": 0.5,
+              },
+            },
+          },
+        ],
+      } as any;
+
+      const result = [
+        {
+          result: {
+            goalSequence: "HH",
+          },
+        },
+      ] as any;
+
+      const odds = oddsGeneratorService.calculateOddsForSecondHalf(matchConfig, result);
+
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_1X2_HOME);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_1X2_AWAY);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_1X2_DRAW);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_HDP_HOME);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_HDP_AWAY);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_OU_OVER);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_OU_UNDER);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_OE_ODD);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_OE_EVEN);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_HOME_OVER);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_HOME_UNDER);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_AWAY_OVER);
+      expect(odds).toHaveProperty(FullTimeOddsKey.FT_AWAY_UNDER);
+    });
+
+    it("should handle different first half results", () => {
+      const matchConfig = {
+        eventDetailInfos: [
+          {},
+          {
+            rateConfig: {
+              scoreRate: {
+                "1-0": 0.5,
+                "0-1": 0.5,
+              },
+            },
+          },
+        ],
+      } as any;
+
+      const resultHA = [
+        {
+          result: {
+            goalSequence: "HA",
+          },
+        },
+      ] as any;
+
+      const resultAA = [
+        {
+          result: {
+            goalSequence: "AA",
+          },
+        },
+      ] as any;
+
+      const oddsHA = oddsGeneratorService.calculateOddsForSecondHalf(matchConfig, resultHA);
+      const oddsAA = oddsGeneratorService.calculateOddsForSecondHalf(matchConfig, resultAA);
+
+      expect(oddsHA).toBeDefined();
+      expect(oddsAA).toBeDefined();
+      expect(oddsHA).not.toEqual(oddsAA);
+    });
+  });
+
+  describe("Edge Cases and Error Handling", () => {
+    it("should handle negative scores in calculateHandicapValue", () => {
+      expect(oddsGeneratorService.calculateHandicapValue(-1, 1)).toBe(2.5);
+      expect(oddsGeneratorService.calculateHandicapValue(1, -1)).toBe(-1.5);
+      expect(oddsGeneratorService.calculateHandicapValue(-1, -1)).toBe(0.5);
+    });
+
+    it("should handle negative scores in calculateOverUnderValue", () => {
+      expect(oddsGeneratorService.calculateOverUnderValue(-1, 1)).toBe(0.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(1, -1)).toBe(0.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(-1, -1)).toBe(-1.5);
+    });
+
+    it("should handle very large numbers in calculateHandicapValue", () => {
+      expect(oddsGeneratorService.calculateHandicapValue(1000, 1001)).toBe(1.5);
+      expect(oddsGeneratorService.calculateHandicapValue(1001, 1000)).toBe(-0.5);
+    });
+
+    it("should handle very large numbers in calculateOverUnderValue", () => {
+      expect(oddsGeneratorService.calculateOverUnderValue(1000, 1001)).toBe(2001.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(1001, 1000)).toBe(2001.5);
+    });
+
+    it("should handle decimal precision in calculateHandicapValue", () => {
+      expect(oddsGeneratorService.calculateHandicapValue(1.999, 2.001)).toBe(0.5);
+      expect(oddsGeneratorService.calculateHandicapValue(2.001, 1.999)).toBe(-0.5);
+    });
+
+    it("should handle decimal precision in calculateOverUnderValue", () => {
+      expect(oddsGeneratorService.calculateOverUnderValue(1.999, 2.001)).toBe(4.5);
+      expect(oddsGeneratorService.calculateOverUnderValue(2.001, 1.999)).toBe(4.5);
+    });
+
+    it("should handle invalid addingScore format", () => {
+      const scoreRates = {
+        "1-0": 0.5,
+        "0-1": 0.5,
+      };
+
+      // parseScore will return [NaN, NaN] for invalid format, which should be handled gracefully
+      const result = oddsGeneratorService.calculateProbabilitiesForBetChoices(scoreRates, "invalid");
+      expect(result).toBeDefined();
+    });
+
+    it("should handle empty probabilities in calculateBetOdds", () => {
+      const probabilities = {};
+
+      const result = oddsGeneratorService.calculateBetOdds(probabilities);
+
+      expect(result).toEqual({});
+    });
+
+    it("should handle probabilities with zero values", () => {
+      const probabilities = {
+        home: 0,
+        away: 0.5,
+        draw: 0.5,
+      };
+
+      const result = oddsGeneratorService.calculateBetOdds(probabilities);
+
+      expect(result.home).toBe(0); // probabilityToBetRawOdds returns 0 for prob <= 0
+      expect(result.away).toBe(2);
+      expect(result.draw).toBe(2);
     });
   });
 });
