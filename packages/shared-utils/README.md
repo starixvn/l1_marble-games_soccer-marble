@@ -54,7 +54,7 @@ const handicap = calculateHandicapValue(1.5, 2.0);
 ### Result Helper
 
 - `generateResult(data: DataResultType)`: Generate game result
-- `getSettlementResult(roundResult: RoundResultType, matchConfig: MatchConfigType)`: Calculate settlement result
+- `generateSettlementResult(roundResult: RoundResultType, matchConfig: MatchConfigType)`: Calculate settlement result
 - `getScoreFromScoreRate(scoreRate: Record<string, number>)`: Get score from rate configuration
 - `generateVideoName(result: string, numberOfVideos: Record<string, number>, videoDefault?: boolean, ignoredVideo?: string)`: Generate video name
 

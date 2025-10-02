@@ -1,6 +1,7 @@
 import {
   ResultGeneratorService as BaseResultGeneratorService,
   resultHelper,
+  oddsHelper,
   FirstHalfOddsKey,
   FullTimeOddsKey,
 } from "@soccer-marble/soccer-marble-base";
@@ -17,62 +18,30 @@ import type {
 import type { OddsInfo } from "../types";
 
 export class ResultGeneratorService extends BaseResultGeneratorService {
-  override getSettlementResult: (roundResult: RoundResult, matchConfig: MatchConfig) => RoundSettlementResult = (
+  override generateSettlementResult: (roundResult: RoundResult, matchConfig: MatchConfig) => RoundSettlementResult = (
     roundResult,
     matchConfig
   ) => {
-    const firstHalfInfos = matchConfig.eventDetailInfos.filter((info) => info.phase === 0);
-    const secondHalfInfos = matchConfig.eventDetailInfos.filter((info) => info.phase === 1);
+    const fixedFtSettlementResult = this.generateFullTimeFixedSettlementResult(roundResult, matchConfig);
 
-    const fhResults = roundResult.filter((result) => result.phase === 0).map((result) => result.result);
-    const shResults = roundResult.filter((result) => result.phase === 1).map((result) => result.result);
-
-    const ftResult = resultHelper.combineResults(fhResults.concat(shResults));
-
-    const fixedFtSettlementResult = this.generateFullTimeFixedSettlementResult(ftResult, matchConfig.oddsInfo[0]);
-
-    const fixedFhResult = resultHelper.combineResults(fhResults);
-
-    const fixedFhSettlementResult = this.generateFirstHalfFixedSettlementResult(
-      fixedFhResult,
-      firstHalfInfos[0].oddsInfo
+    const fhSettlementResults = this.generateFirstHalfSettlementResultForUltraLive(
+      roundResult,
+      matchConfig,
+      fixedFtSettlementResult
     );
 
-    const fhSettlementResults = firstHalfInfos.map((info, index) => {
-      const liveFhResult = resultHelper.combineResults(fhResults.slice(index));
-      const liveFtResult = resultHelper.combineResults(fhResults.slice(index).concat(shResults));
-      const fhOddsInfo = info.oddsInfo;
-      const ftOddsInfo = matchConfig.oddsInfo[index];
-
-      const liveFhSettlementResult = this.generateLiveSettlementResultForFirstHalf(liveFhResult, fhOddsInfo);
-
-      const liveFtSettlementResult = this.generateLiveSettlementResultForFulltime(liveFtResult, ftOddsInfo);
-
-      return {
-        ...fixedFtSettlementResult,
-        ...liveFtSettlementResult,
-        ...fixedFhSettlementResult,
-        ...liveFhSettlementResult,
-      };
-    });
-
-    const shSettlementResults = secondHalfInfos.map((info, index) => {
-      const liveShResult = resultHelper.combineResults(shResults.slice(index));
-      const shOddsInfo = info.oddsInfo;
-      const liveShSettlementResult = this.generateLiveSettlementResultForFulltime(liveShResult, shOddsInfo);
-
-      return {
-        ...fixedFtSettlementResult,
-        ...liveShSettlementResult,
-      };
-    });
+    const shSettlementResults = this.generateSecondHalfSettlementResultForUltraLive(
+      roundResult,
+      matchConfig,
+      fixedFtSettlementResult
+    );
 
     return [...fhSettlementResults, ...shSettlementResults];
   };
 
-  override getSettlementResultFromResultString = (resultString: string, oddsInfo: any) => {
-    const homeGoals = resultString.split("H").length - 1;
-    const awayGoals = resultString.split("A").length - 1;
+  override generateSettlementResultFromResult = (result: ResultType, oddsInfo: any) => {
+    const [homeGoals, awayGoals] = oddsHelper.parseScore(result.finalScore);
+
     const totalGoals = homeGoals + awayGoals;
     const hdpResult = resultHelper.getHandicapResult(homeGoals, awayGoals, oddsInfo.handicapValue);
     const o1x2Result = resultHelper.get1X2Result(homeGoals, awayGoals);
@@ -92,7 +61,7 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
     };
   };
 
-  generateResult = (data: DataResultType): RoundResult => {
+  override generateResult = (data: DataResultType): RoundResult => {
     const numberOfVideos = data.numberOfVideos;
     const firstHalfInfos = data.matchConfig.eventDetailInfos.filter((info) => info.phase === 0);
     const secondHalfInfos = data.matchConfig.eventDetailInfos.filter((info) => info.phase === 1);
@@ -124,8 +93,69 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
     return [...firstHalfResults, ...secondHalfResults];
   };
 
-  generateFullTimeFixedSettlementResult = (ftResult: ResultType, ftOddsInfo: OddsInfo): DrawSettlementResult => {
-    const ftSettlementResult = this.getSettlementResultFromResultString(ftResult.goalSequence, ftOddsInfo);
+  generateFirstHalfSettlementResultForUltraLive = (
+    roundResult: RoundResult,
+    matchConfig: MatchConfig,
+    fixedFtSettlementResult: DrawSettlementResult
+  ): DrawSettlementResult[] => {
+    const firstHalfInfos = matchConfig.eventDetailInfos.filter((info) => info.phase === 0);
+
+    const fhResults = roundResult.filter((result) => result.phase === 0).map((result) => result.result);
+    const shResults = roundResult.filter((result) => result.phase === 1).map((result) => result.result);
+
+    const fixedFhSettlementResult = this.generateFirstHalfFixedSettlementResult(roundResult, matchConfig);
+
+    return firstHalfInfos.map((info, index) => {
+      const liveFhResult = resultHelper.combineResults(fhResults.slice(index));
+      const liveFtResult = resultHelper.combineResults(fhResults.slice(index).concat(shResults));
+      const fhOddsInfo = info.oddsInfo;
+      const ftOddsInfo = matchConfig.oddsInfo[index];
+
+      const liveFhSettlementResult = this.generateFirstHalfLiveSettlementResult(liveFhResult, fhOddsInfo);
+
+      const liveFtSettlementResult = this.generateFullTimeLiveSettlementResult(liveFtResult, ftOddsInfo);
+
+      return {
+        ...fixedFtSettlementResult,
+        ...liveFtSettlementResult,
+        ...fixedFhSettlementResult,
+        ...liveFhSettlementResult,
+      };
+    });
+  };
+
+  generateSecondHalfSettlementResultForUltraLive = (
+    roundResult: RoundResult,
+    matchConfig: MatchConfig,
+    fixedFtSettlementResult: DrawSettlementResult
+  ): DrawSettlementResult[] => {
+    const secondHalfInfos = matchConfig.eventDetailInfos.filter((info) => info.phase === 1);
+
+    const shResults = roundResult.filter((result) => result.phase === 1).map((result) => result.result);
+
+    return secondHalfInfos.map((info, index) => {
+      const liveShResult = resultHelper.combineResults(shResults.slice(index));
+      const shOddsInfo = info.oddsInfo;
+      const liveShSettlementResult = this.generateFullTimeLiveSettlementResult(liveShResult, shOddsInfo);
+
+      return {
+        ...fixedFtSettlementResult,
+        ...liveShSettlementResult,
+      };
+    });
+  };
+
+  generateFullTimeFixedSettlementResult = (
+    roundResult: RoundResult,
+    matchConfig: MatchConfig
+  ): DrawSettlementResult => {
+    const fhResults = roundResult.filter((result) => result.phase === 0).map((result) => result.result);
+    const shResults = roundResult.filter((result) => result.phase === 1).map((result) => result.result);
+    const ftResult = resultHelper.combineResults(fhResults.concat(shResults));
+
+    const ftOddsInfo = matchConfig.oddsInfo[0];
+
+    const ftSettlementResult = this.generateSettlementResultFromResult(ftResult, ftOddsInfo);
 
     return {
       [FullTimeOddsKey.FT_1X2_HOME]: ftSettlementResult.home,
@@ -136,8 +166,16 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
     };
   };
 
-  generateFirstHalfFixedSettlementResult = (fhResult: ResultType, fhOddsInfo: OddsInfo): DrawSettlementResult => {
-    const fhSettlementResult = this.getSettlementResultFromResultString(fhResult.goalSequence, fhOddsInfo);
+  generateFirstHalfFixedSettlementResult = (
+    roundResult: RoundResult,
+    matchConfig: MatchConfig
+  ): DrawSettlementResult => {
+    const firstHalfInfos = matchConfig.eventDetailInfos.filter((info) => info.phase === 0);
+    const fhResults = roundResult.filter((result) => result.phase === 0).map((result) => result.result);
+    const fhResult = resultHelper.combineResults(fhResults);
+    const fhOddsInfo = firstHalfInfos[0].oddsInfo;
+
+    const fhSettlementResult = this.generateSettlementResultFromResult(fhResult, fhOddsInfo);
 
     return {
       [FirstHalfOddsKey.H1_1X2_HOME]: fhSettlementResult.home,
@@ -148,8 +186,8 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
     };
   };
 
-  generateLiveSettlementResultForFirstHalf = (liveFhResult: ResultType, fhOddsInfo: OddsInfo): DrawSettlementResult => {
-    const liveFhSettlementResult = this.getSettlementResultFromResultString(liveFhResult.goalSequence, fhOddsInfo);
+  generateFirstHalfLiveSettlementResult = (liveFhResult: ResultType, fhOddsInfo: OddsInfo): DrawSettlementResult => {
+    const liveFhSettlementResult = this.generateSettlementResultFromResult(liveFhResult, fhOddsInfo);
 
     return {
       [FirstHalfOddsKey.H1_HDP_HOME]: liveFhSettlementResult.handicapHome,
@@ -159,11 +197,8 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
     };
   };
 
-  generateLiveSettlementResultForFulltime = (
-    liveShResult: ResultType,
-    liveFtOddsInfo: OddsInfo
-  ): DrawSettlementResult => {
-    const liveFtSettlementResult = this.getSettlementResultFromResultString(liveShResult.goalSequence, liveFtOddsInfo);
+  generateFullTimeLiveSettlementResult = (liveShResult: ResultType, liveFtOddsInfo: OddsInfo): DrawSettlementResult => {
+    const liveFtSettlementResult = this.generateSettlementResultFromResult(liveShResult, liveFtOddsInfo);
 
     return {
       [FullTimeOddsKey.FT_HDP_HOME]: liveFtSettlementResult.handicapHome,

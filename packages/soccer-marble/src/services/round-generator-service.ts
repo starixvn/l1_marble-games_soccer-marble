@@ -99,7 +99,7 @@ export class RoundGeneratorService {
 
     const odds = this.oddsGeneratorService.calculateOddsForRound(matchConfig, result);
     const selections = this.oddsGeneratorService.generateSelectionsForRound(odds, matchConfig, result);
-    const settlementResult = this.resultGeneratorService.getSettlementResult(result, matchConfig);
+    const settlementResult = this.resultGeneratorService.generateSettlementResult(result, matchConfig);
 
     return {
       gameId: this.gameSettings.gameId,

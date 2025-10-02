@@ -73,7 +73,7 @@ describe("ResultGeneratorService tests", () => {
     });
   });
 
-  describe("getSettlementResultFromResultString", () => {
+  describe("generateSettlementResultFromResult", () => {
     it("should calculate settlement for HH result", () => {
       const settleConfig = {
         overUnderValue: 2.5,
@@ -82,7 +82,10 @@ describe("ResultGeneratorService tests", () => {
         awayOverUnderValue: 0.5,
       };
 
-      const result = resultGeneratorService.getSettlementResultFromResultString("HH", settleConfig);
+      const result = resultGeneratorService.generateSettlementResultFromResult(
+        { goalSequence: "HH", finalScore: "2:0" },
+        settleConfig
+      );
 
       expect(result.handicapHome).toBe(SettlementStatus.WIN);
       expect(result.handicapAway).toBe(SettlementStatus.LOSE);
@@ -107,7 +110,10 @@ describe("ResultGeneratorService tests", () => {
         awayOverUnderValue: 1.5,
       };
 
-      const result = resultGeneratorService.getSettlementResultFromResultString("A", settleConfig);
+      const result = resultGeneratorService.generateSettlementResultFromResult(
+        { goalSequence: "A", finalScore: "0:1" },
+        settleConfig
+      );
 
       expect(result.handicapHome).toBe(SettlementStatus.LOSE);
       expect(result.handicapAway).toBe(SettlementStatus.WIN);
@@ -172,9 +178,9 @@ describe("ResultGeneratorService tests", () => {
     });
   });
 
-  describe("getVideoInfoFromResult", () => {
+  describe("generateVideoInfoFromResult", () => {
     it("should generate video info for different results", () => {
-      const result = resultGeneratorService.getVideoInfoFromResult("H", "A", NUMBER_OF_VIDEOS);
+      const result = resultGeneratorService.generateVideoInfoFromResult("H", "A", NUMBER_OF_VIDEOS);
 
       expect(result.firstHalfVideo).toBeDefined();
       expect(result.secondHalfVideo).toBeDefined();
@@ -182,7 +188,7 @@ describe("ResultGeneratorService tests", () => {
     });
 
     it("should generate video info for same results", () => {
-      const result = resultGeneratorService.getVideoInfoFromResult("H", "H", NUMBER_OF_VIDEOS);
+      const result = resultGeneratorService.generateVideoInfoFromResult("H", "H", NUMBER_OF_VIDEOS);
 
       expect(result.firstHalfVideo).toBeDefined();
       expect(result.secondHalfVideo).toBeDefined();
@@ -193,7 +199,7 @@ describe("ResultGeneratorService tests", () => {
     });
   });
 
-  describe("getSettlementResult", () => {
+  describe("generateSettlementResult", () => {
     const matchConfig = {
       gameTiming: mockContainer.gameSettings.gameTiming,
       numberOfEventDetails: mockContainer.gameSettings.gameTiming.timelines.length,
@@ -250,7 +256,7 @@ describe("ResultGeneratorService tests", () => {
         ];
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, matchConfig as any);
+        const result = resultGeneratorService.generateSettlementResult(roundResult, matchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.WIN);
@@ -326,7 +332,7 @@ describe("ResultGeneratorService tests", () => {
         };
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig as any);
+        const result = resultGeneratorService.generateSettlementResult(roundResult, newMatchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.LOSE);
@@ -408,7 +414,7 @@ describe("ResultGeneratorService tests", () => {
         };
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig as any);
+        const result = resultGeneratorService.generateSettlementResult(roundResult, newMatchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.DRAW);
@@ -494,7 +500,7 @@ describe("ResultGeneratorService tests", () => {
         };
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig as any);
+        const result = resultGeneratorService.generateSettlementResult(roundResult, newMatchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.DRAW);
@@ -582,7 +588,7 @@ describe("ResultGeneratorService tests", () => {
         };
 
         // Act
-        const result = resultGeneratorService.getSettlementResult(roundResult, newMatchConfig as any);
+        const result = resultGeneratorService.generateSettlementResult(roundResult, newMatchConfig as any);
 
         // Assert - Test all first half settlement values for this result
         expect(result[0].h1_hdp_home).toBe(SettlementStatus.WIN);

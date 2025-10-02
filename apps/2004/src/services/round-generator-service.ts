@@ -159,7 +159,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
 
     const odds = this.oddsGeneratorService.calculateOddsForUltraLive(matchConfig, result);
     const selections = this.oddsGeneratorService.generateSelectionsForUltraLive(odds, matchConfig, result);
-    const settlementResult = this.resultGeneratorService.getSettlementResult(result, matchConfig);
+    const settlementResult = this.resultGeneratorService.generateSettlementResult(result, matchConfig);
 
     return {
       gameId: this.gameSettings.gameId,

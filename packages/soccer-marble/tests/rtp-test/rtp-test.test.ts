@@ -1,4 +1,4 @@
-import { generateResult, getSettlementResult } from "../../src/helpers/result-helper";
+import { generateResult, generateSettlementResult } from "../../src/helpers/result-helper";
 import { secureRandomBool, secureShuffle } from "sc-core-rng";
 import { MatchConfigType } from "../../src/types";
 import { gameSettings, rateConfigs } from "../../src/game-config";
@@ -26,7 +26,7 @@ function generateNewRound() {
   const { odds, matchConfig } = calculateOddsForRound(newRound.matchConfig, result.drawResults[0].result.goalSequence);
 
   newRound.odds = odds;
-  const settlementResult = getSettlementResult(result, matchConfig);
+  const settlementResult = generateSettlementResult(result, matchConfig);
   newRound.settlementResult = settlementResult;
 
   return newRound;

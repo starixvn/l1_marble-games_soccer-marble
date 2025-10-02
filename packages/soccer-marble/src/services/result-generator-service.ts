@@ -12,7 +12,7 @@ import {
   ResultType,
   DrawSettlementResult,
 } from "../types";
-import { resultHelper } from "../helpers";
+import { oddsHelper, resultHelper } from "../helpers";
 
 export class ResultGeneratorService {
   protected readonly gameSettings: any;
@@ -25,7 +25,7 @@ export class ResultGeneratorService {
     const numberOfVideos = data.numberOfVideos;
     const firstHalf = this.generateResultFromRate(data.matchConfig.eventDetailInfos[0].rateConfig);
     const secondHalf = this.generateResultFromRate(data.matchConfig.eventDetailInfos[1].rateConfig);
-    const videoInfo = this.getVideoInfoFromResult(firstHalf.goalSequence, secondHalf.goalSequence, numberOfVideos);
+    const videoInfo = this.generateVideoInfoFromResult(firstHalf.goalSequence, secondHalf.goalSequence, numberOfVideos);
 
     const firstHalfResult: EventDetailResult = {
       playlist: videoInfo.firstHalfVideo,
@@ -44,31 +44,42 @@ export class ResultGeneratorService {
     return [firstHalfResult, secondHalfResult];
   };
 
-  getSettlementResult = (roundResult: RoundResult, matchConfig: MatchConfig): RoundSettlementResult => {
+  generateSettlementResult = (roundResult: RoundResult, matchConfig: MatchConfig): RoundSettlementResult => {
+    const fullTimeSettlementResult = this.generateFullTimeSettlementResult(roundResult, matchConfig);
+
+    const firstHalfSettlementResult = this.generateFirstHalfSettlementResult(
+      roundResult,
+      matchConfig,
+      fullTimeSettlementResult
+    );
+
+    const secondHalfSettlementResult = this.generateSecondHalfSettlementResult(
+      roundResult,
+      matchConfig,
+      fullTimeSettlementResult
+    );
+
+    return [firstHalfSettlementResult, secondHalfSettlementResult];
+  };
+
+  generateFullTimeSettlementResult = (roundResult: RoundResult, matchConfig: MatchConfig): DrawSettlementResult => {
     const firstHalf = roundResult[0].result;
     const secondHalf = roundResult[1].result;
+    const fullTime = resultHelper.combineResults([firstHalf, secondHalf]);
 
-    const firstHalfSettlementResult = this.getSettlementResultFromResultString(
-      firstHalf.goalSequence,
-      matchConfig.eventDetailInfos[0].oddsInfo
-    );
-    const secondHalfSettlementResult = this.getSettlementResultFromResultString(
-      secondHalf.goalSequence,
-      matchConfig.eventDetailInfos[1].oddsInfo
-    );
-    const fullTimeSettlementResult = this.getSettlementResultFromResultString(
-      firstHalf.goalSequence + secondHalf.goalSequence,
-      matchConfig.oddsInfo
-    );
+    const fullTimeSettlementResult = this.generateSettlementResultFromResult(fullTime, matchConfig.oddsInfo);
 
-    const finalFirstHalfSettlementResult = {
+    return {
       [FullTimeOddsKey.FT_HDP_HOME]: fullTimeSettlementResult.handicapHome,
       [FullTimeOddsKey.FT_HDP_AWAY]: fullTimeSettlementResult.handicapAway,
+
       [FullTimeOddsKey.FT_1X2_HOME]: fullTimeSettlementResult.home,
       [FullTimeOddsKey.FT_1X2_AWAY]: fullTimeSettlementResult.away,
       [FullTimeOddsKey.FT_1X2_DRAW]: fullTimeSettlementResult.draw,
+
       [FullTimeOddsKey.FT_OU_OVER]: fullTimeSettlementResult.over,
       [FullTimeOddsKey.FT_OU_UNDER]: fullTimeSettlementResult.under,
+
       [FullTimeOddsKey.FT_OE_ODD]: fullTimeSettlementResult.odd,
       [FullTimeOddsKey.FT_OE_EVEN]: fullTimeSettlementResult.even,
 
@@ -76,14 +87,33 @@ export class ResultGeneratorService {
       [FullTimeOddsKey.FT_HOME_UNDER]: fullTimeSettlementResult.homeUnder,
       [FullTimeOddsKey.FT_AWAY_OVER]: fullTimeSettlementResult.awayOver,
       [FullTimeOddsKey.FT_AWAY_UNDER]: fullTimeSettlementResult.awayUnder,
+    };
+  };
+
+  generateFirstHalfSettlementResult = (
+    roundResult: RoundResult,
+    matchConfig: MatchConfig,
+    fullTimeSettlementResult: DrawSettlementResult
+  ): DrawSettlementResult => {
+    const firstHalf = roundResult[0].result;
+    const firstHalfSettlementResult = this.generateSettlementResultFromResult(
+      firstHalf,
+      matchConfig.eventDetailInfos[0].oddsInfo
+    );
+
+    return {
+      ...fullTimeSettlementResult,
 
       [FirstHalfOddsKey.H1_HDP_HOME]: firstHalfSettlementResult.handicapHome,
       [FirstHalfOddsKey.H1_HDP_AWAY]: firstHalfSettlementResult.handicapAway,
+
       [FirstHalfOddsKey.H1_1X2_HOME]: firstHalfSettlementResult.home,
       [FirstHalfOddsKey.H1_1X2_AWAY]: firstHalfSettlementResult.away,
       [FirstHalfOddsKey.H1_1X2_DRAW]: firstHalfSettlementResult.draw,
+
       [FirstHalfOddsKey.H1_OU_OVER]: firstHalfSettlementResult.over,
       [FirstHalfOddsKey.H1_OU_UNDER]: firstHalfSettlementResult.under,
+
       [FirstHalfOddsKey.H1_OE_ODD]: firstHalfSettlementResult.odd,
       [FirstHalfOddsKey.H1_OE_EVEN]: firstHalfSettlementResult.even,
 
@@ -92,30 +122,39 @@ export class ResultGeneratorService {
       [FirstHalfOddsKey.H1_AWAY_OVER]: firstHalfSettlementResult.awayOver,
       [FirstHalfOddsKey.H1_AWAY_UNDER]: firstHalfSettlementResult.awayUnder,
     };
+  };
 
-    const finalSecondHalfSettlementResult = {
-      [FullTimeOddsKey.FT_1X2_HOME]: fullTimeSettlementResult.home,
-      [FullTimeOddsKey.FT_1X2_AWAY]: fullTimeSettlementResult.away,
-      [FullTimeOddsKey.FT_1X2_DRAW]: fullTimeSettlementResult.draw,
+  generateSecondHalfSettlementResult = (
+    roundResult: RoundResult,
+    matchConfig: MatchConfig,
+    fullTimeSettlementResult: DrawSettlementResult
+  ): DrawSettlementResult => {
+    const secondHalf = roundResult[1].result;
+
+    const secondHalfSettlementResult = this.generateSettlementResultFromResult(
+      secondHalf,
+      matchConfig.eventDetailInfos[1].oddsInfo
+    );
+
+    return {
+      ...fullTimeSettlementResult,
+
       [FullTimeOddsKey.FT_HDP_HOME]: secondHalfSettlementResult.handicapHome,
       [FullTimeOddsKey.FT_HDP_AWAY]: secondHalfSettlementResult.handicapAway,
+
       [FullTimeOddsKey.FT_OU_OVER]: secondHalfSettlementResult.over,
       [FullTimeOddsKey.FT_OU_UNDER]: secondHalfSettlementResult.under,
-      [FullTimeOddsKey.FT_OE_ODD]: fullTimeSettlementResult.odd,
-      [FullTimeOddsKey.FT_OE_EVEN]: fullTimeSettlementResult.even,
 
       [FullTimeOddsKey.FT_HOME_OVER]: secondHalfSettlementResult.homeOver,
       [FullTimeOddsKey.FT_HOME_UNDER]: secondHalfSettlementResult.homeUnder,
       [FullTimeOddsKey.FT_AWAY_OVER]: secondHalfSettlementResult.awayOver,
       [FullTimeOddsKey.FT_AWAY_UNDER]: secondHalfSettlementResult.awayUnder,
     };
-
-    return [finalFirstHalfSettlementResult, finalSecondHalfSettlementResult];
   };
 
-  getSettlementResultFromResultString = (resultString: string, oddsInfo: any): DrawSettlementResult => {
-    const homeGoals = resultString.split("H").length - 1;
-    const awayGoals = resultString.split("A").length - 1;
+  generateSettlementResultFromResult = (result: ResultType, oddsInfo: any): DrawSettlementResult => {
+    const [homeGoals, awayGoals] = oddsHelper.parseScore(result.finalScore);
+
     const totalGoals = homeGoals + awayGoals;
     const hdpResult = resultHelper.getHandicapResult(homeGoals, awayGoals, oddsInfo.handicapValue);
     const o1x2Result = resultHelper.get1X2Result(homeGoals, awayGoals);
@@ -159,7 +198,7 @@ export class ResultGeneratorService {
     };
   };
 
-  getVideoInfoFromResult = (firstHalf: string, secondHalf: string, numberOfVideos: Record<string, number>) => {
+  generateVideoInfoFromResult = (firstHalf: string, secondHalf: string, numberOfVideos: Record<string, number>) => {
     const firstHalfVideo = this.generateVideoName(firstHalf, numberOfVideos);
     const secondHalfVideo = this.generateVideoName(secondHalf, numberOfVideos, false, firstHalfVideo);
 

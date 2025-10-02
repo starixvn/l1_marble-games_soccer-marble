@@ -1,7 +1,7 @@
 import { RateConfig } from "../types";
 
 export const parseScore = (score: string): [number, number] => {
-  const [home, away] = score.split("-").map(Number);
+  const [home, away] = score.split(/[:-]/).map(Number);
   return [home, away];
 };
 
