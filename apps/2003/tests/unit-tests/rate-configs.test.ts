@@ -1,25 +1,20 @@
 import { rateConfigs } from "../../src/rate-configs";
-import { OddsGeneratorService, MatchConfigType } from "@soccer-marble/soccer-marble-base";
+import { OddsGeneratorService } from "@soccer-marble/soccer-marble-base";
+import { oddsHelper } from "@soccer-marble/soccer-marble-base";
 
 describe("rateConfigs", () => {
+  const oddsGeneratorService = new OddsGeneratorService();
   describe("awayFavorite", () => {
     it("should always away favorite", () => {
-      for (const firstHalfConfig of rateConfigs.awayFavorite) {
-        for (const secondHalfConfig of rateConfigs.awayFavorite) {
-          const matchConfig = {
-            firstHalf: firstHalfConfig,
-            secondHalf: secondHalfConfig,
-          } as unknown as MatchConfigType;
+      for (const fhRateConfig of rateConfigs.awayFavorite) {
+        for (const shRateConfig of rateConfigs.awayFavorite) {
+          const ftRateConfig = oddsHelper.mergeArrayOfRates([fhRateConfig, shRateConfig]);
 
-          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, {
-            drawResults: [{ result: { goalSequence: "0", finalScore: "0-0" } }],
-          });
+          const fhOddsInfo = oddsGeneratorService.calculateOddsInfo(fhRateConfig.scoreRate);
+          const ftOddsInfo = oddsGeneratorService.calculateOddsInfo(ftRateConfig.scoreRate);
 
-          const firstHalfHandicapValue = result.matchConfig.firstHalf.handicapValue;
-          const fulltimeHandicapValue = result.matchConfig.handicapValue;
-
-          expect(firstHalfHandicapValue).toBe(0.5);
-          expect(fulltimeHandicapValue).toBeGreaterThan(0);
+          expect(fhOddsInfo.handicapValue).toBe(0.5);
+          expect(ftOddsInfo.handicapValue).toBeGreaterThan(0);
         }
       }
     });
@@ -27,22 +22,15 @@ describe("rateConfigs", () => {
 
   describe("homeFavorite", () => {
     it("should always home favorite", () => {
-      for (const firstHalfConfig of rateConfigs.homeFavorite) {
-        for (const secondHalfConfig of rateConfigs.homeFavorite) {
-          const matchConfig = {
-            firstHalf: firstHalfConfig,
-            secondHalf: secondHalfConfig,
-          } as unknown as MatchConfigType;
+      for (const fhRateConfig of rateConfigs.homeFavorite) {
+        for (const shRateConfig of rateConfigs.homeFavorite) {
+          const ftRateConfig = oddsHelper.mergeArrayOfRates([fhRateConfig, shRateConfig]);
 
-          const result = new OddsGeneratorService().calculateOddsForRound(matchConfig, {
-            drawResults: [{ result: { goalSequence: "0", finalScore: "0-0" } }],
-          });
+          const fhOddsInfo = oddsGeneratorService.calculateOddsInfo(fhRateConfig.scoreRate);
+          const ftOddsInfo = oddsGeneratorService.calculateOddsInfo(ftRateConfig.scoreRate);
 
-          const firstHalfHandicapValue = result.matchConfig.firstHalf.handicapValue;
-          const fulltimeHandicapValue = result.matchConfig.handicapValue;
-
-          expect(firstHalfHandicapValue).toBe(-0.5);
-          expect(fulltimeHandicapValue).toBeLessThan(0);
+          expect(fhOddsInfo.handicapValue).toBe(-0.5);
+          expect(ftOddsInfo.handicapValue).toBeLessThan(0);
         }
       }
     });
