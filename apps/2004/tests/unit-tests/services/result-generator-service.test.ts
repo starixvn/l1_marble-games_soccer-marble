@@ -1,12 +1,6 @@
 import { ResultGeneratorService } from "../../../src/services/result-generator-service";
-import { SettlementStatus, FirstHalfOddsKey, FullTimeOddsKey } from "@soccer-marble/soccer-marble-base";
-import type {
-  MatchConfig,
-  RoundResult,
-  DataResultType,
-  ResultType,
-  EventDetailResult,
-} from "@soccer-marble/soccer-marble-base";
+import { SettlementStatus } from "@soccer-marble/soccer-marble-base";
+import type { MatchConfig, RoundResult, DataResultType, ResultType } from "@soccer-marble/soccer-marble-base";
 import type { OddsInfo } from "../../../src/types";
 import crypto from "crypto";
 
@@ -137,7 +131,7 @@ describe("ResultGeneratorService tests", () => {
             oddsDuration: 10,
             resultDuration: 10,
             halfTimeDuration: 20,
-            breakDuration: 3,
+            afterGoalDuration: 3,
           },
         },
         numberOfEventDetails: 7,

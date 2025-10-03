@@ -50,7 +50,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
       const scheduleStart =
         index === 0
           ? gameTiming.extraInfo.oddsDuration
-          : timelines[index - 1].ResultAvailable + gameTiming.extraInfo.breakDuration;
+          : timelines[index - 1].ResultAvailable + gameTiming.extraInfo.afterGoalDuration;
 
       const resultAvailable = scheduleStart + currentVideoLength;
 
@@ -80,7 +80,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
       const scheduleStart =
         index === 0
           ? oddsAvailable + gameTiming.extraInfo.halfTimeDuration
-          : timelines[index - 1].ResultAvailable + gameTiming.extraInfo.breakDuration;
+          : timelines[index - 1].ResultAvailable + gameTiming.extraInfo.afterGoalDuration;
 
       const resultAvailable = scheduleStart + currentVideoLength;
 

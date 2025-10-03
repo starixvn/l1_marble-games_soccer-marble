@@ -23,7 +23,7 @@ describe("RoundGeneratorService", () => {
         oddsDuration: 10,
         resultDuration: 5,
         halfTimeDuration: 15,
-        breakDuration: 5,
+        afterGoalDuration: 5,
       },
     } as GameTiming,
     numberOfVideos: {
@@ -323,7 +323,7 @@ describe("RoundGeneratorService", () => {
       for (let i = 1; i < result.length; i++) {
         expect(result[i].OddsAvailable).toBe(result[i - 1].ScheduleStart);
         expect(result[i].ScheduleStart).toBe(
-          result[i - 1].ResultAvailable + mockGameSettings.gameTiming.extraInfo.breakDuration
+          result[i - 1].ResultAvailable + mockGameSettings.gameTiming.extraInfo.afterGoalDuration
         );
         expect(result[i].ResultAvailable).toBe(result[i].ScheduleStart + videoLengths[i]);
       }
@@ -354,7 +354,7 @@ describe("RoundGeneratorService", () => {
     it("should calculate correct timeline progression", () => {
       const videoLengths = [20, 20, 20];
       const oddsDuration = mockGameSettings.gameTiming.extraInfo.oddsDuration;
-      const breakDuration = mockGameSettings.gameTiming.extraInfo.breakDuration;
+      const afterGoalDuration = mockGameSettings.gameTiming.extraInfo.afterGoalDuration;
 
       const result = service.generateTimelineForFirstHalf(videoLengths);
 
@@ -363,12 +363,12 @@ describe("RoundGeneratorService", () => {
       expect(result[0].ResultAvailable).toBe(oddsDuration + 20);
 
       expect(result[1].OddsAvailable).toBe(oddsDuration);
-      expect(result[1].ScheduleStart).toBe(oddsDuration + 20 + breakDuration);
-      expect(result[1].ResultAvailable).toBe(oddsDuration + 20 + breakDuration + 20);
+      expect(result[1].ScheduleStart).toBe(oddsDuration + 20 + afterGoalDuration);
+      expect(result[1].ResultAvailable).toBe(oddsDuration + 20 + afterGoalDuration + 20);
 
-      expect(result[2].OddsAvailable).toBe(oddsDuration + 20 + breakDuration);
-      expect(result[2].ScheduleStart).toBe(oddsDuration + 20 + breakDuration + 20 + breakDuration);
-      expect(result[2].ResultAvailable).toBe(oddsDuration + 20 + breakDuration + 20 + breakDuration + 20);
+      expect(result[2].OddsAvailable).toBe(oddsDuration + 20 + afterGoalDuration);
+      expect(result[2].ScheduleStart).toBe(oddsDuration + 20 + afterGoalDuration + 20 + afterGoalDuration);
+      expect(result[2].ResultAvailable).toBe(oddsDuration + 20 + afterGoalDuration + 20 + afterGoalDuration + 20);
     });
   });
 
@@ -443,7 +443,7 @@ describe("RoundGeneratorService", () => {
       for (let i = 1; i < result.length; i++) {
         expect(result[i].OddsAvailable).toBe(result[i - 1].ScheduleStart);
         expect(result[i].ScheduleStart).toBe(
-          result[i - 1].ResultAvailable + mockGameSettings.gameTiming.extraInfo.breakDuration
+          result[i - 1].ResultAvailable + mockGameSettings.gameTiming.extraInfo.afterGoalDuration
         );
         expect(result[i].ResultAvailable).toBe(result[i].ScheduleStart + videoLengths[i]);
       }
@@ -489,7 +489,7 @@ describe("RoundGeneratorService", () => {
         { OddsAvailable: 0, ScheduleStart: 60, ResultAvailable: 80 },
       ];
       const halfTimeDuration = mockGameSettings.gameTiming.extraInfo.halfTimeDuration;
-      const breakDuration = mockGameSettings.gameTiming.extraInfo.breakDuration;
+      const afterGoalDuration = mockGameSettings.gameTiming.extraInfo.afterGoalDuration;
 
       const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
 
@@ -498,12 +498,14 @@ describe("RoundGeneratorService", () => {
       expect(result[0].ResultAvailable).toBe(80 + halfTimeDuration + 20);
 
       expect(result[1].OddsAvailable).toBe(80 + halfTimeDuration);
-      expect(result[1].ScheduleStart).toBe(80 + halfTimeDuration + 20 + breakDuration);
-      expect(result[1].ResultAvailable).toBe(80 + halfTimeDuration + 20 + breakDuration + 20);
+      expect(result[1].ScheduleStart).toBe(80 + halfTimeDuration + 20 + afterGoalDuration);
+      expect(result[1].ResultAvailable).toBe(80 + halfTimeDuration + 20 + afterGoalDuration + 20);
 
-      expect(result[2].OddsAvailable).toBe(80 + halfTimeDuration + 20 + breakDuration);
-      expect(result[2].ScheduleStart).toBe(80 + halfTimeDuration + 20 + breakDuration + 20 + breakDuration);
-      expect(result[2].ResultAvailable).toBe(80 + halfTimeDuration + 20 + breakDuration + 20 + breakDuration + 20);
+      expect(result[2].OddsAvailable).toBe(80 + halfTimeDuration + 20 + afterGoalDuration);
+      expect(result[2].ScheduleStart).toBe(80 + halfTimeDuration + 20 + afterGoalDuration + 20 + afterGoalDuration);
+      expect(result[2].ResultAvailable).toBe(
+        80 + halfTimeDuration + 20 + afterGoalDuration + 20 + afterGoalDuration + 20
+      );
     });
 
     it("should handle single first half timeline", () => {
