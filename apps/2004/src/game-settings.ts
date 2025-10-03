@@ -7,11 +7,11 @@ export const gameSettings = {
     wholeRound: 100,
     timelines: [],
     extraInfo: {
-      videoLength: 32,
+      videoLength: 40,
       oddsDuration: 10,
       resultDuration: 10,
       halfTimeDuration: 20,
-      breakDuration: 3,
+      afterGoalDuration: 3,
     },
   },
   teams: [

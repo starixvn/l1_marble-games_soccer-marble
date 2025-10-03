@@ -87,11 +87,11 @@ export const getScoreFromScoreRate = (scoreRate: Record<string, number>) => {
   return secureWeightedPick(score, rate);
 };
 
-export const generateVideoName = (result: string, numberOfVideos: number, videoDefault = false, ignoredVideo = "") => {
-  let videoIndex = videoDefault ? 0 : secureRandomRange(0, numberOfVideos - 1);
+export const generateVideoName = (result: string, numberOfVideos: number, ignoredVideo = "") => {
+  let videoIndex = secureRandomRange(0, numberOfVideos - 1);
   let videoName = crypto.createHash("sha256").update(`${result}-${videoIndex}`).digest("hex");
 
-  if (videoName === ignoredVideo && !videoDefault) {
+  if (videoName === ignoredVideo && numberOfVideos > 1) {
     videoIndex = (videoIndex + 1) % numberOfVideos;
     videoName = crypto.createHash("sha256").update(`${result}-${videoIndex}`).digest("hex");
   }

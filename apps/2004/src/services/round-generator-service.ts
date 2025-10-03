@@ -126,6 +126,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
         rateConfig: config,
         phase: 0,
         oddsInfo: this.oddsGeneratorService.calculateOddsInfo(currentFhTotalScoreRates.scoreRate),
+        videoLength: fhVideoLengths[index],
       };
     });
 
@@ -136,6 +137,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
         rateConfig: config,
         phase: 1,
         oddsInfo: this.oddsGeneratorService.calculateOddsInfo(currentShTotalScoreRates.scoreRate),
+        videoLength: shVideoLengths[index],
       };
     });
 
@@ -161,10 +163,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
 
     const numberOfVideos = this.gameData.gameConfig?.config?.numberOfVideos ?? this.gameSettings.numberOfVideos;
 
-    const result = this.resultGeneratorService.generateResult({
-      numberOfVideos: numberOfVideos,
-      matchConfig,
-    });
+    const result = this.resultGeneratorService.generateResult({ numberOfVideos, matchConfig });
 
     const odds = this.oddsGeneratorService.calculateOddsForUltraLive(matchConfig, result);
     const selections = this.oddsGeneratorService.generateSelectionsForUltraLive(odds, matchConfig, result);

@@ -13,12 +13,15 @@ import {
   DrawSettlementResult,
 } from "../types";
 import { oddsHelper, resultHelper } from "../helpers";
+import { logger } from "sc-common";
 
 export class ResultGeneratorService {
   protected readonly gameSettings: any;
+  protected readonly logService: typeof logger;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
+    this.logService = container.logService;
   }
 
   generateResult = (data: DataResultType): RoundResult => {
@@ -200,7 +203,7 @@ export class ResultGeneratorService {
 
   generateVideoInfoFromResult = (firstHalf: string, secondHalf: string, numberOfVideos: Record<string, number>) => {
     const firstHalfVideo = this.generateVideoName(firstHalf, numberOfVideos);
-    const secondHalfVideo = this.generateVideoName(secondHalf, numberOfVideos, false, firstHalfVideo);
+    const secondHalfVideo = this.generateVideoName(secondHalf, numberOfVideos, firstHalfVideo);
 
     return {
       firstHalfVideo,
@@ -208,13 +211,14 @@ export class ResultGeneratorService {
     };
   };
 
-  generateVideoName = (
-    result: string,
-    numberOfVideos: Record<string, number>,
-    videoDefault = false,
-    ignoredVideo = ""
-  ) => {
+  generateVideoName = (result: string, numberOfVideos: Record<string, number>, ignoredVideo = "") => {
     const currentNumberOfVideos = numberOfVideos[result] || this.gameSettings.numberOfVideos[result];
-    return resultHelper.generateVideoName(result, currentNumberOfVideos, videoDefault, ignoredVideo);
+
+    if (!currentNumberOfVideos) {
+      this.logService.logError(`Result ${result} not found in numberOfVideos config, fallback to default video`);
+      return resultHelper.generateVideoName(result, 1, ignoredVideo);
+    }
+
+    return resultHelper.generateVideoName(result, currentNumberOfVideos, ignoredVideo);
   };
 }

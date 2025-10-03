@@ -6,7 +6,7 @@ import { RoundGeneratorService } from "../../../src/services/round-generator-ser
 import { SettlementStatus } from "@soccer-marble/soccer-marble-base";
 import type { GameTiming, OddsInfo } from "../../../src/types";
 import { MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS, MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../../../src/constant";
-
+import { mockContainer } from "../global-stubs";
 jest.mock("sc-core-rng");
 jest.mock("@soccer-marble/shared-utils");
 
@@ -44,12 +44,11 @@ describe("RoundGeneratorService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockOddsGeneratorService = new OddsGeneratorService();
-    mockResultGeneratorService = new ResultGeneratorService({} as any);
+    mockOddsGeneratorService = mockContainer.oddsGeneratorService as OddsGeneratorService;
+    mockResultGeneratorService = mockContainer.resultGeneratorService as ResultGeneratorService;
 
-    service = new RoundGeneratorService({} as any);
-    service.resultGeneratorService = mockResultGeneratorService;
-    service.oddsGeneratorService = mockOddsGeneratorService;
+    service = new RoundGeneratorService(mockContainer);
+
     // Use Object.assign to set protected properties for testing
     Object.assign(service, {
       gameSettings: mockGameSettings,

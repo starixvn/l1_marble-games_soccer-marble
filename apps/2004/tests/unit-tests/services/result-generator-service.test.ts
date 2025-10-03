@@ -3,6 +3,7 @@ import { SettlementStatus } from "@soccer-marble/soccer-marble-base";
 import type { MatchConfig, RoundResult, DataResultType, ResultType } from "@soccer-marble/soccer-marble-base";
 import type { OddsInfo } from "../../../src/types";
 import crypto from "crypto";
+import { mockContainer } from "../global-stubs";
 
 const NUMBER_OF_VIDEOS = {
   HAA: 1,
@@ -15,7 +16,7 @@ describe("ResultGeneratorService tests", () => {
   let resultGeneratorService: ResultGeneratorService;
 
   beforeEach(() => {
-    resultGeneratorService = new ResultGeneratorService({} as any);
+    resultGeneratorService = new ResultGeneratorService(mockContainer);
   });
 
   describe("generateSettlementResult", () => {
@@ -449,11 +450,13 @@ describe("ResultGeneratorService tests", () => {
               rateConfig: { scoreRate: { "1-0": 1 } } as any,
               phase: 0,
               oddsInfo: {} as any,
+              videoLength: 10,
             },
             {
               rateConfig: { scoreRate: { "0-1": 1 } } as any,
               phase: 1,
               oddsInfo: {} as any,
+              videoLength: 10,
             },
           ],
           rateConfig: {} as any,
@@ -461,8 +464,8 @@ describe("ResultGeneratorService tests", () => {
         },
       };
 
-      const firstHalfVideo = crypto.createHash("sha256").update(`H-0`).digest("hex");
-      const secondHalfVideo = crypto.createHash("sha256").update(`A-0`).digest("hex");
+      const firstHalfVideo = crypto.createHash("sha256").update(`H101-0`).digest("hex");
+      const secondHalfVideo = crypto.createHash("sha256").update(`A101-0`).digest("hex");
 
       const expectedFirstHalfResult = {
         playlist: firstHalfVideo,

@@ -38,6 +38,7 @@ export type EventDetailInfo = {
   rateConfig: RateConfig;
   oddsInfo: any;
   phase: number;
+  videoLength?: number;
 };
 
 export type MatchConfig = {

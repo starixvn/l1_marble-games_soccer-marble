@@ -66,9 +66,17 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
     const firstHalfInfos = data.matchConfig.eventDetailInfos.filter((info) => info.phase === 0);
     const secondHalfInfos = data.matchConfig.eventDetailInfos.filter((info) => info.phase === 1);
 
-    const firstHalfResults = firstHalfInfos.map((info) => {
+    const firstHalfResults = firstHalfInfos.map((info, index) => {
+      const isLastBlock = index === firstHalfInfos.length - 1;
+
       const eventDetailResult = this.generateResultFromRate(info.rateConfig);
-      const videoName = this.generateVideoName(eventDetailResult.goalSequence, numberOfVideos);
+
+      const videoName = this.generateVideoNameForUltraLive(
+        eventDetailResult.goalSequence,
+        numberOfVideos,
+        isLastBlock,
+        info.videoLength as number
+      );
 
       return {
         playlist: videoName,
@@ -78,9 +86,16 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
       } as EventDetailResult;
     });
 
-    const secondHalfResults = secondHalfInfos.map((info) => {
+    const secondHalfResults = secondHalfInfos.map((info, index) => {
+      const isLastBlock = index === secondHalfInfos.length - 1;
+
       const eventDetailResult = this.generateResultFromRate(info.rateConfig);
-      const videoName = this.generateVideoName(eventDetailResult.goalSequence, numberOfVideos);
+      const videoName = this.generateVideoNameForUltraLive(
+        eventDetailResult.goalSequence,
+        numberOfVideos,
+        isLastBlock,
+        info.videoLength as number
+      );
 
       return {
         playlist: videoName,
@@ -91,6 +106,19 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
     });
 
     return [...firstHalfResults, ...secondHalfResults];
+  };
+
+  generateVideoNameForUltraLive = (
+    goalSequence: string,
+    numberOfVideos: Record<string, number>,
+    isLastBlock: boolean,
+    videoLength: number
+  ) => {
+    const videoLengthStr = videoLength.toString().padStart(2, "0");
+    const videoType = isLastBlock ? "1" : "0";
+    const video = `${goalSequence}${videoLengthStr}${videoType}`;
+
+    return this.generateVideoName(video, numberOfVideos);
   };
 
   generateFirstHalfSettlementResultForUltraLive = (
