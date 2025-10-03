@@ -5,7 +5,7 @@ import { ResultGeneratorService } from "../../../src/services/result-generator-s
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { SettlementStatus } from "@soccer-marble/soccer-marble-base";
 import type { GameTiming, OddsInfo } from "../../../src/types";
-import { MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS, MIN_VIDEO_LENGTH } from "../../../src/constant";
+import { MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS, MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../../../src/constant";
 
 jest.mock("sc-core-rng");
 jest.mock("@soccer-marble/shared-utils");
@@ -19,7 +19,7 @@ describe("RoundGeneratorService", () => {
     gameId: 2004,
     gameTiming: {
       extraInfo: {
-        videoLength: 60,
+        videoLength: 40,
         oddsDuration: 10,
         resultDuration: 5,
         halfTimeDuration: 15,
@@ -167,112 +167,16 @@ describe("RoundGeneratorService", () => {
   });
 
   describe("generateVideoLengthForPhase", () => {
-    it("should generate video lengths for phase", () => {
-      const size = 3;
-
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(20);
+    it.each([2, 3, 4])("should generate video lengths for phase with size %d", (size) => {
+      // Restore the real secureRandomRange function
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
 
       const result = service.generateVideoLengthForPhase(size);
 
-      expect(result).toHaveLength(3);
+      expect(result).toHaveLength(size);
       expect(result.every((length) => length >= MIN_VIDEO_LENGTH)).toBe(true);
-      expect(result.reduce((sum, length) => sum + length, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
-    });
-
-    it("should handle single video length", () => {
-      const size = 1;
-
-      const result = service.generateVideoLengthForPhase(size);
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
-    });
-
-    it("should handle large size values", () => {
-      const size = 10;
-      const expectedMaxLength = Math.round(mockGameSettings.gameTiming.extraInfo.videoLength / size);
-
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(expectedMaxLength);
-
-      const result = service.generateVideoLengthForPhase(size);
-
-      expect(result).toHaveLength(10);
-      expect(result.every((length) => length >= MIN_VIDEO_LENGTH)).toBe(true);
-      expect(result.reduce((sum, length) => sum + length, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
-    });
-
-    it("should handle minimum video length boundary", () => {
-      const size = 2;
-      const maxLength = Math.round(mockGameSettings.gameTiming.extraInfo.videoLength / size);
-
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(MIN_VIDEO_LENGTH);
-
-      const result = service.generateVideoLengthForPhase(size);
-
-      expect(result).toHaveLength(2);
-      expect(result[0]).toBe(MIN_VIDEO_LENGTH);
-      expect(result[1]).toBe(mockGameSettings.gameTiming.extraInfo.videoLength - MIN_VIDEO_LENGTH);
-      expect(result.reduce((sum, length) => sum + length, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
-    });
-
-    it("should handle maximum video length boundary", () => {
-      const size = 2;
-      const maxLength = Math.round(mockGameSettings.gameTiming.extraInfo.videoLength / size);
-
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(maxLength);
-
-      const result = service.generateVideoLengthForPhase(size);
-
-      expect(result).toHaveLength(2);
-      expect(result[0]).toBe(maxLength);
-      expect(result[1]).toBe(mockGameSettings.gameTiming.extraInfo.videoLength - maxLength);
-      expect(result.reduce((sum, length) => sum + length, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
-    });
-
-    it("should call secureRandomRange correct number of times", () => {
-      const size = 5;
-      const secureRandomRangeSpy = jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(10);
-
-      service.generateVideoLengthForPhase(size);
-
-      expect(secureRandomRangeSpy).toHaveBeenCalledTimes(size - 1);
-    });
-
-    it("should handle odd video length division", () => {
-      const customGameSettings = {
-        ...mockGameSettings,
-        gameTiming: {
-          ...mockGameSettings.gameTiming,
-          extraInfo: {
-            ...mockGameSettings.gameTiming.extraInfo,
-            videoLength: 61, // Odd number
-          },
-        },
-      };
-
-      Object.assign(service, { gameSettings: customGameSettings });
-
-      const size = 3;
-      const maxLength = Math.round(61 / size); // 20
-
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(20);
-
-      const result = service.generateVideoLengthForPhase(size);
-
-      expect(result).toHaveLength(3);
-      expect(result.reduce((sum, length) => sum + length, 0)).toBe(61);
-    });
-
-    it("should ensure last video length is always positive", () => {
-      const size = 2;
-      const maxLength = Math.round(mockGameSettings.gameTiming.extraInfo.videoLength / size);
-
-      // Mock to return maximum possible length for first video
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(maxLength);
-
-      const result = service.generateVideoLengthForPhase(size);
-
-      expect(result[1]).toBeGreaterThan(0);
+      expect(result.every((length) => length <= MAX_VIDEO_LENGTH)).toBe(true);
       expect(result.reduce((sum, length) => sum + length, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
     });
   });

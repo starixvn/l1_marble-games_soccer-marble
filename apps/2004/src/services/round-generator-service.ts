@@ -5,7 +5,7 @@ import { GameTiming } from "../types";
 import { ResultGeneratorService } from "./result-generator-service";
 import { idHelper, encrypt } from "@soccer-marble/shared-utils";
 import { OddsGeneratorService } from "./odds-generator-service";
-import { MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS, MIN_VIDEO_LENGTH } from "../constant";
+import { MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS, MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../constant";
 export class RoundGeneratorService extends BaseRoundGeneratorService {
   declare resultGeneratorService: ResultGeneratorService;
   declare oddsGeneratorService: OddsGeneratorService;
@@ -24,9 +24,16 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
 
   generateVideoLengthForPhase(size: number) {
     const gameTiming = this.gameSettings.gameTiming as GameTiming;
-    const maxLength = Math.round(gameTiming.extraInfo.videoLength / size);
+    const maxLength = Math.min(
+      Math.floor((gameTiming.extraInfo.videoLength - MIN_VIDEO_LENGTH) / (size - 1)),
+      MAX_VIDEO_LENGTH
+    );
+    const minLength = Math.max(
+      Math.floor((gameTiming.extraInfo.videoLength - MAX_VIDEO_LENGTH) / (size - 1)),
+      MIN_VIDEO_LENGTH
+    );
 
-    const videoLengths = Array.from({ length: size - 1 }, () => secureRandomRange(MIN_VIDEO_LENGTH, maxLength));
+    const videoLengths = Array.from({ length: size - 1 }, () => secureRandomRange(minLength, maxLength));
 
     const totalCurrentLength = videoLengths.reduce((acc, curr) => acc + curr, 0);
 
