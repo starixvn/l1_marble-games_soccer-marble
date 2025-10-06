@@ -464,8 +464,8 @@ describe("ResultGeneratorService tests", () => {
         },
       };
 
-      const firstHalfVideo = crypto.createHash("sha256").update(`H101-0`).digest("hex");
-      const secondHalfVideo = crypto.createHash("sha256").update(`A101-0`).digest("hex");
+      const firstHalfVideo = crypto.createHash("sha256").update(`A-0`).digest("hex");
+      const secondHalfVideo = crypto.createHash("sha256").update(`A-0`).digest("hex");
 
       const expectedFirstHalfResult = {
         playlist: firstHalfVideo,
