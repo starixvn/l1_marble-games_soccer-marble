@@ -17,6 +17,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest --testPathPatterns=tests/unit-tests/",
+    "test-rtp": "jest --testPathPatterns=tests/rtp-test/",
     "test-coverage": "jest --collect-coverage --testPathPatterns=tests/unit-tests/",
     "clean": "rm -rf build dist",
     "type-check": "tsc --noEmit"
