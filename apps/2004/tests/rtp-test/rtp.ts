@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises"; // Using promises version for better async handling
 
-import { ContainerRegistry } from "../../src/container-registry";
+import { ContainerRegistry } from "@soccer-marble/soccer-marble-live";
 import { appConfigs } from "../../src/game-config";
 import { gameSettings } from "../../src/game-settings";
 import { rateConfigs } from "../../src/rate-configs";

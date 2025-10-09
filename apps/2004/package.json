@@ -28,6 +28,7 @@
     "indent": 4
   },
   "dependencies": {
-    "@soccer-marble/soccer-marble-base": "1.0.0"
+    "@soccer-marble/soccer-marble-base": "1.0.0",
+    "@soccer-marble/soccer-marble-live": "1.0.0"
   }
 }

@@ -1,0 +1,42 @@
+{
+  "name": "@soccer-marble/soccer-marble-live",
+  "version": "1.0.0",
+  "description": "Soccer marble live package",
+  "repository": {
+    "type": "git",
+    "url": "git@git3.nexdev.net:l1/marble-games/soccer-marble.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "reg": "npm set registry http://npm.lumigame.com",
+    "build": "tsc",
+    "test": "jest --testPathPatterns=tests/unit-tests/",
+    "test-coverage": "jest --collect-coverage --testPathPatterns=tests/unit-tests/",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "jestSonar": {
+    "reportPath": "reports",
+    "reportFile": "test-reporter.xml",
+    "indent": 4
+  },
+  "dependencies": {
+    "@soccer-marble/shared-utils": "1.0.0",
+    "agenda": "5.0.0",
+    "awilix": "12.0.5",
+    "dotenv": "17.2.1",
+    "express": "5.0.0",
+    "extensionless": "1.9.9",
+    "mongoose": "8.18.0",
+    "sc-common": "3.0.0",
+    "sc-core-rng": "1.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.3",
+    "@types/sc-common": "1.0.2"
+  }
+}

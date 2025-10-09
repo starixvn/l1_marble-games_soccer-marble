@@ -1,8 +1,8 @@
-import { ContainerRegistry } from "../../src/container-registry";
+import { cryptoHelper } from "@soccer-marble/shared-utils";
+import { ContainerRegistry } from "@soccer-marble/soccer-marble-live";
 import { appConfigs } from "../../src/game-config";
 import { gameSettings } from "../../src/game-settings";
 import { rateConfigs } from "../../src/rate-configs";
-import { cryptoHelper } from "@soccer-marble/shared-utils";
 
 const container = new ContainerRegistry(appConfigs, gameSettings, rateConfigs).register();
 const roundGeneratorService = container.resolve("roundGeneratorService");
