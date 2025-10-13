@@ -11,7 +11,9 @@
     "clean": "rm -rf dist",
     "test": "jest --testPathPatterns=tests/unit-tests/",
     "test-coverage": "jest --collect-coverage --testPathPatterns=tests/unit-tests/",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "check:deps": "npm-check-updates",
+    "update:deps": "npm-check-updates -u"
   },
   "files": [
     "dist"

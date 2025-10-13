@@ -26,7 +26,8 @@
     "shared:soccer-marble-live:build": "npm run build --workspace=@soccer-marble/soccer-marble-live",
     "shared:utils:build": "npm run build --workspace=@soccer-marble/shared-utils",
     "shared:build": "npm run shared:utils:build && npm run shared:soccer-marble-base:build && npm run shared:soccer-marble-live:build",
-    "update:deps": "npm-check-updates -u && npm install"
+    "check:deps": "npm-check-updates && npm run check:deps --workspaces",
+    "update:deps": "npm-check-updates -u && npm run update:deps --workspaces"
   },
   "devDependencies": {
     "@babel/core": "7.28.4",

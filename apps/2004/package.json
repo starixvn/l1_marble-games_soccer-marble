@@ -20,7 +20,9 @@
     "test-rtp": "jest --testPathPatterns=tests/rtp-test/",
     "test-coverage": "jest --collect-coverage --testPathPatterns=tests/unit-tests/",
     "clean": "rm -rf build dist",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "check:deps": "npm-check-updates",
+    "update:deps": "npm-check-updates -u"
   },
   "jestSonar": {
     "reportPath": "reports",
