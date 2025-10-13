@@ -22,11 +22,11 @@
     "app:2003:build": "npm run build --workspace=@soccer-marble/2003",
     "app:2004:build": "npm run build --workspace=@soccer-marble/2004",
     "app:2005:build": "npm run build --workspace=@soccer-marble/2005",
-    "shared:soccer-marble:build": "npm run build --workspace=@soccer-marble/soccer-marble-base",
+    "shared:soccer-marble-base:build": "npm run build --workspace=@soccer-marble/soccer-marble-base",
     "shared:soccer-marble-live:build": "npm run build --workspace=@soccer-marble/soccer-marble-live",
     "shared:utils:build": "npm run build --workspace=@soccer-marble/shared-utils",
-    "shared:build": "npm run shared:utils:build && npm run shared:soccer-marble:build && npm run shared:soccer-marble-live:build",
-    "update:deps": "npm update --workspaces"
+    "shared:build": "npm run shared:utils:build && npm run shared:soccer-marble-base:build && npm run shared:soccer-marble-live:build",
+    "update:deps": "npm-check-updates -u && npm install"
   },
   "devDependencies": {
     "@babel/core": "7.28.4",
@@ -39,6 +39,7 @@
     "jest-junit": "16.0.0",
     "jest-sonar-reporter": "2.0.0",
     "jest-auto-stub": "1.0.8",
+    "npm-check-updates": "19.0.0",
     "ts-jest": "29.4.5",
     "tsx": "4.20.6",
     "typescript": "5.9.3"
