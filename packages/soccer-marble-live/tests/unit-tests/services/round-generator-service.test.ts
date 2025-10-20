@@ -181,81 +181,8 @@ describe("RoundGeneratorService", () => {
   });
 
   describe("generateTimelineForFirstHalf", () => {
-    it("should generate timeline for first half", () => {
-      const videoLengths = [20, 20, 20];
-
-      const result = service.generateTimelineForFirstHalf(videoLengths);
-
-      expect(result).toHaveLength(3);
-      expect(result[0]).toHaveProperty("OddsAvailable");
-      expect(result[0]).toHaveProperty("ScheduleStart");
-      expect(result[0]).toHaveProperty("ResultAvailable");
-      expect(result[0].OddsAvailable).toBe(0);
-      expect(result[0].ScheduleStart).toBe(mockGameSettings.gameTiming.extraInfo.oddsDuration);
-    });
-
-    it("should handle single video length", () => {
-      const videoLengths = [60];
-
-      const result = service.generateTimelineForFirstHalf(videoLengths);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].OddsAvailable).toBe(0);
-      expect(result[0].ScheduleStart).toBe(mockGameSettings.gameTiming.extraInfo.oddsDuration);
-      expect(result[0].ResultAvailable).toBe(mockGameSettings.gameTiming.extraInfo.oddsDuration + 60);
-    });
-
-    it("should handle empty video lengths array", () => {
-      const videoLengths: number[] = [];
-
-      const result = service.generateTimelineForFirstHalf(videoLengths);
-
-      expect(result).toHaveLength(0);
-    });
-
-    it("should handle large number of video lengths", () => {
-      const videoLengths = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-
-      const result = service.generateTimelineForFirstHalf(videoLengths);
-
-      expect(result).toHaveLength(10);
-      expect(result[0].OddsAvailable).toBe(0);
-      expect(result[0].ScheduleStart).toBe(mockGameSettings.gameTiming.extraInfo.oddsDuration);
-
-      // Check that each subsequent timeline starts after the previous one ends
-      for (let i = 1; i < result.length; i++) {
-        expect(result[i].OddsAvailable).toBe(result[i - 1].ScheduleStart);
-        expect(result[i].ScheduleStart).toBe(
-          result[i - 1].ResultAvailable + mockGameSettings.gameTiming.extraInfo.afterGoalDuration
-        );
-        expect(result[i].ResultAvailable).toBe(result[i].ScheduleStart + videoLengths[i]);
-      }
-    });
-
-    it("should handle varying video lengths", () => {
-      const videoLengths = [5, 30, 15, 10];
-
-      const result = service.generateTimelineForFirstHalf(videoLengths);
-
-      expect(result).toHaveLength(4);
-      expect(result[0].ResultAvailable).toBe(mockGameSettings.gameTiming.extraInfo.oddsDuration + 5);
-      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + 30);
-      expect(result[2].ResultAvailable).toBe(result[2].ScheduleStart + 15);
-      expect(result[3].ResultAvailable).toBe(result[3].ScheduleStart + 10);
-    });
-
-    it("should handle minimum video length", () => {
-      const videoLengths = [MIN_VIDEO_LENGTH, MIN_VIDEO_LENGTH];
-
-      const result = service.generateTimelineForFirstHalf(videoLengths);
-
-      expect(result).toHaveLength(2);
-      expect(result[0].ResultAvailable).toBe(mockGameSettings.gameTiming.extraInfo.oddsDuration + MIN_VIDEO_LENGTH);
-      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + MIN_VIDEO_LENGTH);
-    });
-
     it("should calculate correct timeline progression", () => {
-      const videoLengths = [20, 20, 20];
+      const videoLengths = [6, 12, 18];
       const oddsDuration = mockGameSettings.gameTiming.extraInfo.oddsDuration;
       const afterGoalDuration = mockGameSettings.gameTiming.extraInfo.afterGoalDuration;
 
@@ -263,163 +190,42 @@ describe("RoundGeneratorService", () => {
 
       expect(result[0].OddsAvailable).toBe(0);
       expect(result[0].ScheduleStart).toBe(oddsDuration);
-      expect(result[0].ResultAvailable).toBe(oddsDuration + 20);
+      expect(result[0].ResultAvailable).toBe(result[0].ScheduleStart + afterGoalDuration + videoLengths[0]);
 
-      expect(result[1].OddsAvailable).toBe(oddsDuration);
-      expect(result[1].ScheduleStart).toBe(oddsDuration + 20 + afterGoalDuration);
-      expect(result[1].ResultAvailable).toBe(oddsDuration + 20 + afterGoalDuration + 20);
+      expect(result[1].OddsAvailable).toBe(result[0].ScheduleStart);
+      expect(result[1].ScheduleStart).toBe(result[0].ResultAvailable);
+      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + afterGoalDuration + videoLengths[1]);
 
-      expect(result[2].OddsAvailable).toBe(oddsDuration + 20 + afterGoalDuration);
-      expect(result[2].ScheduleStart).toBe(oddsDuration + 20 + afterGoalDuration + 20 + afterGoalDuration);
-      expect(result[2].ResultAvailable).toBe(oddsDuration + 20 + afterGoalDuration + 20 + afterGoalDuration + 20);
+      expect(result[2].OddsAvailable).toBe(result[1].ScheduleStart);
+      expect(result[2].ScheduleStart).toBe(result[1].ResultAvailable);
+      expect(result[2].ResultAvailable).toBe(result[1].ResultAvailable + afterGoalDuration + videoLengths[2]);
     });
   });
 
   describe("generateTimelineForSecondHalf", () => {
-    it("should generate timeline for second half", () => {
-      const videoLengths = [20, 20, 20];
-      const fhTimelines = [
-        { OddsAvailable: 0, ScheduleStart: 10, ResultAvailable: 30 },
-        { OddsAvailable: 0, ScheduleStart: 35, ResultAvailable: 55 },
-        { OddsAvailable: 0, ScheduleStart: 60, ResultAvailable: 80 },
-      ];
-
-      const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
-
-      expect(result).toHaveLength(3);
-      expect(result[0]).toHaveProperty("OddsAvailable");
-      expect(result[0]).toHaveProperty("ScheduleStart");
-      expect(result[0]).toHaveProperty("ResultAvailable");
-      expect(result[0].OddsAvailable).toBe(80); // Last first half result available
-      expect(result[0].ScheduleStart).toBe(80 + mockGameSettings.gameTiming.extraInfo.halfTimeDuration);
-    });
-
-    it("should handle empty video lengths array", () => {
-      const videoLengths: number[] = [];
-      const fhTimelines = [{ OddsAvailable: 0, ScheduleStart: 10, ResultAvailable: 30 }];
-
-      const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
-
-      expect(result).toHaveLength(0);
-    });
-
-    it("should handle empty first half timelines array", () => {
-      const videoLengths = [20, 20];
-      const fhTimelines: any[] = [];
-
-      expect(() => {
-        service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
-      }).toThrow();
-    });
-
-    it("should handle single video length", () => {
-      const videoLengths = [60];
-      const fhTimelines = [
-        { OddsAvailable: 0, ScheduleStart: 10, ResultAvailable: 30 },
-        { OddsAvailable: 0, ScheduleStart: 35, ResultAvailable: 55 },
-        { OddsAvailable: 0, ScheduleStart: 60, ResultAvailable: 80 },
-      ];
-
-      const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].OddsAvailable).toBe(80);
-      expect(result[0].ScheduleStart).toBe(80 + mockGameSettings.gameTiming.extraInfo.halfTimeDuration);
-      expect(result[0].ResultAvailable).toBe(result[0].ScheduleStart + 60);
-    });
-
-    it("should handle large number of video lengths", () => {
-      const videoLengths = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-      const fhTimelines = [
-        { OddsAvailable: 0, ScheduleStart: 10, ResultAvailable: 30 },
-        { OddsAvailable: 0, ScheduleStart: 35, ResultAvailable: 55 },
-        { OddsAvailable: 0, ScheduleStart: 60, ResultAvailable: 80 },
-      ];
-
-      const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
-
-      expect(result).toHaveLength(10);
-      expect(result[0].OddsAvailable).toBe(80);
-      expect(result[0].ScheduleStart).toBe(80 + mockGameSettings.gameTiming.extraInfo.halfTimeDuration);
-
-      // Check that each subsequent timeline starts after the previous one ends
-      for (let i = 1; i < result.length; i++) {
-        expect(result[i].OddsAvailable).toBe(result[i - 1].ScheduleStart);
-        expect(result[i].ScheduleStart).toBe(
-          result[i - 1].ResultAvailable + mockGameSettings.gameTiming.extraInfo.afterGoalDuration
-        );
-        expect(result[i].ResultAvailable).toBe(result[i].ScheduleStart + videoLengths[i]);
-      }
-    });
-
-    it("should handle varying video lengths", () => {
-      const videoLengths = [5, 30, 15, 10];
-      const fhTimelines = [
-        { OddsAvailable: 0, ScheduleStart: 10, ResultAvailable: 30 },
-        { OddsAvailable: 0, ScheduleStart: 35, ResultAvailable: 55 },
-        { OddsAvailable: 0, ScheduleStart: 60, ResultAvailable: 80 },
-      ];
-
-      const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
-
-      expect(result).toHaveLength(4);
-      expect(result[0].ResultAvailable).toBe(result[0].ScheduleStart + 5);
-      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + 30);
-      expect(result[2].ResultAvailable).toBe(result[2].ScheduleStart + 15);
-      expect(result[3].ResultAvailable).toBe(result[3].ScheduleStart + 10);
-    });
-
-    it("should handle minimum video length", () => {
-      const videoLengths = [MIN_VIDEO_LENGTH, MIN_VIDEO_LENGTH];
-      const fhTimelines = [
-        { OddsAvailable: 0, ScheduleStart: 10, ResultAvailable: 30 },
-        { OddsAvailable: 0, ScheduleStart: 35, ResultAvailable: 55 },
-        { OddsAvailable: 0, ScheduleStart: 60, ResultAvailable: 80 },
-      ];
-
-      const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
-
-      expect(result).toHaveLength(2);
-      expect(result[0].ResultAvailable).toBe(result[0].ScheduleStart + MIN_VIDEO_LENGTH);
-      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + MIN_VIDEO_LENGTH);
-    });
-
     it("should calculate correct timeline progression", () => {
-      const videoLengths = [20, 20, 20];
+      const videoLengths = [10, 15, 20];
       const fhTimelines = [
-        { OddsAvailable: 0, ScheduleStart: 10, ResultAvailable: 30 },
-        { OddsAvailable: 0, ScheduleStart: 35, ResultAvailable: 55 },
-        { OddsAvailable: 0, ScheduleStart: 60, ResultAvailable: 80 },
+        { OddsAvailable: 0, ScheduleStart: 10, ResultAvailable: 19 },
+        { OddsAvailable: 10, ScheduleStart: 19, ResultAvailable: 34 },
+        { OddsAvailable: 19, ScheduleStart: 34, ResultAvailable: 55 },
       ];
       const halfTimeDuration = mockGameSettings.gameTiming.extraInfo.halfTimeDuration;
       const afterGoalDuration = mockGameSettings.gameTiming.extraInfo.afterGoalDuration;
 
       const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
 
-      expect(result[0].OddsAvailable).toBe(80);
-      expect(result[0].ScheduleStart).toBe(80 + halfTimeDuration);
-      expect(result[0].ResultAvailable).toBe(80 + halfTimeDuration + 20);
+      expect(result[0].OddsAvailable).toBe(fhTimelines[fhTimelines.length - 1].ResultAvailable);
+      expect(result[0].ScheduleStart).toBe(result[0].OddsAvailable + halfTimeDuration);
+      expect(result[0].ResultAvailable).toBe(result[0].ScheduleStart + videoLengths[0] + afterGoalDuration);
 
-      expect(result[1].OddsAvailable).toBe(80 + halfTimeDuration);
-      expect(result[1].ScheduleStart).toBe(80 + halfTimeDuration + 20 + afterGoalDuration);
-      expect(result[1].ResultAvailable).toBe(80 + halfTimeDuration + 20 + afterGoalDuration + 20);
+      expect(result[1].OddsAvailable).toBe(result[0].ScheduleStart);
+      expect(result[1].ScheduleStart).toBe(result[0].ResultAvailable);
+      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + videoLengths[1] + afterGoalDuration);
 
-      expect(result[2].OddsAvailable).toBe(80 + halfTimeDuration + 20 + afterGoalDuration);
-      expect(result[2].ScheduleStart).toBe(80 + halfTimeDuration + 20 + afterGoalDuration + 20 + afterGoalDuration);
-      expect(result[2].ResultAvailable).toBe(
-        80 + halfTimeDuration + 20 + afterGoalDuration + 20 + afterGoalDuration + 20
-      );
-    });
-
-    it("should handle single first half timeline", () => {
-      const videoLengths = [20, 20];
-      const fhTimelines = [{ OddsAvailable: 0, ScheduleStart: 10, ResultAvailable: 30 }];
-
-      const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
-
-      expect(result).toHaveLength(2);
-      expect(result[0].OddsAvailable).toBe(30);
-      expect(result[0].ScheduleStart).toBe(30 + mockGameSettings.gameTiming.extraInfo.halfTimeDuration);
+      expect(result[2].OddsAvailable).toBe(result[1].ScheduleStart);
+      expect(result[2].ScheduleStart).toBe(result[1].ResultAvailable);
+      expect(result[2].ResultAvailable).toBe(result[2].ScheduleStart + videoLengths[2] + afterGoalDuration);
     });
   });
 

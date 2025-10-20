@@ -54,12 +54,9 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
 
       const oddsAvailable = index === 0 ? 0 : timelines[index - 1].ScheduleStart;
 
-      const scheduleStart =
-        index === 0
-          ? gameTiming.extraInfo.oddsDuration
-          : timelines[index - 1].ResultAvailable + gameTiming.extraInfo.afterGoalDuration;
+      const scheduleStart = index === 0 ? gameTiming.extraInfo.oddsDuration : timelines[index - 1].ResultAvailable;
 
-      const resultAvailable = scheduleStart + currentVideoLength;
+      const resultAvailable = scheduleStart + currentVideoLength + gameTiming.extraInfo.afterGoalDuration;
 
       const timeline: Timeline = {
         OddsAvailable: oddsAvailable,
@@ -85,11 +82,9 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
         index === 0 ? fhTimelines[fhTimelines.length - 1].ResultAvailable : timelines[index - 1].ScheduleStart;
 
       const scheduleStart =
-        index === 0
-          ? oddsAvailable + gameTiming.extraInfo.halfTimeDuration
-          : timelines[index - 1].ResultAvailable + gameTiming.extraInfo.afterGoalDuration;
+        index === 0 ? oddsAvailable + gameTiming.extraInfo.halfTimeDuration : timelines[index - 1].ResultAvailable;
 
-      const resultAvailable = scheduleStart + currentVideoLength;
+      const resultAvailable = scheduleStart + currentVideoLength + gameTiming.extraInfo.afterGoalDuration;
 
       const timeline: Timeline = {
         OddsAvailable: oddsAvailable,
