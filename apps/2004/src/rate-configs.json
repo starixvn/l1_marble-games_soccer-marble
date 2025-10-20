@@ -1,0 +1,36 @@
+{
+  "homeFavorite": [
+    {
+      "scoreRate": {
+        "1-0": 0.55,
+        "0-1": 0.45
+      }
+    }
+  ],
+  "homeFavoriteDraw": [
+    {
+      "scoreRate": {
+        "1-0": 0.25,
+        "0-1": 0.25,
+        "0-0": 0.5
+      }
+    }
+  ],
+  "awayFavorite": [
+    {
+      "scoreRate": {
+        "1-0": 0.45,
+        "0-1": 0.55
+      }
+    }
+  ],
+  "awayFavoriteDraw": [
+    {
+      "scoreRate": {
+        "1-0": 0.25,
+        "0-1": 0.25,
+        "0-0": 0.5
+      }
+    }
+  ]
+}

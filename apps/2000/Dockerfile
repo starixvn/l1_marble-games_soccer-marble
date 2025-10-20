@@ -1,12 +1,13 @@
 ARG NODE_IMAGE=hub.lumigame.com/base/node:20.9.0-alpine-24h1.1@sha256:dee2343e5063098be2d8766e25b12b0bd7e3fc3982bd340d5b04e4f518574c68
 ARG APP_NAME=@soccer-marble/soccer-marble
+ARG APP_DIR=2000
 
 # ---------------------------- deps --------------------------
 FROM ${NODE_IMAGE} AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY apps/2000/package.json apps/2000/package.json
+COPY apps/$APP_DIR/package.json apps/$APP_DIR/package.json
 COPY packages/*/package.json packages/
 
 RUN npm run reg

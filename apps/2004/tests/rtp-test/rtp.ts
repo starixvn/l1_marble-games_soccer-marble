@@ -1,11 +1,11 @@
-import path from "path";
 import fs from "fs/promises"; // Using promises version for better async handling
+import path from "path";
 
-import { ContainerRegistry } from "@soccer-marble/soccer-marble-live";
-import { appConfigs } from "../../src/game-config";
-import { gameSettings } from "../../src/game-settings";
-import { rateConfigs } from "../../src/rate-configs";
 import { cryptoHelper } from "@soccer-marble/shared-utils";
+import { ContainerRegistry } from "@soccer-marble/soccer-marble-live";
+import appConfigs from "../../src/game-config.json";
+import gameSettings from "../../src/game-settings.json";
+import rateConfigs from "../../src/rate-configs.json";
 
 const container = new ContainerRegistry(appConfigs, gameSettings, rateConfigs).register();
 const roundGeneratorService = container.resolve("roundGeneratorService");

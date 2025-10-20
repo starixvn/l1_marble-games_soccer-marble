@@ -1,4 +1,4 @@
-import { rateConfigs } from "../../src/rate-configs";
+import rateConfigs from "../../src/rate-configs.json";
 import { OddsGeneratorService } from "@soccer-marble/soccer-marble-base";
 import { oddsHelper } from "@soccer-marble/soccer-marble-base";
 
