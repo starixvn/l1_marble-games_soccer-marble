@@ -1,5 +1,6 @@
 FROM hub.lumigame.com/base/node:20.9.0-alpine-24h1.1@sha256:dee2343e5063098be2d8766e25b12b0bd7e3fc3982bd340d5b04e4f518574c68 AS base
 WORKDIR /app
+RUN chown -R node:node /app
 
 ### Builder
 FROM base AS builder
