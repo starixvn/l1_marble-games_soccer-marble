@@ -27,6 +27,7 @@ RUN npx mod-pruner prune --force
 FROM base AS app
 COPY --from=cleaner /app .
 COPY scripts/start.sh /usr/local/bin/marbles
+RUN chmod +x /usr/local/bin/marbles
 USER node
 EXPOSE ${PORT}
 CMD ["marbles"]
