@@ -1,11 +1,11 @@
 import { RoundGeneratorService as BaseRoundGeneratorService, oddsHelper } from "@soccer-marble/soccer-marble-base";
 import type { RateConfig, Timeline, MatchConfig, GameRunningRound } from "@soccer-marble/soccer-marble-base";
-import { secureRandomRange, secureRandomBool, securePickOne } from "sc-core-rng";
+import { secureRandomRange, secureRandomBool, securePickOne, secureWeightedPick } from "sc-core-rng";
 import { GameTiming } from "../types";
 import { ResultGeneratorService } from "./result-generator-service";
 import { idHelper, encrypt } from "@soccer-marble/shared-utils";
 import { OddsGeneratorService } from "./odds-generator-service";
-import { MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS, MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../constant";
+import { MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../constant";
 export class RoundGeneratorService extends BaseRoundGeneratorService {
   declare resultGeneratorService: ResultGeneratorService;
   declare oddsGeneratorService: OddsGeneratorService;
@@ -98,11 +98,18 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
     return timelines;
   }
 
+  generateBlockFromRate(blockRate: Record<string, number>): number {
+    const blocks = Object.keys(blockRate);
+    const rates = Object.values(blockRate);
+
+    return Number(secureWeightedPick(blocks, rates));
+  }
+
   override createNewMatchConfig(): MatchConfig {
     const gameTiming = this.gameSettings.gameTiming as GameTiming;
     const isHomeFavorite = secureRandomBool();
-    const fhBlocks = secureRandomRange(MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS);
-    const shBlocks = secureRandomRange(MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS);
+    const fhBlocks = this.generateBlockFromRate(this.rateConfigs.blockRate);
+    const shBlocks = this.generateBlockFromRate(this.rateConfigs.blockRate);
 
     const fhRateConfigs = this.generateRateConfigsForPhase(isHomeFavorite, fhBlocks);
     const shRateConfigs = this.generateRateConfigsForPhase(isHomeFavorite, shBlocks);

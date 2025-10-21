@@ -5,7 +5,7 @@ import { ResultGeneratorService } from "../../../src/services/result-generator-s
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { SettlementStatus } from "@soccer-marble/soccer-marble-base";
 import type { GameTiming, OddsInfo } from "../../../src/types";
-import { MIN_PHASE_BLOCKS, MAX_PHASE_BLOCKS, MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../../../src/constant";
+import { MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../../../src/constant";
 import { mockContainer } from "../global-stubs";
 jest.mock("sc-core-rng");
 jest.mock("@soccer-marble/shared-utils");
@@ -39,6 +39,7 @@ describe("RoundGeneratorService", () => {
     awayFavorite: [{ scoreRate: { "1-0": 0.1, "0-1": 0.2 } }, { scoreRate: { "1-0": 0.1, "0-1": 0.3 } }],
     homeFavoriteDraw: [{ scoreRate: { "1-1": 0.4 } }],
     awayFavoriteDraw: [{ scoreRate: { "1-1": 0.4 } }],
+    blockRate: { "2": 0.3, "3": 0.35, "4": 0.35 },
   };
 
   beforeEach(() => {
@@ -229,6 +230,16 @@ describe("RoundGeneratorService", () => {
     });
   });
 
+  describe("generateBlockFromRate", () => {
+    it("should generate block from rate", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureWeightedPick).mockImplementation(actualRng.secureWeightedPick);
+
+      const result = service.generateBlockFromRate({ "2": 0, "3": 1, "4": 0 });
+      expect(result).toBe(3);
+    });
+  });
+
   describe("createNewMatchConfig", () => {
     it("should create new match config with correct structure", () => {
       jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
@@ -263,36 +274,6 @@ describe("RoundGeneratorService", () => {
 
       expect(result).toBeDefined();
       expect(result.eventDetailInfos.length).toBeGreaterThan(0);
-    });
-
-    it("should handle minimum phase blocks", () => {
-      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(MIN_PHASE_BLOCKS);
-      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
-      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
-        handicapValue: 0.5,
-        overUnderValue: 2.5,
-      } as OddsInfo);
-
-      const result = service.createNewMatchConfig();
-
-      expect(result.numberOfEventDetails).toBe(MIN_PHASE_BLOCKS * 2);
-      expect(result.eventDetailInfos.length).toBe(MIN_PHASE_BLOCKS * 2);
-    });
-
-    it("should handle maximum phase blocks", () => {
-      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(false);
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(MAX_PHASE_BLOCKS);
-      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.awayFavorite[0]);
-      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
-        handicapValue: -0.5,
-        overUnderValue: 2.5,
-      } as OddsInfo);
-
-      const result = service.createNewMatchConfig();
-
-      expect(result.numberOfEventDetails).toBe(MAX_PHASE_BLOCKS * 2);
-      expect(result.eventDetailInfos.length).toBe(MAX_PHASE_BLOCKS * 2);
     });
   });
 
@@ -649,7 +630,7 @@ describe("RoundGeneratorService", () => {
     it("should generate complete round with realistic data flow", () => {
       // Mock all dependencies with realistic values
       jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(3);
+      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(3);
       jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
       jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
         handicapValue: 0.5,
@@ -717,7 +698,7 @@ describe("RoundGeneratorService", () => {
     it("should handle end-to-end round generation with different team selection modes", () => {
       // Test with away favorite
       jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(false);
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(2);
+      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(2);
       jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.awayFavorite[0]);
       jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
         handicapValue: -0.5,
@@ -769,7 +750,7 @@ describe("RoundGeneratorService", () => {
 
       // Mock consistent random values
       jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(2);
+      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(2);
       jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
       jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
         handicapValue: 0.5,
