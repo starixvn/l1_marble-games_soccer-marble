@@ -8,14 +8,14 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "nx run-many -t build",
+    "build": "npm run build --workspaces --if-present",
     "build:watch": "nx watch --all -- nx run %NX_PROJECT_NAME%:build",
     "check:deps": "npm-check-updates && nx run-many -t check:deps",
     "clean": "nx run-many -t clean",
     "reg": "npm set registry http://npm.lumigame.com",
     "test": "nx run-many -t test",
-    "pretest-coverage": "(npm run build || true) && npm run build",
-    "test-coverage": "nx run-many -t test-coverage",
+    "pretest-coverage": "npm run build",
+    "test-coverage": "npm run test-coverage --workspaces --if-present",
     "type-check": "nx run-many -t type-check",
     "update:deps": "npm-check-updates -u && nx run-many -t update:deps"
   },

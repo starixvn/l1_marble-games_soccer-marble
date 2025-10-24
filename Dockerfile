@@ -8,7 +8,6 @@ COPY packages packages
 COPY apps apps
 RUN npm run reg
 RUN --mount=type=cache,target=/root/.npm npm install --ignore-scripts
-RUN npm run build || true # Resolve Flaky Tasks
 RUN npm run build
 
 ### Cleaner
