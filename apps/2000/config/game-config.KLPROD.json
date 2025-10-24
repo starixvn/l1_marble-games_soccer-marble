@@ -1,0 +1,22 @@
+{
+  "gameId": 2000,
+  "hostingPort": 3000,
+  "database": {
+    "url": "mongodb://marble_backend:hONLdHsFt~fqGfC%3FL6*iwUexW*Q%60KeKF@10.146.34.26:39510,10.146.34.27:39510,10.146.34.30:39510,10.146.34.28:39510/?replicaSet=SP-Main",
+    "options": {
+      "dbName": "marble_odds_feed"
+    }
+  },
+  "agenda": {
+    "url": "mongodb://marble_backend:hONLdHsFt~fqGfC%3FL6*iwUexW*Q%60KeKF@10.146.34.26:39510,10.146.34.27:39510,10.146.34.30:39510,10.146.34.28:39510",
+    "authSource": "admin",
+    "dbName": "marble_odds_feed",
+    "collectionName": "soccer_marble_2000_jobs",
+    "replicaSet": "SP-Main"
+  },
+  "sentry": {
+    "sentryUrl": "http://18c14f2b9e99e35084c50110359e1592@sentrypro-sc.ops-klprod.gamora.prod/16",
+    "logIdentifier": "Soccer-Marble-2000-Service",
+    "env": "KLPROD"
+  }
+}
