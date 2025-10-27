@@ -9,18 +9,18 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "build:watch": "nx watch --all -- nx run %NX_PROJECT_NAME%:build",
-    "check:deps": "npm-check-updates && nx run-many -t check:deps",
-    "clean": "nx run-many -t clean",
+    "check:deps": "npm-check-updates && npm run check:deps --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present",
     "reg": "npm set registry http://npm.lumigame.com",
-    "test": "nx run-many -t test",
+    "test": "npm run test --workspaces --if-present",
     "pretest-coverage": "npm run build",
     "test-coverage": "npm run test-coverage --workspaces --if-present",
-    "type-check": "nx run-many -t type-check",
-    "update:deps": "npm-check-updates -u && nx run-many -t update:deps"
+    "type-check": "npm run type-check --workspaces --if-present",
+    "update:deps": "npm-check-updates -u && npm run update:deps --workspaces --if-present"
   },
   "devDependencies": {
     "@babel/core": "7.28.4",
+    "@babel/plugin-syntax-import-assertions": "7.27.1",
     "@babel/preset-env": "7.28.3",
     "@types/jest": "30.0.0",
     "@types/node": "24.7.2",
@@ -31,7 +31,6 @@
     "jest-junit": "16.0.0",
     "jest-sonar-reporter": "2.0.0",
     "npm-check-updates": "19.0.0",
-    "nx": "21.8.0",
     "ts-jest": "29.4.5",
     "tsx": "4.20.6",
     "typescript": "5.9.3"

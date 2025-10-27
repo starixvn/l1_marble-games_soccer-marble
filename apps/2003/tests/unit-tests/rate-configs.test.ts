@@ -1,6 +1,5 @@
-import { rateConfigs } from "../../src/rate-configs";
-import { OddsGeneratorService } from "@soccer-marble/soccer-marble-base";
-import { oddsHelper } from "@soccer-marble/soccer-marble-base";
+import { OddsGeneratorService, oddsHelper } from "@soccer-marble/soccer-marble-base";
+import rateConfigs from "../../src/rate-configs.json";
 
 describe("rateConfigs", () => {
   const oddsGeneratorService = new OddsGeneratorService();

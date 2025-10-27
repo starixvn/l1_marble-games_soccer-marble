@@ -23,11 +23,11 @@ function createBaseJestConfig(options = {}) {
   ];
 
   // Common module name mappings for shared packages
-  const commonModuleNameMapper = {
-    "^@soccer-marble/soccer-marble-live$": "<rootDir>/../../packages/soccer-marble-live/src/index.ts",
-    "^@soccer-marble/soccer-marble-base$": "<rootDir>/../../packages/soccer-marble-base/src/index.ts",
-    "^@soccer-marble/shared-utils$": "<rootDir>/../../packages/shared-utils/src/index.ts",
-  };
+  // const commonModuleNameMapper = {
+  //   "^@soccer-marble/soccer-marble-live$": "<rootDir>/../../packages/soccer-marble-live/src/index.ts",
+  //   "^@soccer-marble/soccer-marble-base$": "<rootDir>/../../packages/soccer-marble-base/src/index.ts",
+  //   "^@soccer-marble/shared-utils$": "<rootDir>/../../packages/shared-utils/src/index.ts",
+  // };
 
   return {
     rootDir,
@@ -48,7 +48,7 @@ function createBaseJestConfig(options = {}) {
     },
     transformIgnorePatterns: [...commonTransformIgnorePatterns, ...transformIgnorePatterns],
     moduleNameMapper: {
-      ...commonModuleNameMapper,
+      // ...commonModuleNameMapper,
       ...moduleNameMapper,
     },
     preset: "ts-jest",
