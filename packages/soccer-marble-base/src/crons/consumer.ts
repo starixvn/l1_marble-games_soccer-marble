@@ -34,7 +34,8 @@ export class Consumer {
           const lastEvent = await this.eventService.fetchEvent(lastEventId, true);
 
           const upcomingRoundId = lastRoundId + 1;
-          const upcomingScheduleStartTs = lastEvent ? new Date(lastEvent.scheduleEndTs.getTime()) : new Date();
+          const upcomingScheduleStartTs =
+            lastEvent && lastEvent.scheduleEndTs ? new Date(lastEvent.scheduleEndTs.getTime()) : new Date();
 
           await this.gameHandler.createUpcomingRoundAndEvent(upcomingRoundId, upcomingScheduleStartTs);
         }
