@@ -52,7 +52,8 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
     for (let index = 0; index < videoLengths.length; index++) {
       const currentVideoLength = videoLengths[index];
 
-      const oddsAvailable = index === 0 ? 0 : timelines[index - 1].ScheduleStart;
+      const oddsAvailable =
+        index === 0 ? 0 : timelines[index - 1].ScheduleStart + gameTiming.extraInfo.blockBetDuration;
 
       const scheduleStart = index === 0 ? gameTiming.extraInfo.oddsDuration : timelines[index - 1].ResultAvailable;
 
@@ -79,7 +80,9 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
       const currentVideoLength = videoLengths[index];
 
       const oddsAvailable =
-        index === 0 ? fhTimelines[fhTimelines.length - 1].ResultAvailable : timelines[index - 1].ScheduleStart;
+        index === 0
+          ? fhTimelines[fhTimelines.length - 1].ResultAvailable
+          : timelines[index - 1].ScheduleStart + gameTiming.extraInfo.blockBetDuration;
 
       const scheduleStart =
         index === 0 ? oddsAvailable + gameTiming.extraInfo.halfTimeDuration : timelines[index - 1].ResultAvailable;

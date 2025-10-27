@@ -4,14 +4,15 @@
   "upcomingEvents": 3,
   "theme": "youtube",
   "gameTiming": {
-    "wholeRound": 100,
+    "wholeRound": 165,
     "timelines": [],
     "extraInfo": {
       "videoLength": 40,
-      "oddsDuration": 10,
+      "oddsDuration": 30,
       "resultDuration": 10,
-      "halfTimeDuration": 20,
-      "afterGoalDuration": 3
+      "halfTimeDuration": 30,
+      "afterGoalDuration": 6,
+      "blockBetDuration": 3
     }
   },
   "teams": [
