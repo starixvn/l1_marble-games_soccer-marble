@@ -16,7 +16,6 @@
   },
   "sentry": {
     "sentryUrl": "http://18c14f2b9e99e35084c50110359e1592@sentrysc.ops-kluat.gamora.prod/16",
-    "logIdentifier": "2000",
     "env": "UAT"
   }
 }

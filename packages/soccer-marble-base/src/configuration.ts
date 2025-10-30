@@ -48,7 +48,9 @@ export class Configuration {
   }
 
   async configureDatabaseAndSentry() {
-    this.logService.start(this.appConfigs.sentry);
+    const options = { ...this.appConfigs.sentry, logIdentifier: `${this.appConfigs.gameId}` };
+
+    this.logService.start(options);
     await this.configureDatabase(this.appConfigs.database);
   }
 
