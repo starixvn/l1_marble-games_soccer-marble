@@ -6,10 +6,11 @@ import crypto from "crypto";
 import { mockContainer } from "../global-stubs";
 
 const NUMBER_OF_VIDEOS = {
-  HAA: 1,
-  AHH: 2,
-  A: 1,
-  H: 1,
+  A100: 1,
+  A101: 1,
+  H100: 1,
+  H101: 1,
+  "0101": 1,
 };
 
 describe("ResultGeneratorService tests", () => {
@@ -464,8 +465,8 @@ describe("ResultGeneratorService tests", () => {
         },
       };
 
-      const firstHalfVideo = crypto.createHash("sha256").update(`A-0`).digest("hex");
-      const secondHalfVideo = crypto.createHash("sha256").update(`A-0`).digest("hex");
+      const firstHalfVideo = crypto.createHash("sha256").update(`H101-0`).digest("hex");
+      const secondHalfVideo = crypto.createHash("sha256").update(`A101-0`).digest("hex");
 
       const expectedFirstHalfResult = {
         playlist: firstHalfVideo,
