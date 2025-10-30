@@ -117,9 +117,8 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
     const videoLengthStr = videoLength.toString().padStart(2, "0");
     const videoType = isLastBlock ? "1" : "0";
     const videoName = `${goalSequence}${videoLengthStr}${videoType}`;
-    const video = numberOfVideos[videoName] > 0 ? videoName : "A";
 
-    return this.generateVideoName(video, numberOfVideos);
+    return this.generateVideoName(videoName, numberOfVideos);
   };
 
   generateFirstHalfSettlementResultForUltraLive = (
