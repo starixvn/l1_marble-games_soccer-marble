@@ -16,7 +16,6 @@
   },
   "sentry": {
     "sentryUrl": "http://18c14f2b9e99e35084c50110359e1592@sentrypro-sc.nebula.prod/16",
-    "logIdentifier": "Soccer-Marble-2002-Service",
     "env": "PROD"
   }
 }
