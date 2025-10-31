@@ -25,6 +25,7 @@ RUN npx mod-pruner prune --force
 ### Production
 FROM base AS app
 COPY --from=cleaner /app .
+COPY scripts ./scripts
 COPY scripts/start.sh /usr/local/bin/marbles
 RUN chmod +x /usr/local/bin/marbles && chown -R node:node /app
 USER node
