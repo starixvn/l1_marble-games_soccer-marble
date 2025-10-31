@@ -1,5 +1,6 @@
 {
   "gameId": 2001,
+  "env": "UAT",
   "hostingPort": 3000,
   "database": {
     "url": "mongodb://marble_backend:MarbleBackend%4022027@10.146.34.28:39520/?authSource=admin&replicaSet=SP-UAT",
@@ -15,7 +16,6 @@
     "replicaSet": "SP-UAT"
   },
   "sentry": {
-    "sentryUrl": "http://18c14f2b9e99e35084c50110359e1592@sentrysc.ops-kluat.gamora.prod/16",
-    "env": "UAT"
+    "sentryUrl": "http://18c14f2b9e99e35084c50110359e1592@sentrysc.ops-kluat.gamora.prod/16"
   }
 }

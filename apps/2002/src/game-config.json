@@ -1,5 +1,6 @@
 {
   "gameId": 2002,
+  "env": "DEV",
   "hostingPort": 5000,
   "database": {
     "url": "mongodb://localhost:27017",
@@ -15,7 +16,6 @@
     "replicaSet": ""
   },
   "sentry": {
-    "sentryUrl": "https://6b0f71afab190ba976d8bdc7a43969fe@sentry-k8s.lumigame.com/15",
-    "env": "DEV"
+    "sentryUrl": "https://6b0f71afab190ba976d8bdc7a43969fe@sentry-k8s.lumigame.com/15"
   }
 }

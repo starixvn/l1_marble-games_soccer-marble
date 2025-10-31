@@ -1,5 +1,6 @@
 {
   "gameId": 2005,
+  "env": "LOCAL",
   "hostingPort": 3000,
   "database": {
     "url": "mongodb://marble_backend:MarbleBackend@10.10.50.12:39400,10.10.50.13:39400,10.10.50.14:39400/?replicaSet=SPLocal0",
@@ -15,7 +16,6 @@
     "replicaSet": "SPLocal0"
   },
   "sentry": {
-    "sentryUrl": "https://6b0f71afab190ba976d8bdc7a43969fe@sentry-k8s.lumigame.com/15",
-    "env": "LOCAL"
+    "sentryUrl": "https://6b0f71afab190ba976d8bdc7a43969fe@sentry-k8s.lumigame.com/15"
   }
 }
