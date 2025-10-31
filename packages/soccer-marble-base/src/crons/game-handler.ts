@@ -1,4 +1,4 @@
-import { AppContainer, GameRunningRound, GameSettings, Selection } from "../types";
+import { AppContainer, GameRunningRound, GameSettings, RoundResult, Selection } from "../types";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
 import { RoundGeneratorService } from "../services/round-generator-service";
@@ -104,8 +104,9 @@ export class GameHandler {
   ) {
     const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
     const round = await this.loadRoundFromRoundId(roundId);
-    eventDetail.playlist = round.result[drawIndex].playlist;
-    eventDetail.goalInfo = round.result[drawIndex].goalInfo;
+    const roundResult = this.getRoundResult(round);
+    eventDetail.playlist = roundResult[drawIndex].playlist;
+    eventDetail.goalInfo = roundResult[drawIndex].goalInfo;
 
     await this.eventService.updateEventDetail(eventDetail, ["playlist", "goalInfo"]);
 
@@ -120,7 +121,8 @@ export class GameHandler {
     const eventDetail = await this.eventService.fetchEventDetail(eventDetailId);
     const round = await this.loadRoundFromRoundId(roundId);
     eventDetail.hasResults = true;
-    eventDetail.result = round.result[drawIndex].result;
+    const roundResult = this.getRoundResult(round);
+    eventDetail.result = roundResult[drawIndex].result;
 
     await this.eventService.updateEventDetail(eventDetail, ["result", "hasResults"]);
 
@@ -130,7 +132,7 @@ export class GameHandler {
       this.logService.logError(`Result available for event detail ${eventDetailId} is late by: ${delay}ms`);
     }
 
-    if (drawIndex === round.matchConfig.numberOfEventDetails - 1) {
+    if (drawIndex === this.getLastEventDetailIndex(round)) {
       await this.handleUpdateSettlementResult(round);
       await this.handleRoundEnded(roundId);
     }
@@ -138,8 +140,9 @@ export class GameHandler {
 
   async handleUpdateSettlementResult(round: GameRunningRound) {
     let eventDetails = await this.loadEventDetailsFromEventId(round.eventID);
+    const lastEventDetailIndex = this.getLastEventDetailIndex(round);
 
-    if (!eventDetails[round.matchConfig.numberOfEventDetails - 1].selections?.length) {
+    if (!eventDetails[lastEventDetailIndex].selections?.length) {
       await this.delayTime(1000); // delay to ensure event detail selections are updated
       eventDetails = await this.loadEventDetailsFromEventId(round.eventID);
     }
@@ -161,5 +164,17 @@ export class GameHandler {
     round.result = decrypt(round.encryptedResult);
     round.settlementResult = decrypt(round.encryptedSettlementResult);
     await this.roundService.updateRound(round);
+  }
+
+  getRoundResult(round: GameRunningRound): RoundResult {
+    const oldRoundResult = (round.result as any)?.drawResults ?? [];
+    return oldRoundResult.length > 0 ? oldRoundResult : round.result;
+  }
+
+  getLastEventDetailIndex(round: GameRunningRound): number {
+    const numberOfEventDetails =
+      round.matchConfig.numberOfEventDetails ?? this.gameSettings.gameTiming.timelines.length;
+
+    return numberOfEventDetails - 1;
   }
 }

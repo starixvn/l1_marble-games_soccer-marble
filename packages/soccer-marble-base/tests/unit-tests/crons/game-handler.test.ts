@@ -653,4 +653,72 @@ describe("GameHandler", () => {
       expect(mockRoundService.updateRound).toHaveBeenCalledWith(mockRound);
     });
   });
+
+  describe("getRoundResult", () => {
+    it("should return round.result when it exists as a direct value", () => {
+      // Arrange
+      const mockRoundResult = [
+        { playlist: "video1", result: { goalSequence: "H", finalScore: "1:0" } },
+        { playlist: "video2", result: { goalSequence: "A", finalScore: "1:1" } },
+      ];
+      const mockRound = {
+        result: mockRoundResult,
+      } as any;
+
+      // Act
+      const result = gameHandler.getRoundResult(mockRound);
+
+      // Assert
+      expect(result).toEqual(mockRoundResult);
+    });
+
+    it("should return round.result.drawResults when it exists as an object with drawResults property", () => {
+      // Arrange
+      const mockRoundResult = {
+        drawResults: [{ playlist: "video1" }],
+      };
+      const mockRound = {
+        result: mockRoundResult,
+      } as any;
+
+      // Act
+      const result = gameHandler.getRoundResult(mockRound);
+
+      // Assert
+      expect(result).toEqual(mockRoundResult.drawResults);
+    });
+  });
+
+  describe("getLastEventDetailIndex", () => {
+    it("should prioritize numberOfEventDetails over timelines.length when numberOfEventDetails is defined", () => {
+      // Arrange
+      const mockRound = {
+        matchConfig: {
+          numberOfEventDetails: 3,
+        },
+      } as any;
+
+      mockGameSettings.gameTiming.timelines = [];
+
+      // Act
+      const result = gameHandler.getLastEventDetailIndex(mockRound);
+
+      // Assert
+      expect(result).toBe(2);
+    });
+
+    it("should return timelines.length - 1 when numberOfEventDetails is undefined", () => {
+      // Arrange
+      const mockRound = {
+        matchConfig: {},
+      } as any;
+      mockGameSettings.gameTiming.timelines = [{}, {}, {}, {}]; // 4 timelines
+
+      // Act
+      const result = gameHandler.getLastEventDetailIndex(mockRound);
+
+      // Assert
+      expect(result).toBe(3);
+    });
+  });
 });
