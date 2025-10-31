@@ -87,6 +87,63 @@ describe("Consumer", () => {
         expect(mockJob.remove).toHaveBeenCalled();
       });
 
+      it("should use schedule end time of last event when it exists", async () => {
+        // Arrange
+        const upcomingEvents = [{ eventID: 1 }, { eventID: 2 }];
+        const lastRoundId = 5;
+        const lastEventId = 12345;
+        const lastEvent = {
+          scheduleStartTs: new Date("2023-01-01T10:00:00Z"),
+          scheduleEndTs: new Date("2023-01-01T11:01:01Z"),
+        };
+        const upcomingRoundId = 6;
+        const expectedScheduleStartTs = new Date("2023-01-01T11:01:01Z"); // schedule end time of last event
+
+        mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
+        mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
+        jest.spyOn(idHelper, "createEventId").mockReturnValue(lastEventId);
+        mockEventService.fetchEvent.mockResolvedValue(lastEvent);
+        mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
+
+        // Act
+        await jobHandler(mockJob);
+
+        // Assert
+        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(
+          upcomingRoundId,
+          expectedScheduleStartTs
+        );
+      });
+
+      it("should use schedule start time of last event when schedule end time is not exists", async () => {
+        // Arrange
+        const upcomingEvents = [{ eventID: 1 }, { eventID: 2 }];
+        const lastRoundId = 5;
+        const lastEventId = 12345;
+        const lastEvent = {
+          scheduleStartTs: new Date("2023-01-01T10:00:00Z"),
+        };
+
+        mockGameSettings.gameTiming.wholeRound = 100;
+        const upcomingRoundId = 6;
+        const expectedScheduleStartTs = new Date(lastEvent.scheduleStartTs.getTime() + 100 * 1000); // schedule start time of last event + whole round time
+
+        mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
+        mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
+        jest.spyOn(idHelper, "createEventId").mockReturnValue(lastEventId);
+        mockEventService.fetchEvent.mockResolvedValue(lastEvent);
+        mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
+
+        // Act
+        await jobHandler(mockJob);
+
+        // Assert
+        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(
+          upcomingRoundId,
+          expectedScheduleStartTs
+        );
+      });
+
       it("should not create upcoming round when upcoming events count is sufficient", async () => {
         // Arrange
         const upcomingEvents = [{ eventID: 1 }, { eventID: 2 }, { eventID: 3 }, { eventID: 4 }];

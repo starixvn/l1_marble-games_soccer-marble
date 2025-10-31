@@ -1,6 +1,7 @@
 import Agenda, { Job } from "agenda";
 import { logger } from "sc-common";
 import { AppContainer, GameSettings, JobName } from "../types";
+import { IEvent } from "../models/events";
 import { GameHandler } from "./game-handler";
 import { RoundService } from "../services/round-service";
 import { EventService } from "../services/event-service";
@@ -23,6 +24,19 @@ export class Consumer {
     this.gameSettings = container.gameSettings;
   }
 
+  private calculateUpcomingScheduleStartTs(lastEvent: IEvent | null) {
+    if (!lastEvent) {
+      return new Date();
+    }
+
+    if (lastEvent.scheduleEndTs) {
+      return new Date(lastEvent.scheduleEndTs.getTime());
+    }
+
+    // Support for old events
+    return new Date(lastEvent.scheduleStartTs.getTime() + this.gameSettings.gameTiming.wholeRound * 1000);
+  }
+
   consumeScheduleUpcomingEvent() {
     this.agenda.define(JobName.ScheduleUpcomingEvent, async (job: Job) => {
       try {
@@ -34,8 +48,7 @@ export class Consumer {
           const lastEvent = await this.eventService.fetchEvent(lastEventId, true);
 
           const upcomingRoundId = lastRoundId + 1;
-          const upcomingScheduleStartTs =
-            lastEvent && lastEvent.scheduleEndTs ? new Date(lastEvent.scheduleEndTs.getTime()) : new Date();
+          const upcomingScheduleStartTs = this.calculateUpcomingScheduleStartTs(lastEvent);
 
           await this.gameHandler.createUpcomingRoundAndEvent(upcomingRoundId, upcomingScheduleStartTs);
         }
