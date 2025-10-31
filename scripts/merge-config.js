@@ -6,9 +6,10 @@ const gameConfigPath = "game-config.json";
 if (fs.existsSync(globalConfigPath) && fs.existsSync(gameConfigPath)) {
   console.log("Merge global configs");
 
-  const globalConfig = fs.readFileSync(globalConfigPath, "utf-8");
-  const gameConfig = fs.readFileSync(gameConfigPath, "utf-8");
+  const globalConfig = JSON.parse(fs.readFileSync(globalConfigPath, "utf-8"));
+  const gameConfig = JSON.parse(fs.readFileSync(gameConfigPath, "utf-8"));
   const merged = Object.assign({}, JSON.parse(globalConfig), JSON.parse(gameConfig));
+  const mergedConfigPath = `apps/${gameConfig.gameId}/game-config.json`;
 
-  fs.writeFileSync(gameConfigPath, JSON.stringify(merged, null, 2));
+  fs.writeFileSync(mergedConfigPath, JSON.stringify(merged, null, 2));
 }
