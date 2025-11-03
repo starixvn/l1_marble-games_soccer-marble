@@ -30,7 +30,7 @@
     "jest-auto-stub": "1.0.8",
     "jest-junit": "16.0.0",
     "jest-sonar-reporter": "2.0.0",
-    "npm-check-updates": "19.0.0",
+    "npm-check-updates": "19.1.2",
     "ts-jest": "29.4.5",
     "tsx": "4.20.6",
     "typescript": "5.9.3"
