@@ -1,11 +1,16 @@
 import { RoundGeneratorService as BaseRoundGeneratorService, oddsHelper } from "@soccer-marble/soccer-marble-base";
-import type { RateConfig, Timeline, MatchConfig, GameRunningRound } from "@soccer-marble/soccer-marble-base";
-import { secureRandomRange, secureRandomBool, securePickOne, secureWeightedPick } from "sc-core-rng";
+import type {
+  RateConfig,
+  Timeline,
+  MatchConfig,
+  GameRunningRound,
+  EventDetailResult,
+} from "@soccer-marble/soccer-marble-base";
+import { secureRandomBool, securePickOne, secureWeightedPick } from "sc-core-rng";
 import { GameTiming } from "../types";
 import { ResultGeneratorService } from "./result-generator-service";
 import { idHelper, encrypt } from "@soccer-marble/shared-utils";
 import { OddsGeneratorService } from "./odds-generator-service";
-import { MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../constant";
 export class RoundGeneratorService extends BaseRoundGeneratorService {
   declare resultGeneratorService: ResultGeneratorService;
   declare oddsGeneratorService: OddsGeneratorService;
@@ -20,28 +25,6 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
     );
 
     return rateConfigs as RateConfig[];
-  }
-
-  generateVideoLengthForPhase(size: number) {
-    const gameTiming = this.gameSettings.gameTiming as GameTiming;
-    const maxLength = Math.min(
-      Math.floor((gameTiming.extraInfo.videoLength - MIN_VIDEO_LENGTH) / (size - 1)),
-      MAX_VIDEO_LENGTH
-    );
-    const minLength = Math.max(
-      Math.floor((gameTiming.extraInfo.videoLength - MAX_VIDEO_LENGTH) / (size - 1)),
-      MIN_VIDEO_LENGTH
-    );
-
-    const videoLengths = Array.from({ length: size - 1 }, () => secureRandomRange(minLength, maxLength));
-
-    const totalCurrentLength = videoLengths.reduce((acc, curr) => acc + curr, 0);
-
-    const remainLength = gameTiming.extraInfo.videoLength - totalCurrentLength;
-
-    videoLengths.push(remainLength);
-
-    return videoLengths;
   }
 
   generateTimelineForFirstHalf(videoLengths: number[]): Timeline[] {
@@ -108,7 +91,7 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
     return Number(secureWeightedPick(blocks, rates));
   }
 
-  override createNewMatchConfig(): MatchConfig {
+  createNewMatchConfigAndGenerateResults(): { matchConfig: MatchConfig; result: EventDetailResult[] } {
     const gameTiming = this.gameSettings.gameTiming as GameTiming;
     const isHomeFavorite = secureRandomBool();
     const fhBlocks = this.generateBlockFromRate(this.rateConfigs.blockRate);
@@ -117,8 +100,11 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
     const fhRateConfigs = this.generateRateConfigsForPhase(isHomeFavorite, fhBlocks);
     const shRateConfigs = this.generateRateConfigsForPhase(isHomeFavorite, shBlocks);
 
-    const fhVideoLengths = this.generateVideoLengthForPhase(fhBlocks);
-    const shVideoLengths = this.generateVideoLengthForPhase(shBlocks);
+    const { videoLengths: fhVideoLengths, results: fhResults } =
+      this.resultGeneratorService.generateResultForUltraLivePhase(fhRateConfigs, 0);
+
+    const { videoLengths: shVideoLengths, results: shResults } =
+      this.resultGeneratorService.generateResultForUltraLivePhase(shRateConfigs, 1);
 
     const fhTimelines = this.generateTimelineForFirstHalf(fhVideoLengths);
     const shTimelines = this.generateTimelineForSecondHalf(shVideoLengths, fhTimelines);
@@ -153,22 +139,21 @@ export class RoundGeneratorService extends BaseRoundGeneratorService {
     });
 
     return {
-      gameTiming: { ...this.gameSettings.gameTiming, timelines: [...fhTimelines, ...shTimelines], wholeRound },
-      numberOfEventDetails: fhBlocks + shBlocks,
-      eventDetailInfos: [...fhEventDetailInfos, ...shEventDetailInfos],
-      rateConfig: oddsHelper.mergeArrayOfRates(fhRateConfigs.concat(shRateConfigs)),
-      oddsInfo: ftOddsInfo,
+      matchConfig: {
+        gameTiming: { ...this.gameSettings.gameTiming, timelines: [...fhTimelines, ...shTimelines], wholeRound },
+        numberOfEventDetails: fhBlocks + shBlocks,
+        eventDetailInfos: [...fhEventDetailInfos, ...shEventDetailInfos],
+        rateConfig: oddsHelper.mergeArrayOfRates(fhRateConfigs.concat(shRateConfigs)),
+        oddsInfo: ftOddsInfo,
+      },
+      result: [...fhResults, ...shResults],
     };
   }
 
   override generateNewRound(roundId: number) {
     const { homeTeam, awayTeam, theme } = this.createNewMatch(roundId);
 
-    const matchConfig = this.createNewMatchConfig();
-
-    const numberOfVideos = this.gameData.gameConfig?.config?.numberOfVideos ?? this.gameSettings.numberOfVideos;
-
-    const result = this.resultGeneratorService.generateResult({ numberOfVideos, matchConfig });
+    const { matchConfig, result } = this.createNewMatchConfigAndGenerateResults();
 
     const odds = this.oddsGeneratorService.calculateOddsForUltraLive(matchConfig, result);
     const selections = this.oddsGeneratorService.generateSelectionsForUltraLive(odds, matchConfig, result);

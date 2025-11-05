@@ -8,16 +8,27 @@ import {
 import type {
   RoundResult,
   MatchConfig,
-  DataResultType,
   ResultType,
   EventDetailResult,
   DrawSettlementResult,
   RoundSettlementResult,
+  RateConfig,
+  AppContainer,
+  GameData,
 } from "@soccer-marble/soccer-marble-base";
 
-import type { OddsInfo } from "../types";
+import { secureRandomRange } from "sc-core-rng";
+import type { GameTiming, OddsInfo } from "../types";
+import { MAX_VIDEO_LENGTH, MIN_VIDEO_LENGTH } from "../constant";
 
 export class ResultGeneratorService extends BaseResultGeneratorService {
+  protected readonly gameData: GameData;
+
+  constructor(container: AppContainer) {
+    super(container);
+    this.gameData = container.gameData;
+  }
+
   override generateSettlementResult: (roundResult: RoundResult, matchConfig: MatchConfig) => RoundSettlementResult = (
     roundResult,
     matchConfig
@@ -61,63 +72,96 @@ export class ResultGeneratorService extends BaseResultGeneratorService {
     };
   };
 
-  override generateResult = (data: DataResultType): RoundResult => {
-    const numberOfVideos = data.numberOfVideos;
-    const firstHalfInfos = data.matchConfig.eventDetailInfos.filter((info) => info.phase === 0);
-    const secondHalfInfos = data.matchConfig.eventDetailInfos.filter((info) => info.phase === 1);
+  generateVideoLengthForPhase(size: number) {
+    const gameTiming = this.gameSettings.gameTiming as GameTiming;
+    const maxLength = Math.min(
+      Math.floor((gameTiming.extraInfo.videoLength - MIN_VIDEO_LENGTH) / (size - 1)),
+      MAX_VIDEO_LENGTH
+    );
+    const minLength = Math.max(
+      Math.floor((gameTiming.extraInfo.videoLength - MAX_VIDEO_LENGTH) / (size - 1)),
+      MIN_VIDEO_LENGTH
+    );
 
-    const firstHalfResults = firstHalfInfos.map((info, index) => {
-      const isLastBlock = index === firstHalfInfos.length - 1;
+    const videoLengths = Array.from({ length: size - 1 }, () => secureRandomRange(minLength, maxLength));
 
-      const eventDetailResult = this.generateResultFromRate(info.rateConfig);
+    const totalCurrentLength = videoLengths.reduce((acc, curr) => acc + curr, 0);
 
-      const videoName = this.generateVideoNameForUltraLive(
-        eventDetailResult.goalSequence,
-        numberOfVideos,
-        isLastBlock,
-        info.videoLength as number
-      );
+    const remainLength = gameTiming.extraInfo.videoLength - totalCurrentLength;
 
-      return {
-        playlist: videoName,
-        goalInfo: videoName,
-        result: eventDetailResult,
-        phase: 0,
-      } as EventDetailResult;
-    });
+    videoLengths.push(remainLength);
 
-    const secondHalfResults = secondHalfInfos.map((info, index) => {
-      const isLastBlock = index === secondHalfInfos.length - 1;
+    return videoLengths;
+  }
 
-      const eventDetailResult = this.generateResultFromRate(info.rateConfig);
-      const videoName = this.generateVideoNameForUltraLive(
-        eventDetailResult.goalSequence,
-        numberOfVideos,
-        isLastBlock,
-        info.videoLength as number
-      );
-
-      return {
-        playlist: videoName,
-        goalInfo: videoName,
-        result: eventDetailResult,
-        phase: 1,
-      } as EventDetailResult;
-    });
-
-    return [...firstHalfResults, ...secondHalfResults];
+  generateResultFromRateConfigs = (rateConfigs: RateConfig[]): ResultType[] => {
+    return rateConfigs.map((config) => this.generateResultFromRate(config));
   };
 
-  generateVideoNameForUltraLive = (
-    goalSequence: string,
-    numberOfVideos: Record<string, number>,
-    isLastBlock: boolean,
-    videoLength: number
-  ) => {
+  generateResultAndVideoLengthForHalfWithRetry(
+    halfResults: ResultType[],
+    phase: number,
+    maxAttempts = 100
+  ): { results: EventDetailResult[]; videoLengths: number[] } {
+    let lastError: unknown;
+    const attemptToLog = 1;
+
+    for (let attemptCount = 1; attemptCount <= maxAttempts; attemptCount++) {
+      try {
+        const { results, videoLengths } = this.generateResultAndVideoLengthForHalf(halfResults, phase);
+
+        if (attemptCount > attemptToLog) {
+          this.logService.log(`Successfully generated half results after ${attemptCount} attempts`, "info");
+        }
+
+        return { results, videoLengths };
+      } catch (error) {
+        lastError = error;
+
+        this.logService.logWarning(`Error generating half results (attempt ${attemptCount}/${maxAttempts}): ${error}`);
+      }
+    }
+
+    throw new Error(`Failed to generate half results after ${maxAttempts} attempts. Last error: ${lastError}`);
+  }
+
+  generateResultAndVideoLengthForHalf = (halfResults: ResultType[], phase: number) => {
+    const videoLengths = this.generateVideoLengthForPhase(halfResults.length);
+
+    const results = halfResults.map((result, index) => {
+      const isLastBlock = index === halfResults.length - 1;
+
+      const videoName = this.generateVideoNameForUltraLive(result.goalSequence, isLastBlock, videoLengths[index]);
+
+      return {
+        playlist: videoName,
+        goalInfo: videoName,
+        result: result,
+        phase: phase,
+      } as EventDetailResult;
+    });
+
+    return {
+      results,
+      videoLengths,
+    };
+  };
+
+  generateResultForUltraLivePhase = (
+    rateConfigs: RateConfig[],
+    phase: number
+  ): { results: EventDetailResult[]; videoLengths: number[] } => {
+    const halfResults = this.generateResultFromRateConfigs(rateConfigs);
+
+    return this.generateResultAndVideoLengthForHalfWithRetry(halfResults, phase);
+  };
+
+  generateVideoNameForUltraLive = (goalSequence: string, isLastBlock: boolean, videoLength: number) => {
     const videoLengthStr = videoLength.toString().padStart(2, "0");
     const videoType = isLastBlock ? "1" : "0";
     const videoName = `${goalSequence}${videoLengthStr}${videoType}`;
 
+    const numberOfVideos = this.gameData.gameConfig?.config?.numberOfVideos ?? this.gameSettings.numberOfVideos;
     return this.generateVideoName(videoName, numberOfVideos);
   };
 

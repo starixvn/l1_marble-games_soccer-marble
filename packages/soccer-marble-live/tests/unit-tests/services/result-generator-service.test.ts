@@ -1,9 +1,19 @@
 import { ResultGeneratorService } from "../../../src/services/result-generator-service";
 import { SettlementStatus } from "@soccer-marble/soccer-marble-base";
-import type { MatchConfig, RoundResult, DataResultType, ResultType } from "@soccer-marble/soccer-marble-base";
+import type {
+  MatchConfig,
+  RoundResult,
+  DataResultType,
+  ResultType,
+  GameTiming,
+} from "@soccer-marble/soccer-marble-base";
 import type { OddsInfo } from "../../../src/types";
 import crypto from "crypto";
 import { mockContainer } from "../global-stubs";
+import { MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../../../src/constant";
+import * as rngModule from "sc-core-rng";
+
+jest.mock("sc-core-rng");
 
 const NUMBER_OF_VIDEOS = {
   A100: 1,
@@ -15,6 +25,26 @@ const NUMBER_OF_VIDEOS = {
 
 describe("ResultGeneratorService tests", () => {
   let resultGeneratorService: ResultGeneratorService;
+
+  const mockGameSettings = {
+    gameId: 2004,
+    gameTiming: {
+      extraInfo: {
+        videoLength: 40,
+        oddsDuration: 10,
+        resultDuration: 5,
+        halfTimeDuration: 15,
+        afterGoalDuration: 5,
+        blockBetDuration: 3,
+      },
+    } as GameTiming,
+    numberOfVideos: {
+      H: 10,
+      A: 10,
+    },
+    teams: ["Team A", "Team B"],
+    theme: "Test Theme",
+  };
 
   beforeEach(() => {
     resultGeneratorService = new ResultGeneratorService(mockContainer);
@@ -439,54 +469,324 @@ describe("ResultGeneratorService tests", () => {
     });
   });
 
-  describe("generateResult", () => {
-    it("should return a valid result based on match config", () => {
-      const data: DataResultType = {
-        numberOfVideos: NUMBER_OF_VIDEOS,
-        matchConfig: {
-          gameTiming: {} as any,
-          numberOfEventDetails: 2,
-          eventDetailInfos: [
+  describe("generateVideoLengthForPhase", () => {
+    it.each([2, 3, 4])("should generate video lengths for phase with size %d", (size) => {
+      // Restore the real secureRandomRange function
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
+
+      const result = resultGeneratorService.generateVideoLengthForPhase(size);
+
+      expect(result).toHaveLength(size);
+      expect(result.every((length) => length >= MIN_VIDEO_LENGTH)).toBe(true);
+      expect(result.every((length) => length <= MAX_VIDEO_LENGTH)).toBe(true);
+      expect(result.reduce((sum, length) => sum + length, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
+    });
+  });
+
+  describe("generateResultFromRateConfigs", () => {
+    it("should generate results from multiple rate configs", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureWeightedPick).mockImplementation((array: unknown[]) => array[0]);
+      jest.mocked(rngModule.secureShuffle).mockImplementation(actualRng.secureShuffle);
+
+      const rateConfigs = [
+        { scoreRate: { "1-0": 1 } },
+        { scoreRate: { "0-1": 1 } },
+        { scoreRate: { "2-0": 1 } },
+      ] as any[];
+
+      const results = resultGeneratorService.generateResultFromRateConfigs(rateConfigs);
+
+      expect(results).toHaveLength(3);
+      expect(results[0].finalScore).toBe("1:0");
+      expect(results[1].finalScore).toBe("0:1");
+      expect(results[2].finalScore).toBe("2:0");
+      // Goal sequences should be shuffled
+      expect(results[0].goalSequence).toContain("H");
+      expect(results[1].goalSequence).toContain("A");
+      expect(results[2].goalSequence).toContain("H");
+    });
+
+    it("should handle empty rate configs", () => {
+      const rateConfigs = [] as any[];
+
+      const results = resultGeneratorService.generateResultFromRateConfigs(rateConfigs);
+
+      expect(results).toHaveLength(0);
+    });
+
+    it("should handle draw results", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureWeightedPick).mockImplementation((array: unknown[]) => array[0]);
+      jest.mocked(rngModule.secureShuffle).mockImplementation(actualRng.secureShuffle);
+
+      const rateConfigs = [{ scoreRate: { "0-0": 1 } }] as any[];
+
+      const results = resultGeneratorService.generateResultFromRateConfigs(rateConfigs);
+
+      expect(results).toHaveLength(1);
+      expect(results[0].finalScore).toBe("0:0");
+      expect(results[0].goalSequence).toBe("0");
+    });
+  });
+
+  describe("generateResultAndVideoLengthForHalf", () => {
+    it("should generate results and video lengths for a half", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
+
+      const spy = jest.spyOn(resultGeneratorService, "generateVideoNameForUltraLive");
+      spy.mockReturnValue("mocked-video-hash");
+
+      const halfResults: ResultType[] = [
+        { goalSequence: "H", finalScore: "1:0" },
+        { goalSequence: "A", finalScore: "0:1" },
+        { goalSequence: "H", finalScore: "1:0" },
+      ];
+
+      const { results, videoLengths } = resultGeneratorService.generateResultAndVideoLengthForHalf(halfResults, 0);
+
+      expect(results).toHaveLength(3);
+      expect(videoLengths).toHaveLength(3);
+      expect(videoLengths.reduce((sum, len) => sum + len, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
+
+      // Check that results have correct structure
+      expect(results[0].result).toEqual(halfResults[0]);
+      expect(results[0].phase).toBe(0);
+      expect(results[0].playlist).toBe("mocked-video-hash");
+      expect(results[0].goalInfo).toBe("mocked-video-hash");
+
+      // Check that last block is marked as last (isLastBlock = true)
+      expect(spy).toHaveBeenCalledWith("H", true, expect.any(Number));
+
+      spy.mockRestore();
+    });
+
+    it("should generate results for phase 1", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
+
+      const spy = jest.spyOn(resultGeneratorService, "generateVideoNameForUltraLive");
+      spy.mockReturnValue("mocked-video-hash-2");
+
+      const halfResults: ResultType[] = [
+        { goalSequence: "AA", finalScore: "0:2" },
+        { goalSequence: "H", finalScore: "1:0" },
+      ];
+
+      const { results, videoLengths } = resultGeneratorService.generateResultAndVideoLengthForHalf(halfResults, 1);
+
+      expect(results).toHaveLength(2);
+      expect(videoLengths).toHaveLength(2);
+      expect(results[0].phase).toBe(1);
+      expect(results[1].phase).toBe(1);
+      expect(results[0].playlist).toBe("mocked-video-hash-2");
+
+      spy.mockRestore();
+    });
+
+    it("should mark non-last blocks correctly", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
+
+      const spy = jest.spyOn(resultGeneratorService, "generateVideoNameForUltraLive");
+      spy.mockReturnValue("mocked-video");
+
+      const halfResults: ResultType[] = [
+        { goalSequence: "H", finalScore: "1:0" },
+        { goalSequence: "A", finalScore: "0:1" },
+      ];
+
+      resultGeneratorService.generateResultAndVideoLengthForHalf(halfResults, 0);
+
+      // First call should be with isLastBlock = false
+      expect(spy).toHaveBeenCalledWith("H", false, expect.any(Number));
+      // Second call should be with isLastBlock = true
+      expect(spy).toHaveBeenCalledWith("A", true, expect.any(Number));
+
+      spy.mockRestore();
+    });
+  });
+
+  describe("generateResultAndVideoLengthForHalfWithRetry", () => {
+    it("should succeed on first attempt when generation is successful", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
+
+      const spy = jest.spyOn(resultGeneratorService, "generateVideoNameForUltraLive");
+      spy.mockReturnValue("mocked-video-hash");
+
+      const halfResults: ResultType[] = [
+        { goalSequence: "H", finalScore: "1:0" },
+        { goalSequence: "A", finalScore: "0:1" },
+      ];
+
+      const { results, videoLengths } = resultGeneratorService.generateResultAndVideoLengthForHalfWithRetry(
+        halfResults,
+        0
+      );
+
+      expect(results).toHaveLength(2);
+      expect(videoLengths).toHaveLength(2);
+      expect(videoLengths.reduce((sum, len) => sum + len, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
+
+      spy.mockRestore();
+    });
+
+    it("should retry on failure and eventually succeed", () => {
+      let attemptCount = 0;
+      const spy = jest.spyOn(resultGeneratorService, "generateResultAndVideoLengthForHalf");
+
+      spy.mockImplementation(() => {
+        attemptCount++;
+        if (attemptCount < 3) {
+          throw new Error("Test error");
+        }
+        return {
+          results: [
             {
-              rateConfig: { scoreRate: { "1-0": 1 } } as any,
+              playlist: "test",
+              goalInfo: "test",
+              result: { goalSequence: "H", finalScore: "1:0" },
               phase: 0,
-              oddsInfo: {} as any,
-              videoLength: 10,
-            },
-            {
-              rateConfig: { scoreRate: { "0-1": 1 } } as any,
-              phase: 1,
-              oddsInfo: {} as any,
-              videoLength: 10,
             },
           ],
-          rateConfig: {} as any,
-          oddsInfo: {} as any,
-        },
-      };
+          videoLengths: [40],
+        };
+      });
 
-      const firstHalfVideo = crypto.createHash("sha256").update(`H101-0`).digest("hex");
-      const secondHalfVideo = crypto.createHash("sha256").update(`A101-0`).digest("hex");
+      const halfResults: ResultType[] = [{ goalSequence: "H", finalScore: "1:0" }];
 
-      const expectedFirstHalfResult = {
-        playlist: firstHalfVideo,
-        goalInfo: firstHalfVideo,
-        result: { goalSequence: "H", finalScore: "1:0" },
-        phase: 0,
-      };
+      const { results, videoLengths } = resultGeneratorService.generateResultAndVideoLengthForHalfWithRetry(
+        halfResults,
+        0
+      );
 
-      const expectedSecondHalfResult = {
-        playlist: secondHalfVideo,
-        goalInfo: secondHalfVideo,
-        result: { goalSequence: "A", finalScore: "0:1" },
-        phase: 1,
-      };
+      expect(attemptCount).toBe(3);
+      expect(results).toHaveLength(1);
+      expect(videoLengths).toEqual([40]);
 
-      const result = resultGeneratorService.generateResult(data);
+      spy.mockRestore();
+    });
 
-      expect(result).toHaveLength(2);
-      expect(result[0]).toEqual(expectedFirstHalfResult);
-      expect(result[1]).toEqual(expectedSecondHalfResult);
+    it("should throw error after max attempts", () => {
+      const spy = jest.spyOn(resultGeneratorService, "generateResultAndVideoLengthForHalf");
+
+      spy.mockImplementation(() => {
+        throw new Error("Persistent error");
+      });
+
+      const halfResults: ResultType[] = [{ goalSequence: "H", finalScore: "1:0" }];
+
+      expect(() => {
+        resultGeneratorService.generateResultAndVideoLengthForHalfWithRetry(halfResults, 0, 5);
+      }).toThrow("Failed to generate half results after 5 attempts");
+
+      spy.mockRestore();
+    });
+
+    it("should log warning on retry attempts", () => {
+      let attemptCount = 0;
+      const spy = jest.spyOn(resultGeneratorService, "generateResultAndVideoLengthForHalf");
+      const logSpy = jest.spyOn(mockContainer.logService, "logWarning");
+
+      spy.mockImplementation(() => {
+        attemptCount++;
+        if (attemptCount < 2) {
+          throw new Error("Retry test error");
+        }
+        return {
+          results: [
+            {
+              playlist: "test",
+              goalInfo: "test",
+              result: { goalSequence: "H", finalScore: "1:0" },
+              phase: 0,
+            },
+          ],
+          videoLengths: [40],
+        };
+      });
+
+      const halfResults: ResultType[] = [{ goalSequence: "H", finalScore: "1:0" }];
+
+      resultGeneratorService.generateResultAndVideoLengthForHalfWithRetry(halfResults, 0);
+
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Error generating half results"));
+
+      spy.mockRestore();
+      logSpy.mockRestore();
+    });
+  });
+
+  describe("generateResultForUltraLivePhase", () => {
+    it("should generate results for ultra live phase", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
+      jest.mocked(rngModule.secureWeightedPick).mockImplementation((array: unknown[]) => array[0]);
+      jest.mocked(rngModule.secureShuffle).mockImplementation(actualRng.secureShuffle);
+
+      const spy = jest.spyOn(resultGeneratorService, "generateVideoNameForUltraLive");
+      spy.mockReturnValue("mocked-video-hash");
+
+      const rateConfigs = [
+        { scoreRate: { "1-0": 1 } },
+        { scoreRate: { "0-1": 1 } },
+        { scoreRate: { "1-0": 1 } },
+      ] as any[];
+
+      const { results, videoLengths } = resultGeneratorService.generateResultForUltraLivePhase(rateConfigs, 0);
+
+      expect(results).toHaveLength(3);
+      expect(videoLengths).toHaveLength(3);
+      expect(videoLengths.reduce((sum, len) => sum + len, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
+      expect(results[0].phase).toBe(0);
+      expect(results[1].phase).toBe(0);
+      expect(results[2].phase).toBe(0);
+
+      spy.mockRestore();
+    });
+
+    it("should generate results for phase 1", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
+      jest.mocked(rngModule.secureWeightedPick).mockImplementation((array: unknown[]) => array[0]);
+      jest.mocked(rngModule.secureShuffle).mockImplementation(actualRng.secureShuffle);
+
+      const spy = jest.spyOn(resultGeneratorService, "generateVideoNameForUltraLive");
+      spy.mockReturnValue("mocked-video-hash");
+
+      const rateConfigs = [{ scoreRate: { "2-0": 1 } }, { scoreRate: { "0-2": 1 } }] as any[];
+
+      const { results, videoLengths } = resultGeneratorService.generateResultForUltraLivePhase(rateConfigs, 1);
+
+      expect(results).toHaveLength(2);
+      expect(videoLengths).toHaveLength(2);
+      expect(results[0].phase).toBe(1);
+      expect(results[1].phase).toBe(1);
+
+      spy.mockRestore();
+    });
+
+    it("should use retry logic internally", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
+      jest.mocked(rngModule.secureWeightedPick).mockImplementation((array: unknown[]) => array[0]);
+      jest.mocked(rngModule.secureShuffle).mockImplementation(actualRng.secureShuffle);
+
+      const retrySpy = jest.spyOn(resultGeneratorService, "generateResultAndVideoLengthForHalfWithRetry");
+      const videoSpy = jest.spyOn(resultGeneratorService, "generateVideoNameForUltraLive");
+      videoSpy.mockReturnValue("mocked-video");
+
+      const rateConfigs = [{ scoreRate: { "1-0": 1 } }] as any[];
+
+      resultGeneratorService.generateResultForUltraLivePhase(rateConfigs, 0);
+
+      expect(retrySpy).toHaveBeenCalledWith(expect.any(Array), 0);
+
+      retrySpy.mockRestore();
+      videoSpy.mockRestore();
     });
   });
 });

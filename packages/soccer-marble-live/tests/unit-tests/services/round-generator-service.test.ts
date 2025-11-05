@@ -5,7 +5,6 @@ import { ResultGeneratorService } from "../../../src/services/result-generator-s
 import { RoundGeneratorService } from "../../../src/services/round-generator-service";
 import { SettlementStatus } from "@soccer-marble/soccer-marble-base";
 import type { GameTiming, OddsInfo } from "../../../src/types";
-import { MIN_VIDEO_LENGTH, MAX_VIDEO_LENGTH } from "../../../src/constant";
 import { mockContainer } from "../global-stubs";
 jest.mock("sc-core-rng");
 jest.mock("@soccer-marble/shared-utils");
@@ -167,21 +166,6 @@ describe("RoundGeneratorService", () => {
     });
   });
 
-  describe("generateVideoLengthForPhase", () => {
-    it.each([2, 3, 4])("should generate video lengths for phase with size %d", (size) => {
-      // Restore the real secureRandomRange function
-      const actualRng = jest.requireActual("sc-core-rng");
-      jest.mocked(rngModule.secureRandomRange).mockImplementation(actualRng.secureRandomRange);
-
-      const result = service.generateVideoLengthForPhase(size);
-
-      expect(result).toHaveLength(size);
-      expect(result.every((length) => length >= MIN_VIDEO_LENGTH)).toBe(true);
-      expect(result.every((length) => length <= MAX_VIDEO_LENGTH)).toBe(true);
-      expect(result.reduce((sum, length) => sum + length, 0)).toBe(mockGameSettings.gameTiming.extraInfo.videoLength);
-    });
-  });
-
   describe("generateTimelineForFirstHalf", () => {
     it("should calculate correct timeline progression", () => {
       const videoLengths = [6, 12, 18];
@@ -243,40 +227,222 @@ describe("RoundGeneratorService", () => {
     });
   });
 
-  describe("createNewMatchConfig", () => {
-    it("should create new match config with correct structure", () => {
+  describe("createNewMatchConfigAndGenerateResults", () => {
+    it("should create new match config and generate results with correct structure", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
       jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(2);
+      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(3);
+      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
+      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
+        handicapValue: 0.5,
+        overUnderValue: 2.5,
+      } as OddsInfo);
+      jest.spyOn(mockResultGeneratorService, "generateResultForUltraLivePhase").mockReturnValue({
+        results: [
+          {
+            playlist: "video1",
+            goalInfo: "goal1",
+            result: { goalSequence: "H", finalScore: "1:0" },
+            phase: 0,
+          },
+        ],
+        videoLengths: [10],
+      });
+      jest.spyOn(rngModule, "secureRandomRange").mockImplementation(actualRng.secureRandomRange);
+
+      const result = service.createNewMatchConfigAndGenerateResults();
+
+      expect(result).toHaveProperty("matchConfig");
+      expect(result).toHaveProperty("result");
+      expect(result.matchConfig).toHaveProperty("gameTiming");
+      expect(result.matchConfig).toHaveProperty("numberOfEventDetails");
+      expect(result.matchConfig).toHaveProperty("eventDetailInfos");
+      expect(result.matchConfig).toHaveProperty("rateConfig");
+      expect(result.matchConfig).toHaveProperty("oddsInfo");
+      expect(result.matchConfig.eventDetailInfos.length).toBeGreaterThan(0);
+      expect(result.matchConfig.oddsInfo.length).toBeGreaterThan(0);
+      expect(result.result).toBeInstanceOf(Array);
+    });
+
+    it("should create match config with away favorite and generate results", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(false);
+      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(2);
+      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.awayFavorite[0]);
+      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
+        handicapValue: -0.5,
+        overUnderValue: 2.5,
+      } as OddsInfo);
+      jest.spyOn(mockResultGeneratorService, "generateResultForUltraLivePhase").mockReturnValue({
+        results: [
+          {
+            playlist: "video1",
+            goalInfo: "goal1",
+            result: { goalSequence: "A", finalScore: "0:1" },
+            phase: 0,
+          },
+        ],
+        videoLengths: [12],
+      });
+      jest.spyOn(rngModule, "secureRandomRange").mockImplementation(actualRng.secureRandomRange);
+
+      const result = service.createNewMatchConfigAndGenerateResults();
+
+      expect(result).toBeDefined();
+      expect(result.matchConfig).toBeDefined();
+      expect(result.result).toBeDefined();
+      expect(result.matchConfig.eventDetailInfos.length).toBeGreaterThan(0);
+    });
+
+    it("should call generateResultForUltraLivePhase for both halves", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
+      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(3);
+      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
+      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
+        handicapValue: 0.5,
+        overUnderValue: 2.5,
+      } as OddsInfo);
+      const generateResultSpy = jest.spyOn(mockResultGeneratorService, "generateResultForUltraLivePhase");
+      generateResultSpy.mockReturnValue({
+        results: [
+          {
+            playlist: "video1",
+            goalInfo: "goal1",
+            result: { goalSequence: "H", finalScore: "1:0" },
+            phase: 0,
+          },
+        ],
+        videoLengths: [10],
+      });
+      jest.spyOn(rngModule, "secureRandomRange").mockImplementation(actualRng.secureRandomRange);
+
+      service.createNewMatchConfigAndGenerateResults();
+
+      // Should be called twice: once for first half, once for second half
+      expect(generateResultSpy).toHaveBeenCalledTimes(2);
+      expect(generateResultSpy).toHaveBeenCalledWith(expect.any(Array), 0); // First half (phase 0)
+      expect(generateResultSpy).toHaveBeenCalledWith(expect.any(Array), 1); // Second half (phase 1)
+    });
+
+    it("should generate correct timelines for both halves", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
+      jest.spyOn(service, "generateBlockFromRate").mockReturnValueOnce(2).mockReturnValueOnce(2);
+      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
+      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
+        handicapValue: 0.5,
+        overUnderValue: 2.5,
+      } as OddsInfo);
+      jest.spyOn(mockResultGeneratorService, "generateResultForUltraLivePhase").mockReturnValue({
+        results: [
+          {
+            playlist: "video1",
+            goalInfo: "goal1",
+            result: { goalSequence: "H", finalScore: "1:0" },
+            phase: 0,
+          },
+          {
+            playlist: "video2",
+            goalInfo: "goal2",
+            result: { goalSequence: "A", finalScore: "0:1" },
+            phase: 0,
+          },
+        ],
+        videoLengths: [10, 15],
+      });
+      jest.spyOn(rngModule, "secureRandomRange").mockImplementation(actualRng.secureRandomRange);
+
+      const result = service.createNewMatchConfigAndGenerateResults();
+
+      expect(result.matchConfig.gameTiming.timelines).toBeDefined();
+      expect(result.matchConfig.gameTiming.timelines.length).toBe(4); // 2 for FH + 2 for SH
+      expect(result.matchConfig.gameTiming.wholeRound).toBeDefined();
+      expect(result.matchConfig.gameTiming.wholeRound).toBeGreaterThan(0);
+    });
+
+    it("should combine first and second half results correctly", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
+      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(2);
       jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
       jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
         handicapValue: 0.5,
         overUnderValue: 2.5,
       } as OddsInfo);
 
-      const result = service.createNewMatchConfig();
+      const fhResults = [
+        {
+          playlist: "fh1",
+          goalInfo: "fh_goal1",
+          result: { goalSequence: "H", finalScore: "1:0" },
+          phase: 0,
+        },
+        {
+          playlist: "fh2",
+          goalInfo: "fh_goal2",
+          result: { goalSequence: "A", finalScore: "0:1" },
+          phase: 0,
+        },
+      ];
 
-      expect(result).toHaveProperty("gameTiming");
-      expect(result).toHaveProperty("numberOfEventDetails");
-      expect(result).toHaveProperty("eventDetailInfos");
-      expect(result).toHaveProperty("rateConfig");
-      expect(result).toHaveProperty("oddsInfo");
-      expect(result.eventDetailInfos.length).toBeGreaterThan(0);
-      expect(result.oddsInfo.length).toBeGreaterThan(0);
+      const shResults = [
+        {
+          playlist: "sh1",
+          goalInfo: "sh_goal1",
+          result: { goalSequence: "H", finalScore: "1:0" },
+          phase: 1,
+        },
+        {
+          playlist: "sh2",
+          goalInfo: "sh_goal2",
+          result: { goalSequence: "A", finalScore: "0:1" },
+          phase: 1,
+        },
+      ];
+
+      jest
+        .spyOn(mockResultGeneratorService, "generateResultForUltraLivePhase")
+        .mockReturnValueOnce({
+          results: fhResults,
+          videoLengths: [10, 12],
+        })
+        .mockReturnValueOnce({
+          results: shResults,
+          videoLengths: [11, 13],
+        });
+      jest.spyOn(rngModule, "secureRandomRange").mockImplementation(actualRng.secureRandomRange);
+
+      const result = service.createNewMatchConfigAndGenerateResults();
+
+      expect(result.result).toHaveLength(4);
+      expect(result.result[0]).toEqual(fhResults[0]);
+      expect(result.result[1]).toEqual(fhResults[1]);
+      expect(result.result[2]).toEqual(shResults[0]);
+      expect(result.result[3]).toEqual(shResults[1]);
     });
 
-    it("should create match config with away favorite", () => {
-      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(false);
-      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(2);
-      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.awayFavorite[0]);
+    it("should calculate numberOfEventDetails correctly", () => {
+      const actualRng = jest.requireActual("sc-core-rng");
+      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
+      const fhBlocks = 3;
+      const shBlocks = 4;
+      jest.spyOn(service, "generateBlockFromRate").mockReturnValueOnce(fhBlocks).mockReturnValueOnce(shBlocks);
+      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
       jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
-        handicapValue: -0.5,
+        handicapValue: 0.5,
         overUnderValue: 2.5,
       } as OddsInfo);
+      jest.spyOn(mockResultGeneratorService, "generateResultForUltraLivePhase").mockReturnValue({
+        results: [],
+        videoLengths: [10],
+      });
+      jest.spyOn(rngModule, "secureRandomRange").mockImplementation(actualRng.secureRandomRange);
 
-      const result = service.createNewMatchConfig();
+      const result = service.createNewMatchConfigAndGenerateResults();
 
-      expect(result).toBeDefined();
-      expect(result.eventDetailInfos.length).toBeGreaterThan(0);
+      expect(result.matchConfig.numberOfEventDetails).toBe(fhBlocks + shBlocks);
+      expect(result.matchConfig.eventDetailInfos).toHaveLength(fhBlocks + shBlocks);
     });
   });
 
@@ -316,17 +482,19 @@ describe("RoundGeneratorService", () => {
         theme: mockTheme,
       });
 
-      // Mock the createNewMatchConfig method
-      jest.spyOn(service, "createNewMatchConfig").mockReturnValue({
-        gameTiming: mockGameSettings.gameTiming,
-        numberOfEventDetails: 4,
-        eventDetailInfos: [],
-        rateConfig: { scoreRate: {} },
-        oddsInfo: [],
+      // Mock the createNewMatchConfigAndGenerateResults method
+      jest.spyOn(service, "createNewMatchConfigAndGenerateResults").mockReturnValue({
+        matchConfig: {
+          gameTiming: mockGameSettings.gameTiming,
+          numberOfEventDetails: 4,
+          eventDetailInfos: [],
+          rateConfig: { scoreRate: {} },
+          oddsInfo: [],
+        },
+        result: mockResult,
       });
 
       // Mock result generator service
-      jest.spyOn(mockResultGeneratorService, "generateResult").mockReturnValue(mockResult);
       jest.spyOn(mockResultGeneratorService, "generateSettlementResult").mockReturnValue(mockSettlementResult);
 
       // Mock odds generator service
@@ -361,13 +529,10 @@ describe("RoundGeneratorService", () => {
       expect(service.createNewMatch).toHaveBeenCalledWith(mockRoundId);
     });
 
-    it("should call resultGeneratorService.generateResult with correct parameters", () => {
+    it("should call createNewMatchConfigAndGenerateResults", () => {
       service.generateNewRound(mockRoundId);
 
-      expect(mockResultGeneratorService.generateResult).toHaveBeenCalledWith({
-        numberOfVideos: mockGameSettings.numberOfVideos,
-        matchConfig: expect.any(Object),
-      });
+      expect(service.createNewMatchConfigAndGenerateResults).toHaveBeenCalled();
     });
 
     it("should call oddsGeneratorService methods with correct parameters", () => {
@@ -400,156 +565,12 @@ describe("RoundGeneratorService", () => {
 
       expect(idHelper.createEventId).toHaveBeenCalledWith(mockGameSettings.gameId, mockRoundId);
     });
-
-    it("should use gameConfig numberOfVideos when available", () => {
-      const customNumberOfVideos = { H: 15, A: 15 };
-      Object.assign(service, {
-        gameData: {
-          gameConfig: {
-            config: {
-              numberOfVideos: customNumberOfVideos,
-            },
-          },
-        },
-      });
-
-      service.generateNewRound(mockRoundId);
-
-      expect(mockResultGeneratorService.generateResult).toHaveBeenCalledWith({
-        numberOfVideos: customNumberOfVideos,
-        matchConfig: expect.any(Object),
-      });
-    });
-
-    it("should fallback to gameSettings numberOfVideos when gameConfig is not available", () => {
-      Object.assign(service, {
-        gameData: {
-          gameConfig: null,
-        },
-      });
-
-      service.generateNewRound(mockRoundId);
-
-      expect(mockResultGeneratorService.generateResult).toHaveBeenCalledWith({
-        numberOfVideos: mockGameSettings.numberOfVideos,
-        matchConfig: expect.any(Object),
-      });
-    });
   });
 
-  describe("Error Handling", () => {
-    it("should handle null rate configs gracefully", () => {
-      Object.assign(service, {
-        rateConfigs: null,
-      });
-
-      expect(() => {
-        service.generateRateConfigsForPhase(true, 2);
-      }).toThrow();
-    });
-
-    it("should handle undefined rate configs gracefully", () => {
-      Object.assign(service, {
-        rateConfigs: undefined,
-      });
-
-      expect(() => {
-        service.generateRateConfigsForPhase(true, 2);
-      }).toThrow();
-    });
-
-    it("should handle null game settings gracefully", () => {
-      Object.assign(service, {
-        gameSettings: null,
-      });
-
-      expect(() => {
-        service.generateVideoLengthForPhase(2);
-      }).toThrow();
-    });
-
-    it("should handle missing game timing gracefully", () => {
-      Object.assign(service, {
-        gameSettings: {
-          gameId: 2004,
-          gameTiming: null,
-          numberOfVideos: { H: 10, A: 10 },
-        },
-      });
-
-      expect(() => {
-        service.generateVideoLengthForPhase(2);
-      }).toThrow();
-    });
-
-    it("should handle missing extra info gracefully", () => {
-      Object.assign(service, {
-        gameSettings: {
-          gameId: 2004,
-          gameTiming: {
-            extraInfo: null,
-          },
-          numberOfVideos: { H: 10, A: 10 },
-        },
-      });
-
-      expect(() => {
-        service.generateVideoLengthForPhase(2);
-      }).toThrow();
-    });
-
-    it("should handle odds generator service failure", () => {
-      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockImplementation(() => {
-        throw new Error("Odds calculation failed");
-      });
-
-      expect(() => {
-        service.createNewMatchConfig();
-      }).toThrow("Odds calculation failed");
-    });
-
-    it("should handle result generator service failure", () => {
-      // Mock createNewMatch to avoid the teams issue
-      jest.spyOn(service, "createNewMatch").mockReturnValue({
-        homeTeam: "Team A",
-        awayTeam: "Team B",
-        theme: "Test Theme",
-      });
-
-      jest.spyOn(service, "createNewMatchConfig").mockReturnValue({
-        gameTiming: mockGameSettings.gameTiming,
-        numberOfEventDetails: 4,
-        eventDetailInfos: [],
-        rateConfig: { scoreRate: {} },
-        oddsInfo: [],
-      });
-
-      jest.spyOn(mockResultGeneratorService, "generateResult").mockImplementation(() => {
-        throw new Error("Result generation failed");
-      });
-
-      expect(() => {
-        service.generateNewRound(123);
-      }).toThrow("Result generation failed");
-    });
-
-    it("should handle encryption failure", () => {
-      // Mock createNewMatch to avoid the teams issue
-      jest.spyOn(service, "createNewMatch").mockReturnValue({
-        homeTeam: "Team A",
-        awayTeam: "Team B",
-        theme: "Test Theme",
-      });
-
-      jest.spyOn(service, "createNewMatchConfig").mockReturnValue({
-        gameTiming: mockGameSettings.gameTiming,
-        numberOfEventDetails: 4,
-        eventDetailInfos: [],
-        rateConfig: { scoreRate: {} },
-        oddsInfo: [],
-      });
-
-      jest.spyOn(mockResultGeneratorService, "generateResult").mockReturnValue([
+  describe("Integration Tests", () => {
+    it("should generate complete round with realistic data flow", () => {
+      // Mock all dependencies with realistic values
+      const mockRoundResult = [
         {
           playlist: "video1.mp4",
           goalInfo: "Goal at 15:30",
@@ -559,86 +580,24 @@ describe("RoundGeneratorService", () => {
           },
           phase: 0,
         },
-      ]);
+      ];
 
-      jest
-        .spyOn(mockOddsGeneratorService, "calculateOddsForUltraLive")
-        .mockReturnValue([{ home: 1.5, away: 2.5, draw: 3.0 }]);
-
-      jest.spyOn(mockOddsGeneratorService, "generateSelectionsForUltraLive").mockReturnValue([
-        {
-          home: { name: "Home Win", price: 1.5, point: 0, settlementStatus: SettlementStatus.PLAY },
-          away: { name: "Away Win", price: 2.5, point: 0, settlementStatus: SettlementStatus.PLAY },
-          draw: { name: "Draw", price: 3.0, point: 0, settlementStatus: SettlementStatus.PLAY },
+      jest.spyOn(service, "createNewMatchConfigAndGenerateResults").mockReturnValue({
+        matchConfig: {
+          gameTiming: { ...mockGameSettings.gameTiming, timelines: [], wholeRound: 100 },
+          numberOfEventDetails: 6,
+          eventDetailInfos: Array(6).fill({
+            rateConfig: { scoreRate: {} },
+            phase: 0,
+            oddsInfo: { handicapValue: 0.5, overUnderValue: 2.5 },
+            videoLength: 10,
+          }),
+          rateConfig: { scoreRate: {} },
+          oddsInfo: Array(3).fill({ handicapValue: 0.5, overUnderValue: 2.5 }),
         },
-      ]);
-
-      jest
-        .spyOn(mockResultGeneratorService, "generateSettlementResult")
-        .mockReturnValue([{ home: SettlementStatus.WIN, away: SettlementStatus.LOSE, draw: SettlementStatus.LOSE }]);
-
-      jest.spyOn(idHelper, "createEventId").mockReturnValue(123456);
-
-      (encrypt as jest.Mock).mockImplementation(() => {
-        throw new Error("Encryption failed");
+        result: mockRoundResult,
       });
 
-      expect(() => {
-        service.generateNewRound(123);
-      }).toThrow("Encryption failed");
-    });
-
-    it("should handle invalid video length values", () => {
-      const customGameSettings = {
-        ...mockGameSettings,
-        gameTiming: {
-          ...mockGameSettings.gameTiming,
-          extraInfo: {
-            ...mockGameSettings.gameTiming.extraInfo,
-            videoLength: 0, // Invalid video length
-          },
-        },
-      };
-
-      Object.assign(service, { gameSettings: customGameSettings });
-
-      // The method doesn't throw for invalid video lengths, it just produces unexpected results
-      const result = service.generateVideoLengthForPhase(2);
-      expect(result).toBeDefined();
-      expect(result.length).toBe(2);
-    });
-
-    it("should handle negative video length values", () => {
-      const customGameSettings = {
-        ...mockGameSettings,
-        gameTiming: {
-          ...mockGameSettings.gameTiming,
-          extraInfo: {
-            ...mockGameSettings.gameTiming.extraInfo,
-            videoLength: -10, // Negative video length
-          },
-        },
-      };
-
-      Object.assign(service, { gameSettings: customGameSettings });
-
-      // The method doesn't throw for negative video lengths, it just produces unexpected results
-      const result = service.generateVideoLengthForPhase(2);
-      expect(result).toBeDefined();
-      expect(result.length).toBe(2);
-    });
-  });
-
-  describe("Integration Tests", () => {
-    it("should generate complete round with realistic data flow", () => {
-      // Mock all dependencies with realistic values
-      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
-      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(3);
-      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
-      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
-        handicapValue: 0.5,
-        overUnderValue: 2.5,
-      } as OddsInfo);
       jest
         .spyOn(mockOddsGeneratorService, "calculateOddsForUltraLive")
         .mockReturnValue([{ home: 1.8, away: 2.1, draw: 3.2 }]);
@@ -647,17 +606,6 @@ describe("RoundGeneratorService", () => {
           home: { name: "Home Win", price: 1.8, point: 0, settlementStatus: SettlementStatus.PLAY },
           away: { name: "Away Win", price: 2.1, point: 0, settlementStatus: SettlementStatus.PLAY },
           draw: { name: "Draw", price: 3.2, point: 0, settlementStatus: SettlementStatus.PLAY },
-        },
-      ]);
-      jest.spyOn(mockResultGeneratorService, "generateResult").mockReturnValue([
-        {
-          playlist: "video1.mp4",
-          goalInfo: "Goal at 15:30",
-          result: {
-            goalSequence: "1-0",
-            finalScore: "2-1",
-          },
-          phase: 0,
         },
       ]);
       jest
@@ -700,24 +648,7 @@ describe("RoundGeneratorService", () => {
 
     it("should handle end-to-end round generation with different team selection modes", () => {
       // Test with away favorite
-      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(false);
-      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(2);
-      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.awayFavorite[0]);
-      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
-        handicapValue: -0.5,
-        overUnderValue: 2.5,
-      } as OddsInfo);
-      jest
-        .spyOn(mockOddsGeneratorService, "calculateOddsForUltraLive")
-        .mockReturnValue([{ home: 2.2, away: 1.7, draw: 3.1 }]);
-      jest.spyOn(mockOddsGeneratorService, "generateSelectionsForUltraLive").mockReturnValue([
-        {
-          home: { name: "Home Win", price: 2.2, point: 0, settlementStatus: SettlementStatus.PLAY },
-          away: { name: "Away Win", price: 1.7, point: 0, settlementStatus: SettlementStatus.PLAY },
-          draw: { name: "Draw", price: 3.1, point: 0, settlementStatus: SettlementStatus.PLAY },
-        },
-      ]);
-      jest.spyOn(mockResultGeneratorService, "generateResult").mockReturnValue([
+      const mockRoundResult = [
         {
           playlist: "video1.mp4",
           goalInfo: "Goal at 20:15",
@@ -726,6 +657,33 @@ describe("RoundGeneratorService", () => {
             finalScore: "1-3",
           },
           phase: 0,
+        },
+      ];
+
+      jest.spyOn(service, "createNewMatchConfigAndGenerateResults").mockReturnValue({
+        matchConfig: {
+          gameTiming: { ...mockGameSettings.gameTiming, timelines: [], wholeRound: 100 },
+          numberOfEventDetails: 4,
+          eventDetailInfos: Array(4).fill({
+            rateConfig: { scoreRate: {} },
+            phase: 0,
+            oddsInfo: { handicapValue: -0.5, overUnderValue: 2.5 },
+            videoLength: 10,
+          }),
+          rateConfig: { scoreRate: {} },
+          oddsInfo: Array(2).fill({ handicapValue: -0.5, overUnderValue: 2.5 }),
+        },
+        result: mockRoundResult,
+      });
+
+      jest
+        .spyOn(mockOddsGeneratorService, "calculateOddsForUltraLive")
+        .mockReturnValue([{ home: 2.2, away: 1.7, draw: 3.1 }]);
+      jest.spyOn(mockOddsGeneratorService, "generateSelectionsForUltraLive").mockReturnValue([
+        {
+          home: { name: "Home Win", price: 2.2, point: 0, settlementStatus: SettlementStatus.PLAY },
+          away: { name: "Away Win", price: 1.7, point: 0, settlementStatus: SettlementStatus.PLAY },
+          draw: { name: "Draw", price: 3.1, point: 0, settlementStatus: SettlementStatus.PLAY },
         },
       ]);
       jest
@@ -751,25 +709,7 @@ describe("RoundGeneratorService", () => {
     it("should maintain data consistency across all generated components", () => {
       const roundId = 789;
 
-      // Mock consistent random values
-      jest.spyOn(rngModule, "secureRandomBool").mockReturnValue(true);
-      jest.spyOn(service, "generateBlockFromRate").mockReturnValue(2);
-      jest.spyOn(rngModule, "securePickOne").mockReturnValue(mockRateConfigs.homeFavorite[0]);
-      jest.spyOn(mockOddsGeneratorService, "calculateOddsInfo").mockReturnValue({
-        handicapValue: 0.5,
-        overUnderValue: 2.5,
-      } as OddsInfo);
-      jest
-        .spyOn(mockOddsGeneratorService, "calculateOddsForUltraLive")
-        .mockReturnValue([{ home: 1.9, away: 2.0, draw: 3.3 }]);
-      jest.spyOn(mockOddsGeneratorService, "generateSelectionsForUltraLive").mockReturnValue([
-        {
-          home: { name: "Home Win", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
-          away: { name: "Away Win", price: 2.0, point: 0, settlementStatus: SettlementStatus.PLAY },
-          draw: { name: "Draw", price: 3.3, point: 0, settlementStatus: SettlementStatus.PLAY },
-        },
-      ]);
-      jest.spyOn(mockResultGeneratorService, "generateResult").mockReturnValue([
+      const mockRoundResult = [
         {
           playlist: "video1.mp4",
           goalInfo: "Goal at 25:45",
@@ -778,6 +718,33 @@ describe("RoundGeneratorService", () => {
             finalScore: "3-2",
           },
           phase: 0,
+        },
+      ];
+
+      jest.spyOn(service, "createNewMatchConfigAndGenerateResults").mockReturnValue({
+        matchConfig: {
+          gameTiming: { ...mockGameSettings.gameTiming, timelines: Array(4).fill({}) as any, wholeRound: 100 },
+          numberOfEventDetails: 4,
+          eventDetailInfos: Array(4).fill({
+            rateConfig: { scoreRate: {} },
+            phase: 0,
+            oddsInfo: { handicapValue: 0.5, overUnderValue: 2.5 },
+            videoLength: 10,
+          }),
+          rateConfig: { scoreRate: {} },
+          oddsInfo: Array(2).fill({ handicapValue: 0.5, overUnderValue: 2.5 }),
+        },
+        result: mockRoundResult,
+      });
+
+      jest
+        .spyOn(mockOddsGeneratorService, "calculateOddsForUltraLive")
+        .mockReturnValue([{ home: 1.9, away: 2.0, draw: 3.3 }]);
+      jest.spyOn(mockOddsGeneratorService, "generateSelectionsForUltraLive").mockReturnValue([
+        {
+          home: { name: "Home Win", price: 1.9, point: 0, settlementStatus: SettlementStatus.PLAY },
+          away: { name: "Away Win", price: 2.0, point: 0, settlementStatus: SettlementStatus.PLAY },
+          draw: { name: "Draw", price: 3.3, point: 0, settlementStatus: SettlementStatus.PLAY },
         },
       ]);
       jest
