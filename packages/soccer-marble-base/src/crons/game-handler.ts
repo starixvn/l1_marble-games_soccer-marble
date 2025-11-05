@@ -62,7 +62,7 @@ export class GameHandler {
       return;
     }
 
-    const newRound = this.roundGeneratorService.generateNewRound(roundId);
+    const newRound = this.roundGeneratorService.generateNewRoundWithRetry(roundId);
 
     await this.roundService.insertRound(newRound as IRound);
     const event = await this.eventService.createNewEvent(newRound, scheduleStartTs);
@@ -93,7 +93,7 @@ export class GameHandler {
     const delay = new Date().getTime() - eventDetail.oddsAvailableTs.getTime();
 
     if (drawIndex > 0 && Math.abs(delay) > maxDelay) {
-      this.logService.logError(`Odds available for event detail ${eventDetailId} is late by: ${delay}ms`);
+      this.logService.logWarning(`Odds available for event detail ${eventDetailId} is late by: ${delay}ms`);
     }
   }
 
@@ -113,7 +113,7 @@ export class GameHandler {
     const delay = new Date().getTime() - eventDetail.scheduleStartTs.getTime();
 
     if (Math.abs(delay) > maxDelay) {
-      this.logService.logError(`Video info available for event detail ${eventDetailId} is late by: ${delay}ms`);
+      this.logService.logWarning(`Video info available for event detail ${eventDetailId} is late by: ${delay}ms`);
     }
   }
 
@@ -129,7 +129,7 @@ export class GameHandler {
     const delay = new Date().getTime() - eventDetail.resultsAvailableTs.getTime();
 
     if (Math.abs(delay) > maxDelay) {
-      this.logService.logError(`Result available for event detail ${eventDetailId} is late by: ${delay}ms`);
+      this.logService.logWarning(`Result available for event detail ${eventDetailId} is late by: ${delay}ms`);
     }
 
     if (drawIndex === this.getLastEventDetailIndex(round)) {

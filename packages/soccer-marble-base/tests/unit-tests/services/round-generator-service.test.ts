@@ -753,4 +753,182 @@ describe("RoundGeneratorService", () => {
       expect(result).toEqual(expectedResult);
     });
   });
+
+  describe("generateNewRoundWithRetry", () => {
+    const roundId = 1;
+    const mockRound = {
+      gameId: 2001,
+      eventID: 123,
+      roundId,
+      homeTeam: "Team A",
+      awayTeam: "Team B",
+      theme: "2001",
+      matchConfig: {} as any,
+      odds: [],
+      encryptedResult: "encrypted_data",
+      encryptedSettlementResult: "encrypted_data",
+      encryptedSelections: "encrypted_data",
+      ended: false,
+    };
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it("should successfully generate new round on first attempt", () => {
+      // Arrange
+      const generateNewRoundSpy = jest.spyOn(service, "generateNewRound").mockReturnValue(mockRound as any);
+      const logSpy = jest.spyOn(mockContainer.logService, "log");
+
+      // Act
+      const result = service.generateNewRoundWithRetry(roundId);
+
+      // Assert
+      expect(result).toEqual(mockRound);
+      expect(generateNewRoundSpy).toHaveBeenCalledTimes(1);
+      expect(generateNewRoundSpy).toHaveBeenCalledWith(roundId);
+      expect(logSpy).not.toHaveBeenCalled();
+    });
+
+    it("should retry and succeed on second attempt", () => {
+      // Arrange
+      const generateNewRoundSpy = jest
+        .spyOn(service, "generateNewRound")
+        .mockImplementationOnce(() => {
+          throw new Error("First attempt failed");
+        })
+        .mockReturnValueOnce(mockRound as any);
+      const logSpy = jest.spyOn(mockContainer.logService, "log");
+      const logWarningSpy = jest.spyOn(mockContainer.logService, "logWarning");
+
+      // Act
+      const result = service.generateNewRoundWithRetry(roundId);
+
+      // Assert
+      expect(result).toEqual(mockRound);
+      expect(generateNewRoundSpy).toHaveBeenCalledTimes(2);
+      expect(logWarningSpy).toHaveBeenCalledWith(
+        "Error generating new round (attempt 1/100): Error: First attempt failed"
+      );
+      expect(logSpy).toHaveBeenCalledWith("Successfully generated new round after 2 attempts", "info");
+    });
+
+    it("should retry multiple times before succeeding", () => {
+      // Arrange
+      const generateNewRoundSpy = jest
+        .spyOn(service, "generateNewRound")
+        .mockImplementationOnce(() => {
+          throw new Error("Attempt 1 failed");
+        })
+        .mockImplementationOnce(() => {
+          throw new Error("Attempt 2 failed");
+        })
+        .mockImplementationOnce(() => {
+          throw new Error("Attempt 3 failed");
+        })
+        .mockReturnValueOnce(mockRound as any);
+      const logSpy = jest.spyOn(mockContainer.logService, "log");
+      const logWarningSpy = jest.spyOn(mockContainer.logService, "logWarning");
+
+      // Act
+      const result = service.generateNewRoundWithRetry(roundId);
+
+      // Assert
+      expect(result).toEqual(mockRound);
+      expect(generateNewRoundSpy).toHaveBeenCalledTimes(4);
+      expect(logWarningSpy).toHaveBeenCalledTimes(3);
+      expect(logSpy).toHaveBeenCalledWith("Successfully generated new round after 4 attempts", "info");
+    });
+
+    it("should throw error after reaching max attempts", () => {
+      // Arrange
+      const maxAttempts = 3;
+      const error = new Error("Generation failed");
+      const generateNewRoundSpy = jest.spyOn(service, "generateNewRound").mockImplementation(() => {
+        throw error;
+      });
+      const logWarningSpy = jest.spyOn(mockContainer.logService, "logWarning");
+
+      // Act & Assert
+      expect(() => service.generateNewRoundWithRetry(roundId, maxAttempts)).toThrow(
+        `Failed to generate new round after ${maxAttempts} attempts. Last error: Error: Generation failed`
+      );
+      expect(generateNewRoundSpy).toHaveBeenCalledTimes(maxAttempts);
+      expect(logWarningSpy).toHaveBeenCalledTimes(maxAttempts);
+    });
+
+    it("should use default maxAttempts of 100", () => {
+      // Arrange
+      const error = new Error("Generation failed");
+      const generateNewRoundSpy = jest.spyOn(service, "generateNewRound").mockImplementation(() => {
+        throw error;
+      });
+
+      // Act & Assert
+      expect(() => service.generateNewRoundWithRetry(roundId)).toThrow(
+        "Failed to generate new round after 100 attempts. Last error: Error: Generation failed"
+      );
+      expect(generateNewRoundSpy).toHaveBeenCalledTimes(100);
+    });
+
+    it("should log each failed attempt with correct attempt number", () => {
+      // Arrange
+      const maxAttempts = 5;
+      const error = new Error("Test error");
+      jest.spyOn(service, "generateNewRound").mockImplementation(() => {
+        throw error;
+      });
+      const logWarningSpy = jest.spyOn(mockContainer.logService, "logWarning");
+
+      // Act
+      try {
+        service.generateNewRoundWithRetry(roundId, maxAttempts);
+      } catch (e) {
+        // Expected to throw
+      }
+
+      // Assert
+      expect(logWarningSpy).toHaveBeenNthCalledWith(1, "Error generating new round (attempt 1/5): Error: Test error");
+      expect(logWarningSpy).toHaveBeenNthCalledWith(2, "Error generating new round (attempt 2/5): Error: Test error");
+      expect(logWarningSpy).toHaveBeenNthCalledWith(3, "Error generating new round (attempt 3/5): Error: Test error");
+      expect(logWarningSpy).toHaveBeenNthCalledWith(4, "Error generating new round (attempt 4/5): Error: Test error");
+      expect(logWarningSpy).toHaveBeenNthCalledWith(5, "Error generating new round (attempt 5/5): Error: Test error");
+    });
+
+    it("should handle non-Error objects as errors", () => {
+      // Arrange
+      const maxAttempts = 2;
+      const generateNewRoundSpy = jest.spyOn(service, "generateNewRound").mockImplementation(() => {
+        throw "String error";
+      });
+
+      // Act & Assert
+      expect(() => service.generateNewRoundWithRetry(roundId, maxAttempts)).toThrow(
+        "Failed to generate new round after 2 attempts. Last error: String error"
+      );
+      expect(generateNewRoundSpy).toHaveBeenCalledTimes(maxAttempts);
+    });
+
+    it("should work with custom maxAttempts parameter", () => {
+      // Arrange
+      const customMaxAttempts = 50;
+      const generateNewRoundSpy = jest
+        .spyOn(service, "generateNewRound")
+        .mockImplementationOnce(() => {
+          throw new Error("Failed");
+        })
+        .mockReturnValueOnce(mockRound as any);
+      const logWarningSpy = jest.spyOn(mockContainer.logService, "logWarning");
+
+      // Act
+      const result = service.generateNewRoundWithRetry(roundId, customMaxAttempts);
+
+      // Assert
+      expect(result).toEqual(mockRound);
+      expect(generateNewRoundSpy).toHaveBeenCalledTimes(2);
+      expect(logWarningSpy).toHaveBeenCalledWith(
+        `Error generating new round (attempt 1/${customMaxAttempts}): Error: Failed`
+      );
+    });
+  });
 });

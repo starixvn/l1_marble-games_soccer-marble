@@ -174,7 +174,7 @@ describe("GameHandler", () => {
       mockGameData.gameConfig = {
         config: { enabled: true },
       } as any;
-      mockRoundGeneratorService.generateNewRound.mockReturnValue(mockRound);
+      mockRoundGeneratorService.generateNewRoundWithRetry.mockReturnValue(mockRound);
       mockRoundService.insertRound.mockResolvedValue(undefined);
       mockEventService.createNewEvent.mockResolvedValue(mockEvent);
       jest.spyOn(gameHandler, "loadEventDetailsFromEventId").mockResolvedValue(mockEventDetails);
@@ -184,7 +184,7 @@ describe("GameHandler", () => {
       await gameHandler.createUpcomingRoundAndEvent(roundId, scheduleStartTs);
 
       // Assert
-      expect(mockRoundGeneratorService.generateNewRound).toHaveBeenCalledWith(roundId);
+      expect(mockRoundGeneratorService.generateNewRoundWithRetry).toHaveBeenCalledWith(roundId);
       expect(mockRoundService.insertRound).toHaveBeenCalledWith(mockRound);
       expect(mockEventService.createNewEvent).toHaveBeenCalledWith(mockRound, scheduleStartTs);
       expect(gameHandler.loadEventDetailsFromEventId).toHaveBeenCalledWith(12345);
@@ -352,7 +352,7 @@ describe("GameHandler", () => {
       await gameHandler.handleOddsAvailableForEventDetail(drawIndex, eventDetailId, roundId);
 
       // Assert
-      expect(mockLogService.logError).toHaveBeenCalledWith(
+      expect(mockLogService.logWarning).toHaveBeenCalledWith(
         expect.stringContaining(`Odds available for event detail ${eventDetailId} is late by:`)
       );
     });
@@ -428,7 +428,7 @@ describe("GameHandler", () => {
       await gameHandler.handleVideoInfoAvailableForEventDetail(drawIndex, eventDetailId, roundId);
 
       // Assert
-      expect(mockLogService.logError).toHaveBeenCalledWith(
+      expect(mockLogService.logWarning).toHaveBeenCalledWith(
         expect.stringContaining(`Video info available for event detail ${eventDetailId} is late by:`)
       );
     });

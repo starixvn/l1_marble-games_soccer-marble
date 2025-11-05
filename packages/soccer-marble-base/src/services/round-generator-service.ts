@@ -5,6 +5,7 @@ import { ResultGeneratorService } from "./result-generator-service";
 import { encrypt, idHelper } from "@soccer-marble/shared-utils";
 import { GameData } from "../crons/game-data";
 import { oddsHelper } from "../helpers";
+import { logger } from "sc-common";
 
 export class RoundGeneratorService {
   protected readonly gameSettings: GameSettings;
@@ -12,6 +13,7 @@ export class RoundGeneratorService {
   protected readonly gameData: GameData;
   protected readonly oddsGeneratorService: OddsGeneratorService;
   protected readonly resultGeneratorService: ResultGeneratorService;
+  protected readonly logService: typeof logger;
 
   constructor(container: AppContainer) {
     this.gameSettings = container.gameSettings;
@@ -19,6 +21,7 @@ export class RoundGeneratorService {
     this.gameData = container.gameData;
     this.oddsGeneratorService = container.oddsGeneratorService;
     this.resultGeneratorService = container.resultGeneratorService;
+    this.logService = container.logService;
   }
 
   createNewMatchFromRandomTeams() {
@@ -115,5 +118,28 @@ export class RoundGeneratorService {
       encryptedSelections: encrypt(selections),
       ended: false,
     } as GameRunningRound;
+  }
+
+  generateNewRoundWithRetry(roundId: number, maxAttempts = 100): GameRunningRound {
+    let lastError: unknown;
+    const attemptToLog = 1;
+
+    for (let attemptCount = 1; attemptCount <= maxAttempts; attemptCount++) {
+      try {
+        const newRound = this.generateNewRound(roundId);
+
+        if (attemptCount > attemptToLog) {
+          this.logService.log(`Successfully generated new round after ${attemptCount} attempts`, "info");
+        }
+
+        return newRound;
+      } catch (error) {
+        lastError = error;
+
+        this.logService.logWarning(`Error generating new round (attempt ${attemptCount}/${maxAttempts}): ${error}`);
+      }
+    }
+
+    throw new Error(`Failed to generate new round after ${maxAttempts} attempts. Last error: ${lastError}`);
   }
 }

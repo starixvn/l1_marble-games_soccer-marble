@@ -215,8 +215,7 @@ export class ResultGeneratorService {
     const currentNumberOfVideos = numberOfVideos[result] || this.gameSettings.numberOfVideos[result];
 
     if (!currentNumberOfVideos) {
-      this.logService.logError(`Result ${result} not found in numberOfVideos config, fallback to default video`);
-      return resultHelper.generateVideoName(result, 1, ignoredVideo);
+      throw new Error(`Result ${result} not found in numberOfVideos config`);
     }
 
     return resultHelper.generateVideoName(result, currentNumberOfVideos, ignoredVideo);

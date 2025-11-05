@@ -36,7 +36,7 @@ function calculateRTP(ROUND_IN_BATCH: number) {
   let totalAllWins = 0;
 
   for (let i = 0; i < ROUND_IN_BATCH; i++) {
-    const round = roundGeneratorService.generateNewRound(i);
+    const round = roundGeneratorService.generateNewRoundWithRetry(i);
     const eventDetailInfos = round.matchConfig.eventDetailInfos;
     const allEventDetailsOdds = round.odds;
     const allEventDetailsSettlementResults = cryptoHelper.decrypt(round.encryptedSettlementResult);
