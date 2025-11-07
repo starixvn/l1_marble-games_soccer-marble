@@ -22,7 +22,7 @@ describe("RoundGeneratorService", () => {
         oddsDuration: 10,
         resultDuration: 5,
         halfTimeDuration: 15,
-        afterGoalDuration: 5,
+        preloadDuration: 5,
         blockBetDuration: 3,
       },
     } as GameTiming,
@@ -170,22 +170,22 @@ describe("RoundGeneratorService", () => {
     it("should calculate correct timeline progression", () => {
       const videoLengths = [6, 12, 18];
       const oddsDuration = mockGameSettings.gameTiming.extraInfo.oddsDuration;
-      const afterGoalDuration = mockGameSettings.gameTiming.extraInfo.afterGoalDuration;
+      const preloadDuration = mockGameSettings.gameTiming.extraInfo.preloadDuration;
       const blockBetDuration = mockGameSettings.gameTiming.extraInfo.blockBetDuration;
 
       const result = service.generateTimelineForFirstHalf(videoLengths);
 
       expect(result[0].OddsAvailable).toBe(0);
       expect(result[0].ScheduleStart).toBe(oddsDuration);
-      expect(result[0].ResultAvailable).toBe(result[0].ScheduleStart + afterGoalDuration + videoLengths[0]);
+      expect(result[0].ResultAvailable).toBe(result[0].ScheduleStart + preloadDuration + videoLengths[0]);
 
       expect(result[1].OddsAvailable).toBe(result[0].ScheduleStart + blockBetDuration);
       expect(result[1].ScheduleStart).toBe(result[0].ResultAvailable);
-      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + afterGoalDuration + videoLengths[1]);
+      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + preloadDuration + videoLengths[1]);
 
       expect(result[2].OddsAvailable).toBe(result[1].ScheduleStart + blockBetDuration);
       expect(result[2].ScheduleStart).toBe(result[1].ResultAvailable);
-      expect(result[2].ResultAvailable).toBe(result[1].ResultAvailable + afterGoalDuration + videoLengths[2]);
+      expect(result[2].ResultAvailable).toBe(result[1].ResultAvailable + preloadDuration + videoLengths[2]);
     });
   });
 
@@ -198,22 +198,22 @@ describe("RoundGeneratorService", () => {
         { OddsAvailable: 19, ScheduleStart: 34, ResultAvailable: 55 },
       ];
       const halfTimeDuration = mockGameSettings.gameTiming.extraInfo.halfTimeDuration;
-      const afterGoalDuration = mockGameSettings.gameTiming.extraInfo.afterGoalDuration;
+      const preloadDuration = mockGameSettings.gameTiming.extraInfo.preloadDuration;
       const blockBetDuration = mockGameSettings.gameTiming.extraInfo.blockBetDuration;
 
       const result = service.generateTimelineForSecondHalf(videoLengths, fhTimelines);
 
       expect(result[0].OddsAvailable).toBe(fhTimelines[fhTimelines.length - 1].ResultAvailable);
       expect(result[0].ScheduleStart).toBe(result[0].OddsAvailable + halfTimeDuration);
-      expect(result[0].ResultAvailable).toBe(result[0].ScheduleStart + videoLengths[0] + afterGoalDuration);
+      expect(result[0].ResultAvailable).toBe(result[0].ScheduleStart + videoLengths[0] + preloadDuration);
 
       expect(result[1].OddsAvailable).toBe(result[0].ScheduleStart + blockBetDuration);
       expect(result[1].ScheduleStart).toBe(result[0].ResultAvailable);
-      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + videoLengths[1] + afterGoalDuration);
+      expect(result[1].ResultAvailable).toBe(result[1].ScheduleStart + videoLengths[1] + preloadDuration);
 
       expect(result[2].OddsAvailable).toBe(result[1].ScheduleStart + blockBetDuration);
       expect(result[2].ScheduleStart).toBe(result[1].ResultAvailable);
-      expect(result[2].ResultAvailable).toBe(result[2].ScheduleStart + videoLengths[2] + afterGoalDuration);
+      expect(result[2].ResultAvailable).toBe(result[2].ScheduleStart + videoLengths[2] + preloadDuration);
     });
   });
 

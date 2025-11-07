@@ -97,7 +97,7 @@ const gameSettings = {
       oddsDuration: 10,
       resultDuration: 10,
       halfTimeDuration: 20,
-      afterGoalDuration: 3,
+      preloadDuration: 3,
     },
   },
   teams: [

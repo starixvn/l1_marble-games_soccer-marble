@@ -8,7 +8,7 @@ export type GameTiming = {
     oddsDuration: number;
     resultDuration: number;
     halfTimeDuration: number;
-    afterGoalDuration: number;
+    preloadDuration: number;
     blockBetDuration: number;
   };
 };
