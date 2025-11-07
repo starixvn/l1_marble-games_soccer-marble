@@ -16,7 +16,10 @@
         "ScheduleStart": 55,
         "ResultAvailable": 90
       }
-    ]
+    ],
+    "extraInfo": {
+      "preloadDuration": 3
+    }
   },
   "teams": [
     "clb_rma",

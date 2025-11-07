@@ -43,6 +43,9 @@ describe("EventService", () => {
               { OddsAvailable: 1, ScheduleStart: 2, ResultAvailable: 3 },
             ],
             wholeRound: 60,
+            extraInfo: {
+              preloadDuration: 1,
+            },
           },
         },
         theme: "2001",
@@ -122,6 +125,9 @@ describe("EventService", () => {
               { OddsAvailable: 10, ScheduleStart: 20, ResultAvailable: 30 },
               { OddsAvailable: 40, ScheduleStart: 50, ResultAvailable: 60 },
             ],
+            extraInfo: {
+              preloadDuration: 1,
+            },
           },
           eventDetailInfos: [{ phase: 0 }, { phase: 1 }],
         },
@@ -148,6 +154,7 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(startTime.getTime() + 10 * 1000),
         scheduleStartTs: new Date(startTime.getTime() + 20 * 1000),
         resultsAvailableTs: new Date(startTime.getTime() + 30 * 1000),
+        preloadDurationMs: 1000,
         hasResults: false,
         phase: 0,
       });
@@ -158,6 +165,7 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(startTime.getTime() + 40 * 1000),
         scheduleStartTs: new Date(startTime.getTime() + 50 * 1000),
         resultsAvailableTs: new Date(startTime.getTime() + 60 * 1000),
+        preloadDurationMs: 1000,
         hasResults: false,
         phase: 1,
       });
@@ -173,6 +181,9 @@ describe("EventService", () => {
         matchConfig: {
           gameTiming: {
             timelines: [{ OddsAvailable: 5, ScheduleStart: 10, ResultAvailable: 15 }],
+            extraInfo: {
+              preloadDuration: 1,
+            },
           },
           eventDetailInfos: [{ phase: 0 }],
         },
@@ -191,6 +202,7 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(startTime.getTime() + 5 * 1000),
         scheduleStartTs: new Date(startTime.getTime() + 10 * 1000),
         resultsAvailableTs: new Date(startTime.getTime() + 15 * 1000),
+        preloadDurationMs: 1000,
         hasResults: false,
         phase: 0,
       });

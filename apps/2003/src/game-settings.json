@@ -16,7 +16,10 @@
         "ScheduleStart": 100,
         "ResultAvailable": 140
       }
-    ]
+    ],
+    "extraInfo": {
+      "preloadDuration": 10
+    }
   },
   "teams": [
     "clb_ars",

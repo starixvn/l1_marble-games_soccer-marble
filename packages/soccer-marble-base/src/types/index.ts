@@ -75,6 +75,7 @@ export type EventDetail = {
     goalSequence: string;
     finalScore: string;
   };
+  preloadDurationMs: number;
   hasResults: boolean;
   phase: number;
 };
