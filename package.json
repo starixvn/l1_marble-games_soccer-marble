@@ -19,9 +19,9 @@
     "update:deps": "npm-check-updates -u && npm run update:deps --workspaces --if-present"
   },
   "devDependencies": {
-    "@babel/core": "7.28.4",
+    "@babel/core": "7.28.5",
     "@babel/plugin-syntax-import-assertions": "7.27.1",
-    "@babel/preset-env": "7.28.3",
+    "@babel/preset-env": "7.28.5",
     "@types/jest": "30.0.0",
     "@types/node": "24.10.0",
     "babel-jest": "30.2.0",
