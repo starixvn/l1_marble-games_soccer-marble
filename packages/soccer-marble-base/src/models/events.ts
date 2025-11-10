@@ -1,6 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 import { SettlementStatus } from "../types";
 
+export type EventConfig = {
+  preloadDurationMs: number;
+};
 export interface IEvent {
   _id: mongoose.Schema.Types.ObjectId;
   eventID: number;
@@ -11,6 +14,7 @@ export interface IEvent {
   gameId: number;
   scheduleStartTs: Date;
   scheduleEndTs: Date;
+  eventConfig: EventConfig;
 }
 
 // Define the Selection Schema
@@ -36,6 +40,7 @@ const EventSchema = new Schema<IEvent>({
   theme: { type: String, required: true },
   gameId: { type: Number, required: true },
   eventDetails: [mongoose.Schema.Types.ObjectId],
+  eventConfig: { type: Schema.Types.Mixed, required: true },
   scheduleStartTs: { type: Date, required: true },
   scheduleEndTs: { type: Date, required: true },
 });

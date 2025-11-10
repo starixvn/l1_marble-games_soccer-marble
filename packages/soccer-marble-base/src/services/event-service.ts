@@ -20,11 +20,12 @@ export class EventService {
 
   async createNewEvent(roundData: GameRunningRound, scheduleStartTs: Date) {
     const eventId = roundData.eventID;
+    const preloadDuration = roundData.matchConfig.gameTiming?.extraInfo?.preloadDuration || 0;
     const eventStartTimeTs = Math.max(scheduleStartTs.getTime(), new Date().getTime() + 2000); // 2 seconds delay
     const wholeRound = roundData.matchConfig.gameTiming.wholeRound;
     const eventDetails = await this.createNewEventDetails(eventId, new Date(eventStartTimeTs), roundData);
 
-    const event = {
+    const event: Omit<IEvent, "_id"> = {
       eventID: eventId,
       eventNameAKey: roundData.homeTeam,
       eventNameBKey: roundData.awayTeam,
@@ -33,6 +34,9 @@ export class EventService {
       eventDetails: eventDetails.map((eventDetail) => eventDetail._id),
       scheduleStartTs: new Date(eventStartTimeTs),
       scheduleEndTs: new Date(eventStartTimeTs + wholeRound * 1000),
+      eventConfig: {
+        preloadDurationMs: preloadDuration * 1000,
+      },
     };
 
     return this.eventRepository.create(event);
@@ -40,7 +44,6 @@ export class EventService {
 
   async createNewEventDetails(eventId: number, startTime: Date, roundData: GameRunningRound): Promise<IEventDetail[]> {
     const timelines = roundData.matchConfig.gameTiming.timelines;
-    const preloadDuration = roundData.matchConfig.gameTiming?.extraInfo?.preloadDuration || 0;
 
     return Promise.all(
       timelines.map((timeline, index) => {
@@ -51,7 +54,6 @@ export class EventService {
           resultsAvailableTs: new Date(startTime.getTime() + timeline.ResultAvailable * 1000),
           hasResults: false,
           phase: roundData.matchConfig.eventDetailInfos[index].phase,
-          preloadDurationMs: preloadDuration * 1000,
         };
 
         return this.eventDetailsRepository.create(eventDetail);

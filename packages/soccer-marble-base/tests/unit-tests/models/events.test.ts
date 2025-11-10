@@ -11,6 +11,9 @@ describe("Event Model", () => {
       gameId: 1,
       eventDetails: [],
       scheduleStartTs: new Date(),
+      eventConfig: {
+        preloadDurationMs: 1000,
+      },
     });
 
     expect(event.eventID).toBe(1);
@@ -19,6 +22,9 @@ describe("Event Model", () => {
     expect(event.gameId).toBe(1);
     expect(event.eventDetails).toEqual([]);
     expect(event.scheduleStartTs).toBeInstanceOf(Date);
+    expect(event.eventConfig).toEqual({
+      preloadDurationMs: 1000,
+    });
   });
 
   it("should verify required properties", () => {
@@ -31,6 +37,7 @@ describe("Event Model", () => {
     expect(validationError?.errors).toHaveProperty("eventNameBKey");
     expect(validationError?.errors).toHaveProperty("gameId");
     expect(validationError?.errors).toHaveProperty("scheduleStartTs");
+    expect(validationError?.errors).toHaveProperty("eventConfig");
   });
 
   it("should verify property types", () => {
@@ -47,6 +54,7 @@ describe("Event Model", () => {
     expect(validationError).toBeDefined();
     expect(validationError?.errors).toHaveProperty("eventID");
     expect(validationError?.errors).toHaveProperty("scheduleStartTs");
+    expect(validationError?.errors).toHaveProperty("eventConfig");
   });
 });
 

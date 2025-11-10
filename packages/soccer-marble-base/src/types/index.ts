@@ -75,7 +75,6 @@ export type EventDetail = {
     goalSequence: string;
     finalScore: string;
   };
-  preloadDurationMs: number;
   hasResults: boolean;
   phase: number;
 };
@@ -93,15 +92,6 @@ export type EventDetailResult = {
 export type RoundResult = EventDetailResult[];
 export type DrawSettlementResult = Record<string, SettlementStatus>;
 export type RoundSettlementResult = DrawSettlementResult[];
-
-export type Event = {
-  eventID: number;
-  eventNameAKey: string;
-  eventNameBKey: string;
-  gameId: number;
-  eventDetails: EventDetail[];
-  scheduleStartTs: Date;
-};
 
 export interface AppContainer {
   appConfigs: any;

@@ -77,6 +77,9 @@ describe("EventService", () => {
           gameId: 2001,
           theme: "2001",
           eventDetails: ["id1", "id2"],
+          eventConfig: {
+            preloadDurationMs: 1000,
+          },
         })
       );
       expect(result).toEqual({ eventID: 123 });
@@ -154,7 +157,6 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(startTime.getTime() + 10 * 1000),
         scheduleStartTs: new Date(startTime.getTime() + 20 * 1000),
         resultsAvailableTs: new Date(startTime.getTime() + 30 * 1000),
-        preloadDurationMs: 1000,
         hasResults: false,
         phase: 0,
       });
@@ -165,7 +167,6 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(startTime.getTime() + 40 * 1000),
         scheduleStartTs: new Date(startTime.getTime() + 50 * 1000),
         resultsAvailableTs: new Date(startTime.getTime() + 60 * 1000),
-        preloadDurationMs: 1000,
         hasResults: false,
         phase: 1,
       });
@@ -202,7 +203,6 @@ describe("EventService", () => {
         oddsAvailableTs: new Date(startTime.getTime() + 5 * 1000),
         scheduleStartTs: new Date(startTime.getTime() + 10 * 1000),
         resultsAvailableTs: new Date(startTime.getTime() + 15 * 1000),
-        preloadDurationMs: 1000,
         hasResults: false,
         phase: 0,
       });
