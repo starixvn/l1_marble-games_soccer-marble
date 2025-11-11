@@ -16,6 +16,7 @@ COPY package.json package-lock.json nx.json ./
 COPY --from=builder /app/package-lock.json ./package-lock.json
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/apps ./apps
+RUN npm run reg
 RUN --mount=type=cache,target=/root/.npm npm install --omit=dev --ignore-scripts
 RUN find . -type f -not -name "package.json" -not -path "*/dist/*" -not -path "*/node_modules/*" -delete && \
     find . -type f -name "*.d.ts" -delete && \
