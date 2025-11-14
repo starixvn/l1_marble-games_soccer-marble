@@ -79,9 +79,7 @@ export class EventService {
   }
 
   async fetchEventWithRetries(eventId: number): Promise<IEvent> {
-    const event = await retryHelper.retry(
-      async () => await this.eventRepository.findOne({ eventID: eventId }).lean().exec()
-    );
+    const event = await retryHelper.retry(async () => this.eventRepository.findOne({ eventID: eventId }).lean().exec());
 
     if (!event) {
       this.logService.logError(`Event not found for eventId ${eventId}`);
