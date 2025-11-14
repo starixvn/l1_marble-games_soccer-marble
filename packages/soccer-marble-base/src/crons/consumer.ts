@@ -45,7 +45,7 @@ export class Consumer {
         if (upcomingEvents.length < this.gameSettings.upcomingEvents) {
           const lastRoundId = await this.roundService.initializeRoundId();
           const lastEventId = idHelper.createEventId(this.gameSettings.gameId, lastRoundId);
-          const lastEvent = await this.eventService.fetchEvent(lastEventId, true);
+          const lastEvent = lastRoundId > 0 ? await this.eventService.fetchEventWithRetries(lastEventId) : null;
 
           const upcomingRoundId = lastRoundId + 1;
           const upcomingScheduleStartTs = this.calculateUpcomingScheduleStartTs(lastEvent);

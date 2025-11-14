@@ -4,6 +4,7 @@ import { IEventDetail } from "../models/event-details";
 import { IEvent } from "../models/events";
 import { GameSettings, AppContainer, EventDetail, GameRunningRound } from "../types";
 import { logger } from "sc-common";
+import { retryHelper } from "@soccer-marble/shared-utils";
 
 export class EventService {
   protected readonly eventRepository: typeof EventModel;
@@ -66,10 +67,23 @@ export class EventService {
     await this.eventDetailsRepository.updateOne({ _id: eventDetail._id }, { $set: updateFields });
   }
 
-  async fetchEvent(eventId: number, nullable = false): Promise<IEvent | null> {
+  async fetchEvent(eventId: number): Promise<IEvent> {
     const event = await this.eventRepository.findOne({ eventID: eventId }).lean().exec();
 
-    if (!event && !nullable) {
+    if (!event) {
+      this.logService.logError(`Event not found for eventId ${eventId}`);
+      throw new Error(`Event not found for eventId ${eventId}`);
+    }
+
+    return event;
+  }
+
+  async fetchEventWithRetries(eventId: number): Promise<IEvent> {
+    const event = await retryHelper.retry(
+      async () => await this.eventRepository.findOne({ eventID: eventId }).lean().exec()
+    );
+
+    if (!event) {
       this.logService.logError(`Event not found for eventId ${eventId}`);
       throw new Error(`Event not found for eventId ${eventId}`);
     }

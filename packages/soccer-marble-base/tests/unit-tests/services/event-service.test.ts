@@ -1,5 +1,6 @@
 import { EventService } from "../../../src/services/event-service";
 import { mockContainer } from "../global-stubs";
+import { retryHelper } from "@soccer-marble/shared-utils";
 
 describe("EventService", () => {
   let eventService: EventService;
@@ -281,33 +282,84 @@ describe("EventService", () => {
       // Assert
       expect(mockLogService.logError).toHaveBeenCalledWith("Event not found for eventId 123");
     });
+  });
 
-    it("should return null if event not found and nullable is true", async () => {
-      // Arrange
-      mockEventRepository.findOne.mockReturnThis();
-      mockEventRepository.lean.mockReturnThis();
-      mockEventRepository.exec.mockResolvedValue(null);
-
-      // Act
-      const result = await eventService.fetchEvent(123, true);
-
-      // Assert
-      expect(result).toBeNull();
-      expect(mockLogService.logError).not.toHaveBeenCalled();
-    });
-
-    it("should return event if found even when nullable is true", async () => {
+  describe("fetchEventWithRetries", () => {
+    it("should return event if found on first try", async () => {
       // Arrange
       const fakeEvent = { eventID: 123 };
+      const retrySpy = jest.spyOn(retryHelper, "retry").mockImplementation(async (fn: any) => {
+        return await fn();
+      });
       mockEventRepository.findOne.mockReturnThis();
       mockEventRepository.lean.mockReturnThis();
       mockEventRepository.exec.mockResolvedValue(fakeEvent);
 
       // Act
-      const result = await eventService.fetchEvent(123, true);
+      const result = await eventService.fetchEventWithRetries(123);
+
+      // Assert
+      expect(retrySpy).toHaveBeenCalledWith(expect.any(Function));
+      expect(result).toEqual(fakeEvent);
+      retrySpy.mockRestore();
+    });
+
+    it("should retry and return event if found after retries", async () => {
+      // Arrange
+      const fakeEvent = { eventID: 456 };
+      let attemptCount = 0;
+      const retrySpy = jest.spyOn(retryHelper, "retry").mockImplementation(async (fn: any) => {
+        attemptCount++;
+        const result = await fn();
+        if (attemptCount < 3 && !result) {
+          return await fn(); // Simulate retry
+        }
+        return result;
+      });
+      mockEventRepository.findOne.mockReturnThis();
+      mockEventRepository.lean.mockReturnThis();
+      mockEventRepository.exec.mockResolvedValueOnce(null).mockResolvedValueOnce(fakeEvent);
+
+      // Act
+      const result = await eventService.fetchEventWithRetries(456);
 
       // Assert
       expect(result).toEqual(fakeEvent);
+      retrySpy.mockRestore();
+    });
+
+    it("should log and throw if event not found after all retries", async () => {
+      // Arrange
+      const retrySpy = jest.spyOn(retryHelper, "retry").mockImplementation(async (fn: any) => {
+        return await fn();
+      });
+      mockEventRepository.findOne.mockReturnThis();
+      mockEventRepository.lean.mockReturnThis();
+      mockEventRepository.exec.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(eventService.fetchEventWithRetries(789)).rejects.toThrow("Event not found for eventId 789");
+      expect(mockLogService.logError).toHaveBeenCalledWith("Event not found for eventId 789");
+      expect(retrySpy).toHaveBeenCalledWith(expect.any(Function));
+      retrySpy.mockRestore();
+    });
+
+    it("should call repository with correct eventId", async () => {
+      // Arrange
+      const fakeEvent = { eventID: 999 };
+      const retrySpy = jest.spyOn(retryHelper, "retry").mockImplementation(async (fn: any) => {
+        return await fn();
+      });
+      mockEventRepository.findOne.mockReturnThis();
+      mockEventRepository.lean.mockReturnThis();
+      mockEventRepository.exec.mockResolvedValue(fakeEvent);
+
+      // Act
+      await eventService.fetchEventWithRetries(999);
+
+      // Assert
+      expect(mockEventRepository.findOne).toHaveBeenCalledWith({ eventID: 999 });
+      retrySpy.mockRestore();
     });
   });
 

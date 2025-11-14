@@ -69,7 +69,7 @@ describe("Consumer", () => {
         mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
         mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
         jest.spyOn(idHelper, "createEventId").mockReturnValue(lastEventId);
-        mockEventService.fetchEvent.mockResolvedValue(lastEvent);
+        mockEventService.fetchEventWithRetries.mockResolvedValue(lastEvent);
         mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
 
         // Act
@@ -79,7 +79,7 @@ describe("Consumer", () => {
         expect(mockEventService.fetchAllUpcomingEvents).toHaveBeenCalled();
         expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
         expect(idHelper.createEventId).toHaveBeenCalledWith(mockGameSettings.gameId, lastRoundId);
-        expect(mockEventService.fetchEvent).toHaveBeenCalledWith(lastEventId, true);
+        expect(mockEventService.fetchEventWithRetries).toHaveBeenCalledWith(lastEventId);
         expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(
           upcomingRoundId,
           expectedScheduleStartTs
@@ -102,7 +102,7 @@ describe("Consumer", () => {
         mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
         mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
         jest.spyOn(idHelper, "createEventId").mockReturnValue(lastEventId);
-        mockEventService.fetchEvent.mockResolvedValue(lastEvent);
+        mockEventService.fetchEventWithRetries.mockResolvedValue(lastEvent);
         mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
 
         // Act
@@ -131,7 +131,7 @@ describe("Consumer", () => {
         mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
         mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
         jest.spyOn(idHelper, "createEventId").mockReturnValue(lastEventId);
-        mockEventService.fetchEvent.mockResolvedValue(lastEvent);
+        mockEventService.fetchEventWithRetries.mockResolvedValue(lastEvent);
         mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
 
         // Act
