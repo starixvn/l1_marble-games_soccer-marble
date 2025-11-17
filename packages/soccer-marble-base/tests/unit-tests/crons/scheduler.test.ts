@@ -40,45 +40,35 @@ describe("Scheduler", () => {
   });
 
   describe("scheduleUpcomingEvent", () => {
-    const mockDate = new Date("2023-01-01T10:00:00Z");
-    const RealDate = Date.now;
-
-    beforeEach(() => {
-      // Mock Date.now to return a specific timestamp
-      global.Date.now = jest.fn(() => new Date(mockDate).getTime());
-    });
-
-    afterEach(() => {
-      global.Date.now = RealDate;
-      jest.restoreAllMocks();
-    });
-
-    it("should schedule upcoming event with default delay", async () => {
-      // Act
-      await scheduler.scheduleUpcomingEvent();
-
-      // Assert
-      expect(mockAgenda.schedule).toHaveBeenCalledWith(new Date(mockDate.getTime() + 0), JobName.ScheduleUpcomingEvent, {});
-    });
-
-    it("should schedule upcoming event with custom delay", async () => {
+    it("should schedule upcoming event with count", async () => {
       // Arrange
-      const delay = 5000;
+      const upcomingEventsToSchedule = 3;
 
       // Act
-      await scheduler.scheduleUpcomingEvent(delay);
+      await scheduler.scheduleUpcomingEvent(upcomingEventsToSchedule);
 
       // Assert
-      expect(mockAgenda.schedule).toHaveBeenCalledWith(
-        new Date(mockDate.getTime() + delay),
-        JobName.ScheduleUpcomingEvent,
-        {}
-      );
+      expect(mockAgenda.schedule).toHaveBeenCalledWith(new Date(), JobName.ScheduleUpcomingEvent, {
+        upcomingEventsToSchedule: 3,
+      });
+    });
+
+    it("should schedule upcoming event with different count", async () => {
+      // Arrange
+      const upcomingEventsToSchedule = 5;
+
+      // Act
+      await scheduler.scheduleUpcomingEvent(upcomingEventsToSchedule);
+
+      // Assert
+      expect(mockAgenda.schedule).toHaveBeenCalledWith(new Date(), JobName.ScheduleUpcomingEvent, {
+        upcomingEventsToSchedule: 5,
+      });
     });
   });
 
   describe("scheduleUpcomingEvents", () => {
-    it("should schedule multiple upcoming events when needed", async () => {
+    it("should schedule upcoming events when needed", async () => {
       // Arrange
       const upcomingEvents = [{ eventID: 1 }];
       const upcomingEventsToSchedule = 2; // 3 required - 1 existing = 2 to schedule
@@ -90,9 +80,8 @@ describe("Scheduler", () => {
 
       // Assert
       expect(mockEventService.fetchAllUpcomingEvents).toHaveBeenCalled();
-      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledTimes(upcomingEventsToSchedule);
-      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledWith(2000); // 1 * 2000
-      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledWith(4000); // 2 * 2000
+      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledTimes(1);
+      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledWith(upcomingEventsToSchedule);
     });
 
     it("should not schedule events when sufficient events exist", async () => {
@@ -121,7 +110,8 @@ describe("Scheduler", () => {
 
       // Assert
       expect(mockEventService.fetchAllUpcomingEvents).toHaveBeenCalled();
-      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledTimes(upcomingEventsToSchedule);
+      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledTimes(1);
+      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledWith(upcomingEventsToSchedule);
     });
   });
 

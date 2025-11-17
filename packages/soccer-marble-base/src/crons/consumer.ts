@@ -37,20 +37,26 @@ export class Consumer {
     return new Date(lastEvent.scheduleStartTs.getTime() + this.gameSettings.gameTiming.wholeRound * 1000);
   }
 
+  async createUpcomingRoundAndEvent(lastRoundId: number) {
+    const lastEventId = idHelper.createEventId(this.gameSettings.gameId, lastRoundId);
+    const lastEvent = lastRoundId > 0 ? await this.eventService.fetchEventWithRetries(lastEventId) : null;
+
+    const upcomingRoundId = lastRoundId + 1;
+    const upcomingScheduleStartTs = this.calculateUpcomingScheduleStartTs(lastEvent);
+
+    await this.gameHandler.createUpcomingRoundAndEvent(upcomingRoundId, upcomingScheduleStartTs);
+  }
+
   consumeScheduleUpcomingEvent() {
     this.agenda.define(JobName.ScheduleUpcomingEvent, async (job: Job) => {
       try {
-        const upcomingEvents = await this.eventService.fetchAllUpcomingEvents();
+        const { upcomingEventsToSchedule } = job.attrs.data;
 
-        if (upcomingEvents.length < this.gameSettings.upcomingEvents) {
-          const lastRoundId = await this.roundService.initializeRoundId();
-          const lastEventId = idHelper.createEventId(this.gameSettings.gameId, lastRoundId);
-          const lastEvent = lastRoundId > 0 ? await this.eventService.fetchEventWithRetries(lastEventId) : null;
+        let lastRoundId = await this.roundService.initializeRoundId();
 
-          const upcomingRoundId = lastRoundId + 1;
-          const upcomingScheduleStartTs = this.calculateUpcomingScheduleStartTs(lastEvent);
-
-          await this.gameHandler.createUpcomingRoundAndEvent(upcomingRoundId, upcomingScheduleStartTs);
+        for (let i = 0; i < upcomingEventsToSchedule; i++) {
+          await this.createUpcomingRoundAndEvent(lastRoundId);
+          lastRoundId++;
         }
       } catch (error) {
         this.logService.logError(`Error in scheduleUpComingEvent: ${error}`);

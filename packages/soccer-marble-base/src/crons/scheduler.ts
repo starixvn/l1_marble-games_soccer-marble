@@ -44,17 +44,18 @@ export class Scheduler {
     }
   }
 
-  async scheduleUpcomingEvent(msDelay = 0) {
-    await this.agenda.schedule(new Date(Date.now() + msDelay), JobName.ScheduleUpcomingEvent, {});
+  async scheduleUpcomingEvent(upcomingEventsToSchedule: number) {
+    await this.agenda.schedule(new Date(), JobName.ScheduleUpcomingEvent, {
+      upcomingEventsToSchedule,
+    });
   }
 
   async scheduleUpcomingEvents() {
     const upcomingEvents = await this.eventService.fetchAllUpcomingEvents();
     const upcomingEventsToSchedule = Math.max(this.gameSettings.upcomingEvents - upcomingEvents.length, 0);
 
-    for (let i = 1; i <= upcomingEventsToSchedule; i++) {
-      const delay = i * 2000; // 2 seconds delay
-      await this.scheduleUpcomingEvent(delay);
+    if (upcomingEventsToSchedule > 0) {
+      await this.scheduleUpcomingEvent(upcomingEventsToSchedule);
     }
   }
 
