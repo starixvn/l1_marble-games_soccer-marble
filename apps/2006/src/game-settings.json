@@ -1,24 +1,24 @@
 {
   "gameId": 2006,
   "modelPrefix": "soccer_marble_2006",
-  "upcomingEvents": 3,
+  "upcomingEvents": 10,
   "theme": "epl_mun",
   "gameTiming": {
-    "wholeRound": 140,
+    "wholeRound": 10,
     "timelines": [
       {
         "OddsAvailable": 0,
-        "ScheduleStart": 30,
-        "ResultAvailable": 70
+        "ScheduleStart": 2,
+        "ResultAvailable": 5
       },
       {
-        "OddsAvailable": 65,
-        "ScheduleStart": 100,
-        "ResultAvailable": 140
+        "OddsAvailable": 5,
+        "ScheduleStart": 8,
+        "ResultAvailable": 10
       }
     ],
     "extraInfo": {
-      "preloadDuration": 8
+      "preloadDuration": 0
     }
   },
   "teams": [
