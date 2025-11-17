@@ -1,0 +1,10 @@
+{
+  "gameId": 2005,
+  "agenda": {
+    "url": "mongodb://marble_backend:MarbleBackend%4022027@10.146.34.28:39520",
+    "authSource": "admin",
+    "dbName": "marble_odds_feed",
+    "collectionName": "soccer_marble_2006_jobs",
+    "replicaSet": "SP-UAT"
+  }
+}
