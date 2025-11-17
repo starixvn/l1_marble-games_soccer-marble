@@ -12,7 +12,7 @@
     "url": "mongodb://localhost:27017",
     "authSource": "",
     "dbName": "marble-football",
-    "collectionName": "soccer_marble_2003_jobs",
+    "collectionName": "soccer_marble_2005_jobs",
     "replicaSet": ""
   },
   "sentry": {
