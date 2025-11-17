@@ -45,7 +45,7 @@ export class Scheduler {
   }
 
   async scheduleUpcomingEvent(upcomingEventsToSchedule: number) {
-    await this.agenda.schedule(new Date(), JobName.ScheduleUpcomingEvent, {
+    await this.agenda.schedule(new Date(Date.now()), JobName.ScheduleUpcomingEvent, {
       upcomingEventsToSchedule,
     });
   }

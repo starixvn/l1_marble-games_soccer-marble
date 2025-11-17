@@ -40,6 +40,19 @@ describe("Scheduler", () => {
   });
 
   describe("scheduleUpcomingEvent", () => {
+    const mockDate = new Date("2023-01-01T10:00:00Z");
+    const RealDate = Date.now;
+
+    beforeEach(() => {
+      // Mock Date.now to return a specific timestamp
+      global.Date.now = jest.fn(() => new Date(mockDate).getTime());
+    });
+
+    afterEach(() => {
+      global.Date.now = RealDate;
+      jest.restoreAllMocks();
+    });
+
     it("should schedule upcoming event with count", async () => {
       // Arrange
       const upcomingEventsToSchedule = 3;
@@ -48,7 +61,7 @@ describe("Scheduler", () => {
       await scheduler.scheduleUpcomingEvent(upcomingEventsToSchedule);
 
       // Assert
-      expect(mockAgenda.schedule).toHaveBeenCalledWith(new Date(), JobName.ScheduleUpcomingEvent, {
+      expect(mockAgenda.schedule).toHaveBeenCalledWith(mockDate, JobName.ScheduleUpcomingEvent, {
         upcomingEventsToSchedule: 3,
       });
     });
@@ -61,7 +74,7 @@ describe("Scheduler", () => {
       await scheduler.scheduleUpcomingEvent(upcomingEventsToSchedule);
 
       // Assert
-      expect(mockAgenda.schedule).toHaveBeenCalledWith(new Date(), JobName.ScheduleUpcomingEvent, {
+      expect(mockAgenda.schedule).toHaveBeenCalledWith(mockDate, JobName.ScheduleUpcomingEvent, {
         upcomingEventsToSchedule: 5,
       });
     });
