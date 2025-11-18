@@ -15,7 +15,7 @@
     "test:root": "jest --config jest.config.cjs",
     "test": "npm run test:root && npm run test --workspaces --if-present",
     "pretest-coverage": "npm run build",
-    "test-coverage": "npm run test-coverage --workspaces --if-present",
+    "test-coverage": "npm run test:root && npm run test-coverage --workspaces --if-present",
     "type-check": "npm run type-check --workspaces --if-present",
     "update:deps": "npm-check-updates -u && npm run update:deps --workspaces --if-present"
   },
