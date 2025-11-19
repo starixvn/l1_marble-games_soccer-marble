@@ -4,13 +4,13 @@
   "upcomingEvents": 3,
   "theme": "ultra_live_galaxy",
   "gameTiming": {
-    "wholeRound": 165,
+    "wholeRound": 100,
     "timelines": [],
     "extraInfo": {
       "videoLength": 40,
-      "oddsDuration": 30,
-      "resultDuration": 10,
-      "halfTimeDuration": 30,
+      "oddsDuration": 5,
+      "resultDuration": 7,
+      "halfTimeDuration": 5,
       "preloadDuration": 9,
       "blockBetDuration": 2
     }
