@@ -3,6 +3,8 @@ import { AppContainer, GameSettings, JobName } from "../types";
 import { EventService } from "../services/event-service";
 import { GameData } from "./game-data";
 import { IEventDetail } from "../models/event-details";
+import { secureRandomRange } from "sc-core-rng";
+import { RoundService } from "../services/round-service";
 
 export class Scheduler {
   protected readonly agenda: Agenda;
@@ -12,12 +14,14 @@ export class Scheduler {
   protected gameStatusInterval: NodeJS.Timeout | null = null;
   protected wholeRoundInterval: NodeJS.Timeout | null = null;
   protected readonly scheduleBufferMs = 100;
+  protected readonly roundService: RoundService;
 
   constructor(container: AppContainer) {
     this.agenda = container.agenda;
     this.eventService = container.eventService;
     this.gameData = container.gameData;
     this.gameSettings = container.gameSettings;
+    this.roundService = container.roundService;
   }
 
   clearIntervals() {
@@ -29,6 +33,10 @@ export class Scheduler {
       clearInterval(this.wholeRoundInterval);
       this.wholeRoundInterval = null;
     }
+  }
+
+  async delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async checkGameStatus() {
@@ -44,18 +52,25 @@ export class Scheduler {
     }
   }
 
-  async scheduleUpcomingEvent(upcomingEventsToSchedule: number) {
+  async scheduleUpcomingEvent(upcomingEventsToSchedule: number, lastRoundId: number) {
     await this.agenda.schedule(new Date(Date.now()), JobName.ScheduleUpcomingEvent, {
       upcomingEventsToSchedule,
+      lastRoundId,
     });
   }
 
   async scheduleUpcomingEvents() {
+    const maxDelay = 5000;
     const upcomingEvents = await this.eventService.fetchAllUpcomingEvents();
+    const lastRoundId = await this.roundService.initializeRoundId();
     const upcomingEventsToSchedule = Math.max(this.gameSettings.upcomingEvents - upcomingEvents.length, 0);
 
     if (upcomingEventsToSchedule > 0) {
-      await this.scheduleUpcomingEvent(upcomingEventsToSchedule);
+      const randomDelay = secureRandomRange(0, maxDelay);
+
+      // Add random delay to avoid creating upcoming events at the same time
+      await this.delay(randomDelay);
+      this.scheduleUpcomingEvent(upcomingEventsToSchedule, lastRoundId);
     }
   }
 

@@ -3,6 +3,9 @@ import { mockContainer } from "../global-stubs";
 import { JobName } from "../../../src/types";
 import { IEventDetail } from "../../../src/models/event-details";
 import mongoose from "mongoose";
+import * as rngModule from "sc-core-rng";
+
+jest.mock("sc-core-rng");
 
 // Mock setInterval and clearInterval
 const mockSetInterval = jest.fn();
@@ -17,14 +20,16 @@ describe("Scheduler", () => {
   let mockEventService: any;
   let mockGameData: any;
   let mockGameSettings: any;
+  let mockRoundService: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    const { agenda, eventService, gameData, gameSettings } = mockContainer;
+    const { agenda, eventService, gameData, gameSettings, roundService } = mockContainer;
     mockAgenda = agenda;
     mockEventService = eventService;
     mockGameData = gameData;
     mockGameSettings = gameSettings;
+    mockRoundService = roundService;
     scheduler = new Scheduler(mockContainer);
   });
 
@@ -53,39 +58,50 @@ describe("Scheduler", () => {
       jest.restoreAllMocks();
     });
 
-    it("should schedule upcoming event with count", async () => {
+    it("should schedule upcoming event with count and lastRoundId", async () => {
       // Arrange
       const upcomingEventsToSchedule = 3;
+      const lastRoundId = 5;
 
       // Act
-      await scheduler.scheduleUpcomingEvent(upcomingEventsToSchedule);
+      await scheduler.scheduleUpcomingEvent(upcomingEventsToSchedule, lastRoundId);
 
       // Assert
       expect(mockAgenda.schedule).toHaveBeenCalledWith(mockDate, JobName.ScheduleUpcomingEvent, {
         upcomingEventsToSchedule: 3,
+        lastRoundId: 5,
       });
     });
 
-    it("should schedule upcoming event with different count", async () => {
+    it("should schedule upcoming event with different count and lastRoundId", async () => {
       // Arrange
       const upcomingEventsToSchedule = 5;
+      const lastRoundId = 10;
 
       // Act
-      await scheduler.scheduleUpcomingEvent(upcomingEventsToSchedule);
+      await scheduler.scheduleUpcomingEvent(upcomingEventsToSchedule, lastRoundId);
 
       // Assert
       expect(mockAgenda.schedule).toHaveBeenCalledWith(mockDate, JobName.ScheduleUpcomingEvent, {
         upcomingEventsToSchedule: 5,
+        lastRoundId: 10,
       });
     });
   });
 
   describe("scheduleUpcomingEvents", () => {
-    it("should schedule upcoming events when needed", async () => {
+    beforeEach(() => {
+      jest.spyOn(rngModule, "secureRandomRange").mockReturnValue(1000);
+      jest.spyOn(scheduler, "delay").mockResolvedValue(undefined);
+    });
+
+    it("should schedule upcoming events when needed with lastRoundId and random delay", async () => {
       // Arrange
       const upcomingEvents = [{ eventID: 1 }];
       const upcomingEventsToSchedule = 2; // 3 required - 1 existing = 2 to schedule
+      const lastRoundId = 5;
       mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
+      mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
       jest.spyOn(scheduler, "scheduleUpcomingEvent").mockResolvedValue(undefined);
 
       // Act
@@ -93,14 +109,19 @@ describe("Scheduler", () => {
 
       // Assert
       expect(mockEventService.fetchAllUpcomingEvents).toHaveBeenCalled();
+      expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
+      expect(rngModule.secureRandomRange).toHaveBeenCalledWith(0, 5000);
+      expect(scheduler.delay).toHaveBeenCalledWith(1000);
       expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledTimes(1);
-      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledWith(upcomingEventsToSchedule);
+      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledWith(upcomingEventsToSchedule, lastRoundId);
     });
 
     it("should not schedule events when sufficient events exist", async () => {
       // Arrange
       const upcomingEvents = [{ eventID: 1 }, { eventID: 2 }, { eventID: 3 }, { eventID: 4 }];
+      const lastRoundId = 10;
       mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
+      mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
       jest.spyOn(scheduler, "scheduleUpcomingEvent").mockResolvedValue(undefined);
 
       // Act
@@ -108,14 +129,19 @@ describe("Scheduler", () => {
 
       // Assert
       expect(mockEventService.fetchAllUpcomingEvents).toHaveBeenCalled();
+      expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
       expect(scheduler.scheduleUpcomingEvent).not.toHaveBeenCalled();
+      expect(rngModule.secureRandomRange).not.toHaveBeenCalled();
+      expect(scheduler.delay).not.toHaveBeenCalled();
     });
 
     it("should handle zero upcoming events", async () => {
       // Arrange
       const upcomingEvents: any[] = [];
       const upcomingEventsToSchedule = 3; // 3 required - 0 existing = 3 to schedule
+      const lastRoundId = 0;
       mockEventService.fetchAllUpcomingEvents.mockResolvedValue(upcomingEvents);
+      mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
       jest.spyOn(scheduler, "scheduleUpcomingEvent").mockResolvedValue(undefined);
 
       // Act
@@ -123,8 +149,11 @@ describe("Scheduler", () => {
 
       // Assert
       expect(mockEventService.fetchAllUpcomingEvents).toHaveBeenCalled();
+      expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
+      expect(rngModule.secureRandomRange).toHaveBeenCalledWith(0, 5000);
+      expect(scheduler.delay).toHaveBeenCalledWith(1000);
       expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledTimes(1);
-      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledWith(upcomingEventsToSchedule);
+      expect(scheduler.scheduleUpcomingEvent).toHaveBeenCalledWith(upcomingEventsToSchedule, lastRoundId);
     });
   });
 
@@ -361,6 +390,24 @@ describe("Scheduler", () => {
 
       // Assert
       expect(mockClearInterval).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("delay", () => {
+    it("should delay for specified milliseconds", async () => {
+      // Arrange
+      jest.useFakeTimers();
+      const delayMs = 1000;
+
+      // Act
+      const delayPromise = scheduler.delay(delayMs);
+      jest.advanceTimersByTime(delayMs);
+      await delayPromise;
+
+      // Assert - if we get here without timeout, the delay worked
+      expect(true).toBe(true);
+
+      jest.useRealTimers();
     });
   });
 });

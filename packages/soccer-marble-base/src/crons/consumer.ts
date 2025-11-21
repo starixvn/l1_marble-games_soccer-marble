@@ -50,9 +50,18 @@ export class Consumer {
   consumeScheduleUpcomingEvent() {
     this.agenda.define(JobName.ScheduleUpcomingEvent, async (job: Job) => {
       try {
-        const { upcomingEventsToSchedule } = job.attrs.data;
+        const upcomingEventsToSchedule = job.attrs?.data?.upcomingEventsToSchedule ?? 1;
 
         let lastRoundId = await this.roundService.initializeRoundId();
+
+        if (job.attrs?.data?.lastRoundId && lastRoundId !== job.attrs.data.lastRoundId) {
+          this.logService.log(
+            `LastRoundId is not the same as the lastRoundId in the job. Skip creating upcoming event`,
+            "info"
+          );
+
+          return;
+        }
 
         for (let i = 0; i < upcomingEventsToSchedule; i++) {
           await this.createUpcomingRoundAndEvent(lastRoundId);

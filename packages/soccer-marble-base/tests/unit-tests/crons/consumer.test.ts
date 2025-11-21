@@ -62,30 +62,17 @@ describe("Consumer", () => {
       it("should create single upcoming round", async () => {
         // Arrange
         const lastRoundId = 5;
-        const lastEventId = 12345;
-        const lastEvent = {
-          scheduleStartTs: new Date("2023-01-01T10:00:00Z"),
-          scheduleEndTs: new Date("2023-01-01T10:01:01Z"),
-        };
-        const upcomingRoundId = 6;
-        const expectedScheduleStartTs = new Date("2023-01-01T10:01:01Z"); // schedule end time of last event
+        mockJob.attrs.data.lastRoundId = lastRoundId;
 
         mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
-        jest.spyOn(idHelper, "createEventId").mockReturnValue(lastEventId);
-        mockEventService.fetchEventWithRetries.mockResolvedValue(lastEvent);
-        mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
+        jest.spyOn(consumer, "createUpcomingRoundAndEvent").mockResolvedValue(undefined);
 
         // Act
         await jobHandler(mockJob);
 
         // Assert
         expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
-        expect(idHelper.createEventId).toHaveBeenCalledWith(mockGameSettings.gameId, lastRoundId);
-        expect(mockEventService.fetchEventWithRetries).toHaveBeenCalledWith(lastEventId);
-        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(
-          upcomingRoundId,
-          expectedScheduleStartTs
-        );
+        expect(consumer.createUpcomingRoundAndEvent).toHaveBeenCalledWith(lastRoundId);
         expect(mockJob.remove).toHaveBeenCalled();
       });
 
@@ -93,113 +80,74 @@ describe("Consumer", () => {
         // Arrange
         mockJob.attrs.data.upcomingEventsToSchedule = 3;
         const lastRoundId = 5;
-        const lastEventId1 = 12345;
-        const lastEventId2 = 12346;
-        const lastEventId3 = 12347;
-        const lastEvent1 = {
-          scheduleStartTs: new Date("2023-01-01T10:00:00Z"),
-          scheduleEndTs: new Date("2023-01-01T10:01:01Z"),
-        };
-        const lastEvent2 = {
-          scheduleStartTs: new Date("2023-01-01T10:01:01Z"),
-          scheduleEndTs: new Date("2023-01-01T10:02:02Z"),
-        };
-        const lastEvent3 = {
-          scheduleStartTs: new Date("2023-01-01T10:02:02Z"),
-          scheduleEndTs: new Date("2023-01-01T10:03:03Z"),
-        };
+        mockJob.attrs.data.lastRoundId = lastRoundId;
 
         mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
-        const createEventIdSpy = jest.spyOn(idHelper, "createEventId");
-        createEventIdSpy.mockReturnValueOnce(lastEventId1);
-        createEventIdSpy.mockReturnValueOnce(lastEventId2);
-        createEventIdSpy.mockReturnValueOnce(lastEventId3);
-
-        mockEventService.fetchEventWithRetries
-          .mockResolvedValueOnce(lastEvent1)
-          .mockResolvedValueOnce(lastEvent2)
-          .mockResolvedValueOnce(lastEvent3);
-        mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
+        jest.spyOn(consumer, "createUpcomingRoundAndEvent").mockResolvedValue(undefined);
 
         // Act
         await jobHandler(mockJob);
 
         // Assert
-        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledTimes(3);
-        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenNthCalledWith(
-          1,
-          6,
-          new Date("2023-01-01T10:01:01Z")
-        );
-        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenNthCalledWith(
-          2,
-          7,
-          new Date("2023-01-01T10:02:02Z")
-        );
-        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenNthCalledWith(
-          3,
-          8,
-          new Date("2023-01-01T10:03:03Z")
-        );
+        expect(consumer.createUpcomingRoundAndEvent).toHaveBeenCalledTimes(3);
+        expect(consumer.createUpcomingRoundAndEvent).toHaveBeenNthCalledWith(1, 5);
+        expect(consumer.createUpcomingRoundAndEvent).toHaveBeenNthCalledWith(2, 6);
+        expect(consumer.createUpcomingRoundAndEvent).toHaveBeenNthCalledWith(3, 7);
       });
 
-      it("should use schedule start time of last event when schedule end time does not exist", async () => {
+      it("should skip creation when lastRoundId does not match", async () => {
         // Arrange
         const lastRoundId = 5;
-        const lastEventId = 12345;
-        const lastEvent = {
-          scheduleStartTs: new Date("2023-01-01T10:00:00Z"),
-        };
-
-        mockGameSettings.gameTiming.wholeRound = 100;
-        const upcomingRoundId = 6;
-        const expectedScheduleStartTs = new Date(lastEvent.scheduleStartTs.getTime() + 100 * 1000); // schedule start time of last event + whole round time
+        const jobLastRoundId = 3; // Different from current lastRoundId
+        mockJob.attrs.data.lastRoundId = jobLastRoundId;
 
         mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
-        jest.spyOn(idHelper, "createEventId").mockReturnValue(lastEventId);
-        mockEventService.fetchEventWithRetries.mockResolvedValue(lastEvent);
-        mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
-
-        // Act
-        await jobHandler(mockJob);
-
-        // Assert
-        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(
-          upcomingRoundId,
-          expectedScheduleStartTs
-        );
-      });
-
-      it("should not create any rounds when upcomingEventsToSchedule is 0", async () => {
-        // Arrange
-        mockJob.attrs.data.upcomingEventsToSchedule = 0;
-        const lastRoundId = 5;
-        mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
+        jest.spyOn(consumer, "createUpcomingRoundAndEvent").mockResolvedValue(undefined);
 
         // Act
         await jobHandler(mockJob);
 
         // Assert
         expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
-        expect(mockGameHandler.createUpcomingRoundAndEvent).not.toHaveBeenCalled();
-        expect(mockJob.remove).toHaveBeenCalled();
+        expect(mockLogService.log).toHaveBeenCalledWith(
+          "LastRoundId is not the same as the lastRoundId in the job. Skip creating upcoming event",
+          "info"
+        );
+        expect(consumer.createUpcomingRoundAndEvent).not.toHaveBeenCalled();
       });
 
-      it("should use current date when lastRoundId is 0 (first round)", async () => {
+      it("should not create any rounds when upcomingEventsToSchedule is 0", async () => {
         // Arrange
-        const lastRoundId = 0; // First round, no previous events
-        mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
-        mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
+        mockJob.attrs.data.upcomingEventsToSchedule = 0;
+        const lastRoundId = 5;
+        mockJob.attrs.data.lastRoundId = lastRoundId;
 
-        const mockDate = new Date("2023-01-01T10:00:00Z");
-        jest.spyOn(global, "Date").mockImplementation(() => mockDate as any);
+        mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
+        jest.spyOn(consumer, "createUpcomingRoundAndEvent").mockResolvedValue(undefined);
 
         // Act
         await jobHandler(mockJob);
 
         // Assert
-        expect(mockEventService.fetchEventWithRetries).not.toHaveBeenCalled(); // Should skip fetching when lastRoundId is 0
-        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(1, mockDate);
+        expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
+        expect(consumer.createUpcomingRoundAndEvent).not.toHaveBeenCalled();
+        expect(mockJob.remove).toHaveBeenCalled();
+      });
+
+      it("should work when no lastRoundId is provided in job data", async () => {
+        // Arrange
+        const lastRoundId = 5;
+        delete mockJob.attrs.data.lastRoundId; // No lastRoundId in job data
+
+        mockRoundService.initializeRoundId.mockResolvedValue(lastRoundId);
+        jest.spyOn(consumer, "createUpcomingRoundAndEvent").mockResolvedValue(undefined);
+
+        // Act
+        await jobHandler(mockJob);
+
+        // Assert
+        expect(mockRoundService.initializeRoundId).toHaveBeenCalled();
+        expect(consumer.createUpcomingRoundAndEvent).toHaveBeenCalledWith(lastRoundId);
         expect(mockJob.remove).toHaveBeenCalled();
       });
 
@@ -214,6 +162,77 @@ describe("Consumer", () => {
         // Assert
         expect(mockLogService.logError).toHaveBeenCalledWith(`Error in scheduleUpComingEvent: ${error}`);
         expect(mockJob.remove).toHaveBeenCalled();
+      });
+    });
+
+    describe("createUpcomingRoundAndEvent", () => {
+      it("should create upcoming round and event with scheduleEndTs", async () => {
+        // Arrange
+        const lastRoundId = 5;
+        const lastEventId = 12345;
+        const lastEvent = {
+          scheduleStartTs: new Date("2023-01-01T10:00:00Z"),
+          scheduleEndTs: new Date("2023-01-01T10:01:01Z"),
+        };
+        const upcomingRoundId = 6;
+        const expectedScheduleStartTs = new Date("2023-01-01T10:01:01Z");
+
+        jest.spyOn(idHelper, "createEventId").mockReturnValue(lastEventId);
+        mockEventService.fetchEventWithRetries.mockResolvedValue(lastEvent);
+        mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
+
+        // Act
+        await consumer.createUpcomingRoundAndEvent(lastRoundId);
+
+        // Assert
+        expect(idHelper.createEventId).toHaveBeenCalledWith(mockGameSettings.gameId, lastRoundId);
+        expect(mockEventService.fetchEventWithRetries).toHaveBeenCalledWith(lastEventId);
+        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(
+          upcomingRoundId,
+          expectedScheduleStartTs
+        );
+      });
+
+      it("should use scheduleStartTs + wholeRound when scheduleEndTs does not exist", async () => {
+        // Arrange
+        const lastRoundId = 5;
+        const lastEventId = 12345;
+        const lastEvent = {
+          scheduleStartTs: new Date("2023-01-01T10:00:00Z"),
+        };
+        mockGameSettings.gameTiming.wholeRound = 100;
+        const upcomingRoundId = 6;
+        const expectedScheduleStartTs = new Date(lastEvent.scheduleStartTs.getTime() + 100 * 1000);
+
+        jest.spyOn(idHelper, "createEventId").mockReturnValue(lastEventId);
+        mockEventService.fetchEventWithRetries.mockResolvedValue(lastEvent);
+        mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
+
+        // Act
+        await consumer.createUpcomingRoundAndEvent(lastRoundId);
+
+        // Assert
+        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(
+          upcomingRoundId,
+          expectedScheduleStartTs
+        );
+      });
+
+      it("should use current date when lastRoundId is 0 (first round)", async () => {
+        // Arrange
+        const lastRoundId = 0;
+        const upcomingRoundId = 1;
+        mockGameHandler.createUpcomingRoundAndEvent.mockResolvedValue(undefined);
+
+        const mockDate = new Date("2023-01-01T10:00:00Z");
+        jest.spyOn(global, "Date").mockImplementation(() => mockDate as any);
+
+        // Act
+        await consumer.createUpcomingRoundAndEvent(lastRoundId);
+
+        // Assert
+        expect(mockEventService.fetchEventWithRetries).not.toHaveBeenCalled();
+        expect(mockGameHandler.createUpcomingRoundAndEvent).toHaveBeenCalledWith(upcomingRoundId, mockDate);
       });
     });
 
