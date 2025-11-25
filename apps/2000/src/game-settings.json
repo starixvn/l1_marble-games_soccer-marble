@@ -9,16 +9,16 @@
       {
         "OddsAvailable": 0,
         "ScheduleStart": 10,
-        "ResultAvailable": 45
+        "ResultAvailable": 48
       },
       {
-        "OddsAvailable": 40,
-        "ScheduleStart": 55,
-        "ResultAvailable": 90
+        "OddsAvailable": 43,
+        "ScheduleStart": 54,
+        "ResultAvailable": 92
       }
     ],
     "extraInfo": {
-      "preloadDuration": 3
+      "preloadDuration": 6
     }
   },
   "teams": [
