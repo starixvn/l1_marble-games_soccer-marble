@@ -3,6 +3,8 @@ variables:
   NODEJS_IMAGE: hub.lumigame.com/base/node:20.9.0-alpine-24h1.1
   SRC_PATH: .
   PUBLISH_NPM: "true"
+  PUBLISH_NPM_IMAGE: $DOCKER_REG_LOCAL_URL/docker-hub/library/node:lts-slim
+  NPM_LANG_TS: "true"
 
 include:
   - project: "ci/core-cicd"
