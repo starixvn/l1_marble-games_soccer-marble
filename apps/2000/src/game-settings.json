@@ -4,7 +4,7 @@
   "upcomingEvents": 3,
   "theme": "youtube",
   "gameTiming": {
-    "wholeRound": 100,
+    "wholeRound": 112,
     "timelines": [
       {
         "OddsAvailable": 0,
@@ -13,8 +13,8 @@
       },
       {
         "OddsAvailable": 43,
-        "ScheduleStart": 54,
-        "ResultAvailable": 92
+        "ScheduleStart": 64,
+        "ResultAvailable": 102
       }
     ],
     "extraInfo": {
