@@ -1,0 +1,4 @@
+{
+  "extends": ["sc-semantic-release"],
+  "branches": ["master", "main"]
+}
