@@ -12,19 +12,35 @@
     "check:deps": "npm-check-updates && npm run check:deps --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present",
     "reg": "npm set registry http://npm.lumigame.com",
-    "test:root": "jest --config jest.config.cjs",
     "test": "npm run test:root && npm run test --workspaces --if-present",
     "pretest-coverage": "npm run build",
     "test-coverage": "npm run test:root && npm run test-coverage --workspaces --if-present",
+    "test:root": "jest --config jest.config.cjs",
     "type-check": "npm run type-check --workspaces --if-present",
     "update:deps": "npm-check-updates -u && npm run update:deps --workspaces --if-present"
+  },
+  "dependencies": {
+    "agenda": "5.0.0",
+    "awilix": "12.0.5",
+    "dotenv": "17.2.3",
+    "express": "5.1.0",
+    "extensionless": "2.0.2",
+    "mongoose": "8.20.1",
+    "sc-common": "3.0.0",
+    "sc-core-rng": "1.1.0"
   },
   "devDependencies": {
     "@babel/core": "7.28.5",
     "@babel/plugin-syntax-import-assertions": "7.27.1",
     "@babel/preset-env": "7.28.5",
+    "@semantic-release/changelog": "6.0.3",
+    "@semantic-release/commit-analyzer": "13.0.1",
+    "@semantic-release/git": "10.0.1",
+    "@semantic-release/release-notes-generator": "14.1.0",
+    "@types/express": "5.0.5",
     "@types/jest": "30.0.0",
     "@types/node": "24.10.1",
+    "@types/sc-common": "1.0.2",
     "babel-jest": "30.2.0",
     "cross-env": "10.1.0",
     "jest": "30.2.0",
@@ -32,20 +48,10 @@
     "jest-junit": "16.0.0",
     "jest-sonar-reporter": "2.0.0",
     "npm-check-updates": "19.1.2",
+    "sc-semantic-release": "1.3.0",
+    "semantic-release": "25.0.0",
     "ts-jest": "29.4.5",
     "tsx": "4.20.6",
-    "typescript": "5.9.3",
-    "@types/express": "5.0.5",
-    "@types/sc-common": "1.0.2"
-  },
-  "dependencies": {
-    "agenda": "5.0.0",
-    "awilix": "12.0.5",
-    "dotenv": "17.2.3",
-    "express": "5.1.0",
-    "mongoose": "8.20.1",
-    "sc-common": "3.0.0",
-    "sc-core-rng": "1.1.0",
-    "extensionless": "2.0.2"
+    "typescript": "5.9.3"
   }
 }
