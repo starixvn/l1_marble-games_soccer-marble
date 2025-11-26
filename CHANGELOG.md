@@ -1,3 +1,10 @@
+## [1.0.1](https://git3.nexdev.net/l1/marble-games/soccer-marble/compare/v[secure]...v1.0.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* adjust game timing values in settings for improved gameplay ([4f501ab](https://git3.nexdev.net/l1/marble-games/soccer-marble/commit/4f501abf2d24eb3832736ce0f35d0751a6c926cd))
+
 # [secure] (2025-11-26)
 
 
