@@ -25,7 +25,7 @@
     "dotenv": "17.2.3",
     "express": "5.1.0",
     "extensionless": "2.0.2",
-    "mongoose": "8.20.1",
+    "mongoose": "9.0.0",
     "sc-common": "3.0.0",
     "sc-core-rng": "1.1.0"
   },
